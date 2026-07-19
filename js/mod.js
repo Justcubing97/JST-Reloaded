@@ -12,12 +12,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
-	name: "Pre-RG release",
+	num: "1.1",
+	name: "Pre-RG release - CSS fix",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
+	<h3>v1.1</h3><br>
+		- Fixed CSS for elements.
+	<h3>v1.0</h3><br>
 		- Three layers: Notes, Songs, and DDR! <br>
 		- 7 Achievements.`
 
