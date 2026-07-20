@@ -1,11 +1,14 @@
 addLayer("ddrm", {
     startData() { return {
-        unlocked: true,
+        unlocked: false,
         points: new Decimal(0),
 
         marvelous: new Decimal(0),
+        mEffect: new Decimal(1),
         great: new Decimal(0),
+        gEffect: new Decimal(1),
         almost: new Decimal(0),
+        aEffect: new Decimal(1),
         miss: new Decimal(0),
         current: [],
         timer: 0,
@@ -28,17 +31,25 @@ addLayer("ddrm", {
         {key: "/", onPress(){player.ddrm.paused = !player.ddrm.paused}}
     ],
 
-    arrowClicking_DDRM(column){
-        if (getGridData("ddrm", 200 + column) == 1){
-            setGridData("ddrm", 200 + column, 0)
+    findMults_DDRM(type){
+        let mult = new Decimal(1)
+        if (type == "m"){
+            if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
 
-            let index = player.ddrm.current.findIndex(x => x[1] == 200 + column)
-            player.ddrm.current.splice(index, 1)
-
-            player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.marvelous = player.ddrm.marvelous.add(1)
+            return mult
         }
+        if (type == "g"){
 
+            return mult
+        }
+        if (type == "a"){
+            if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
+
+            return mult
+        }
+    },
+
+    arrowClicking_DDRM(column){
         if (getGridData("ddrm", 100 + column) == 1){
             setGridData("ddrm", 100 + column, 0)
 
@@ -46,7 +57,17 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.great = player.ddrm.great.add(1)
+            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
+        }
+
+        if (getGridData("ddrm", 200 + column) == 1){
+            setGridData("ddrm", 200 + column, 0)
+
+            let index = player.ddrm.current.findIndex(x => x[1] == 200 + column)
+            player.ddrm.current.splice(index, 1)
+
+            player.ddrm.points = player.ddrm.points.add(1)
+            player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m"))
         }
 
         if (getGridData("ddrm", 300 + column) == 1){
@@ -56,8 +77,9 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.great = player.ddrm.great.add(1)
+            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
         }
+
         if (getGridData("ddrm", 400 + column) == 1){
             setGridData("ddrm", 400 + column, 0)
 
@@ -65,7 +87,17 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.almost = player.ddrm.almost.add(1)
+            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a"))
+        }
+
+        if (getGridData("ddrm", 500 + column) == 1){
+            setGridData("ddrm", 500 + column, 0)
+
+            let index = player.ddrm.current.findIndex(x => x[1] == 500 + column)
+            player.ddrm.current.splice(index, 1)
+
+            player.ddrm.points = player.ddrm.points.add(1)
+            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a"))
         }
     },
 
@@ -209,7 +241,7 @@ addLayer("ddrm", {
 
     update(diff){
         player.ddrm.timer += 1
-        player.ddrm.timer = player.ddrm.timer % 8
+        player.ddrm.timer = player.ddrm.timer % 12
 
         /*
         INFO:
@@ -225,33 +257,38 @@ addLayer("ddrm", {
         x0y, where x is the current row (10 is the lowest row, 1 is the highest, and 2 is the step zone)
         */
 
-        if (Math.random() > 0 && player.ddrm.timer == 0 && player.ddrm.paused){
+        if (Math.random() > 0.1 && player.ddrm.timer == 0 && player.ddrm.paused){ //this conditional spawns the notes
             let num = Math.floor(Math.random() * 4) + 1 //chooses column
             let quantize = 1 //initializes color
-            player.ddrm.current.push([quantize, 1000 + num]) //pushes the chosen color and column to the array
+            player.ddrm.current.push([quantize, 1100 + num]) //pushes the chosen color and column to the array
             
         }
 
-        for (var DDRMC = 0; DDRMC < player.ddrm.current.length; DDRMC++){
-            if (player.ddrm.timer % 2 == 0 && player.ddrm.paused){
-                player.ddrm.current[DDRMC][1] = player.ddrm.current[DDRMC][1] - 100
-                setGridData("ddrm", player.ddrm.current[DDRMC][1], player.ddrm.current[DDRMC][0])
-                setGridData("ddrm", player.ddrm.current[DDRMC][1] + 100, "0")
-                if (player.ddrm.current[DDRMC][1] < 0){
-                    player.ddrm.current.shift()
-                    player.ddrm.miss = player.ddrm.miss.add(1)
+        for (var DDRMC = 0; DDRMC < player.ddrm.current.length; DDRMC++){ //this loop moves the notes
+            if (player.ddrm.timer % 3 == 0 && player.ddrm.paused){ //every other tick
+                player.ddrm.current[DDRMC][1] = player.ddrm.current[DDRMC][1] - 100 //shift the note in the array
+                setGridData("ddrm", player.ddrm.current[DDRMC][1], player.ddrm.current[DDRMC][0]) //changes the data
+                setGridData("ddrm", player.ddrm.current[DDRMC][1] + 100, "0") //removes the data
+                if (player.ddrm.current[DDRMC][1] < 0){ //is it out of the play area?
+                    player.ddrm.current.shift() //delete it!
+                    player.ddrm.miss = player.ddrm.miss.add(1) //add a miss
                 }
             }
         }
+
+        //update the effects
+        player.ddrm.mEffect = player.ddrm.marvelous.add(1).pow(0.5).mul(15)
+        player.ddrm.gEffect = player.ddrm.great.add(1).pow(0.5).mul(2)
+        player.ddrm.aEffect = player.ddrm.almost.add(1).log(500).div(25).add(1)
     },
 
     tabFormat: [
         "main-display",
         ["clickables", [1]],
         "blank",
-        ["display-text", function(){return `You have hit <h2 style="color: #8000FF; text-shadow: 0px 0px 10px #8000FF">${format(player.ddrm.marvelous)}</h2> Marvelous arrows`}],
-        ["display-text", function(){return `You have hit <h2 style="color: #40FF40; text-shadow: 0px 0px 10px #40FF40">${format(player.ddrm.great)}</h2> Great arrows`}],
-        ["display-text", function(){return `You have hit <h2 style="color: #FF4040; text-shadow: 0px 0px 10px #FF4040">${format(player.ddrm.almost)}</h2> Almost arrows`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #8000FF; text-shadow: 0px 0px 10px #8000FF">${format(player.ddrm.marvelous)}</h2> Marvelous arrows, multiplying ME by x${format(player.ddrm.mEffect)}`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #40FF40; text-shadow: 0px 0px 10px #40FF40">${format(player.ddrm.great)}</h2> Great arrows, multiplying Notes by x${format(player.ddrm.gEffect)}`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #FF4040; text-shadow: 0px 0px 10px #FF4040">${format(player.ddrm.almost)}</h2> Almost arrows, multiplying Songs by x${format(player.ddrm.aEffect)}`}],
         ["display-text", function(){return `You have missed <h2 style="color: #B0B0B0; text-shadow: 0px 0px 10px #B0B0B0">${format(player.ddrm.miss)}</h2> arrows`}],
         ["display-text", function(){return "Use arrow keys or click the white arrows to hit them! Hit / to pause DDR."}],
         "blank",
@@ -259,5 +296,8 @@ addLayer("ddrm", {
     ],
 
 
-    unlocked() {player.ddr.unlocked},
+    layerShown(){
+        if (player.ddr.points.gte(1)) player.ddrm.unlocked = true
+        return player.ddrm.unlocked
+    },
 })

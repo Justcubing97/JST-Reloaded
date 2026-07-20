@@ -43,6 +43,7 @@ addLayer("n", {
         if (hasUpgrade(layer, 22)) mult = mult.mul(upgradeEffect(this.layer, 22))
         if (hasUpgrade(layer, 31)) mult = mult.mul(10)
         if (hasUpgrade(layer, 33)) mult = mult.mul(upgradeEffect(this.layer, 33))
+        if (hasUpgrade(layer, 34)) mult = mult.mul(4)
         if (hasUpgrade(layer, 103)) mult = mult.mul(5)
         if (hasUpgrade(layer, 104)) mult = mult.mul(25)
         if (hasUpgrade(layer, 41)) mult = mult.mul(25)
@@ -55,6 +56,8 @@ addLayer("n", {
 
         layer = "ddr"
         if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
+
+        mult = mult.mul(player.ddrm.gEffect)
         //exp 
         layer = "n"
         if (hasUpgrade(this.layer, 201)) mult = mult.pow(1.05)
@@ -125,14 +128,14 @@ addLayer("n", {
                 "blank",
                 "buyables",
             ],
-            unlocked() {return hasUpgrade("s", 21)},
+            unlocked() {return hasUpgrade("s", 21) || hasUpgrade("ddr", 13)},
         },
     },
 
     upgrades: {
         11: {
             title: "The Simple Ascent",
-            description: "x2 Musical Essence.",
+            description: "x3 Musical Essence.",
             cost: new Decimal("1"),
             unlocked() {return true},
         },
@@ -152,8 +155,8 @@ addLayer("n", {
             },
             effectDisplay() {
                 let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " ME"
-                if (upgradeEffect(this.layer, this.id).gte("1e35") && hasMilestone("s", 6)) text += " (softcapped)"
-                else if (upgradeEffect(this.layer, this.id).gte("1e25")) text += " (softcapped)"
+                if (upgradeEffect(this.layer, this.id).gte("1e50") && hasMilestone("s", 6)) text += " (softcapped)"
+                else if (upgradeEffect(this.layer, this.id).gte("1e25") && !hasMilestone("s", 6)) text += " (softcapped)"
                 return text
             },
             description: "Notes boost Musical Essence.",
@@ -163,13 +166,13 @@ addLayer("n", {
         13: {
             title: "Feedback Loop",
             description: "x3 Notes.",
-            cost: new Decimal("10"),
+            cost: new Decimal("5"),
             unlocked() {return true},
         },
         14: {
             title: "4K Setup",
             description: "x4 Notes and ME.",
-            cost: new Decimal("25"),
+            cost: new Decimal("20"),
             unlocked() {return true},
         },
 
@@ -183,7 +186,7 @@ addLayer("n", {
             title: "More Dynamic Boosts",
             effect() {
                 let base = player.points.add(1)
-                base = base.pow(0.1)
+                base = base.pow(0.15)
                 if (hasUpgrade(this.layer, 24)) base = base.mul(2)
                 if (hasUpgrade(this.layer, 32)) base = base.mul(15)
 
@@ -197,7 +200,7 @@ addLayer("n", {
         },
         23: {
             title: "Base-ic Manipulation",
-            description: "+4 to ME base.",
+            description: "+6 to ME base.",
             cost: new Decimal("4000"),
             unlocked() {return hasUpgrade(this.layer, 14)},
         },
@@ -236,7 +239,7 @@ addLayer("n", {
         },
         34: {
             title: "4 Beats",
-            description: "Unlock Whole Notes and x4 ME.",
+            description: "Unlock Whole Notes and x4 ME and Notes.",
             cost: new Decimal("1e10"),
             unlocked() {return hasUpgrade(this.layer, 24)},
         },
@@ -415,11 +418,16 @@ addLayer("n", {
 
     buyables: {
         11: {
+            base() {return new Decimal("1e20")},
+            exponentialBase() {
+                let init = new Decimal("200")
+                if (hasMilestone("s", 5)) init = init.sub(75)
+                if (inChallenge("s", 11)) init = new Decimal("1e10")
+                return init
+            },
             cost(x) {
-                let base = new Decimal("1e20")
-                let expbase = new Decimal("200")
-                if (hasMilestone("s", 5)) expbase = expbase.sub(75)
-                if (inChallenge("s", 11)) expbase = new Decimal("1e10")
+                let base = tmp[this.layer].buyables[this.id].base
+                let expbase = tmp[this.layer].buyables[this.id].exponentialBase
                 let multi = new Decimal(expbase).pow(x)
 
                 let final = base.mul(multi)
@@ -430,15 +438,40 @@ addLayer("n", {
             display() { return "Multiplies Notes by 2 per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect()) },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if (hasUpgrade("ddr", 13)){
+                    let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
+                    let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
+                    player[this.layer].points = player[this.layer].points.sub(cost)
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                } else {
+                    player[this.layer].points = player[this.layer].points.sub(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
             },
             effect(x) {
                 let base = new Decimal(2)
                 let effect = base.pow(x)
                 return effect
             },
-            unlocked() {return hasMilestone("s", 2)},
+            unlocked() {return hasMilestone("s", 2) || hasUpgrade("ddr", 13)},
+            buyMax() {
+                let timesBought = player.n.points
+                timesBought = timesBought.mul(upgradeEffect(this.layer, 111))
+                timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
+                timesBought = timesBought.div(new Decimal.pow("10", "20"))
+                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
+                timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
+                timesBought = timesBought.floor()
+
+                let totalCost = new Decimal.pow("10", "20")
+                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
+                totalCost = totalCost.div(upgradeEffect(this.layer, 111))
+                let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
+                polynomial = polynomial.pow(timesBought).sub(1)
+                polynomial = polynomial.div(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
+                totalCost = totalCost.mul(polynomial)
+                return [totalCost, timesBought]
+            },
         },
     },
 
@@ -494,6 +527,7 @@ addLayer("n", {
         return ""
     },
     shouldNotify() {
+        let a = tmp[this.layer].buyables[11].buyMax
         let layer = "n"
         for (const id of [11]) {
             if (canBuyBuyable(layer, id) && hasUpgrade("s", 21)) {

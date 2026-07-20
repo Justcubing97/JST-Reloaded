@@ -12,11 +12,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "2.0",
-	name: "DDR minigame release",
+	num: "2.1",
+	name: "DDR layer expansion",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.1</h2><br>
+		- Added effects from the DDR minigame. <br>
+        - Fixed Note layer progression - no more timewall at 1e10 Notes! <br>
+        - More Arrow upgrades. <br><br>
 	<h2>v2.0</h2><br>
 		- Fixed CSS for upgrades. <br>
         - New DDR minigame! <br>
@@ -31,7 +35,7 @@ let winText = `Congratulations! You have reached the end and beaten this game as
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything", "arrowClicking_DDRM"]
+var doNotCallTheseFunctionsEveryTick = ["blowUpEverything", "arrowClicking_DDRM", "findMults_DDRM"]
 
 function getStartPoints(){
     return new Decimal(modInfo.initialStartPoints)
@@ -51,12 +55,12 @@ function getPointGen() {
 	let mult = new Decimal(1)
     //add
     layer = "n"
-    if (hasUpgrade(layer, 23)) mult = mult.add(4)
+    if (hasUpgrade(layer, 23)) mult = mult.add(6)
     if (hasUpgrade(layer, 101)) mult = mult.add(3)
     if (hasUpgrade(layer, 103)) mult = mult.add(10)
     //mul
     layer = "n"
-    if (hasUpgrade(layer, 11)) mult = mult.mul(2)
+    if (hasUpgrade(layer, 11)) mult = mult.mul(3)
     if (hasUpgrade(layer, 12)) mult = mult.mul(upgradeEffect(layer, 12))
     if (hasUpgrade(layer, 14)) mult = mult.mul(4)
     if (hasUpgrade(layer, 21)) mult = mult.mul(6)
@@ -75,6 +79,9 @@ function getPointGen() {
 
     layer = "ddr"
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
+    if (hasUpgrade(layer, 13)) mult = mult.mul("1e6")
+        
+    mult = mult.mul(player.ddrm.mEffect)
     //exp
     layer = "n"
     if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
@@ -95,13 +102,13 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 2 Arrows and have Arrow upgrade 1",
+    "Current endgame: 10 Arrows and have Arrow upgrade 3",
     "The Rhythm Game Tree made by Justcubing97",
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.ddr.points.gte(2) && hasUpgrade("ddr", 11)
+	return player.ddr.points.gte(10) && hasUpgrade("ddr", 13)
 }
 
 

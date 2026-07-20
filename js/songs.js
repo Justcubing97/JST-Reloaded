@@ -27,6 +27,8 @@ addLayer("s", {
         if (hasUpgrade(layer, 204)) mult = mult.mul(1.5)
         if (hasUpgrade(layer, 42)) mult = mult.mul(1.25)
         if (hasUpgrade(layer, 112)) mult = mult.mul(1.1)
+
+        mult = mult.mul(player.ddrm.aEffect)
         //exp 
         //other hypers
         //time dilations/chals
@@ -43,7 +45,7 @@ addLayer("s", {
     },
     passiveGeneration() {return false},
     resetDescription: "Compose ",
-    canBuyMax() {return hasMilestone(this.layer, 1)},
+    canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12)},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -187,7 +189,7 @@ addLayer("s", {
         },
         5: {
             requirementDescription: "5: 22 Songs",
-            effectDescription: "You stumble on a strange cave while walking in nature. +1 Songs and Note buyable 1's scaling is 125.",
+            effectDescription: "You seem to be more and more well-versed in music. +1 Songs and Note buyable 1's scaling is 125.",
             done() { return player.s.points.gte(22) },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
@@ -198,8 +200,8 @@ addLayer("s", {
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
         7: {
-            requirementDescription: "6: 50 Songs",
-            effectDescription: "You decide to venture into the cave. Unlock \"Power Outage\".",
+            requirementDescription: "7: 50 Songs",
+            effectDescription: "You feel the FLOW STATE of music production. Unlock \"Power Outage\".",
             done() { return player.s.points.gte(50) },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },

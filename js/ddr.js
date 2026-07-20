@@ -37,6 +37,23 @@ addLayer("ddr", {
         if (hasChallenge("s", 11)) player.ddr.unlocked = true
         return player.ddr.unlocked
     },
+    canReset(){return hasChallenge("s", 11)},
+
+    tabFormat: [
+        "main-display",
+        "prestige-button",
+        ["blank", "4px"],
+        ["display-text", function(){return `You have ${format(player.s.points)} Songs.`}],
+        ["blank", function() {if (!hasChallenge("s", 11)) return ["8px", "17px"]; else return ["0px", "0px"]}],
+        ["display-text", function(){if (!hasChallenge("s", 11)) return "You need to complete \"Power Outage\" first!"}],
+        "blank",
+        ["display-text", function(){return `You have made ${format(player.ddr.total)} Arrows in total.`}],
+        "blank",
+        "upgrades",
+        ["blank", "30px"],
+        "challenges",
+    ],
+    
     passiveGeneration() {return false},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
@@ -59,17 +76,30 @@ addLayer("ddr", {
         11: {
             title: "⇧ x → ♪ & 🎧",
             effect() {
-                let base = player.ddr.points.add(2)
-                base = base.log(1.1).add(1).mul(25).pow(1.01)
+                let base = player.ddr.total.add(2)
+                base = base.log(1.05).add(1).mul(25).pow(1.1)
                 return base
             },
             effectDisplay() {
                 let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " ME and Notes"
                 return text
             },
-            description: "Arrows boost ME and Notes.",
+            description: "Total arrows boost ME and Notes.",
             cost: new Decimal("1"),
         },
+        12: {
+            title: "Multi-hit",
+            description: "x2 Marvelous and Almost arrows, and you can always bulk-compose Songs.",
+            cost: new Decimal("2"),
+        },
+        13: {
+            title: "More Power = Improve Skill",
+            description: "You can buy max of the first Note buyable and keep it unlocked. x1,000,000 ME!",
+            cost: new Decimal("5"),
+        },
     },
-    tooltip() {return format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"},
+    tooltip() {
+        if (!canReset(this.layer)) return format(player.ddr.points) + " Arrows (\"Power Outage\" needed to reset)"
+        return format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"
+    },
 })
