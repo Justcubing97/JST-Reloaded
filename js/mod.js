@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Rhythm Game Tree",
 	author: "Justcubing97",
 	pointsName: "Musical Essence",
-	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "tree.js"],
+	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "tree.js", "ddrm.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,22 +12,26 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.1",
-	name: "Pre-RG release - CSS fix",
+	num: "2.0",
+	name: "DDR minigame release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.0</h2><br>
+		- Fixed CSS for upgrades. <br>
+        - New DDR minigame! <br>
+        - Implemented one Arrow upgrade. <br><br>
 	<h3>v1.1</h3><br>
-		- Fixed CSS for elements.
-	<h3>v1.0</h3><br>
+		- Fixed CSS for elements. <br><br>
+	<h2>v1.0</h2><br>
 		- Three layers: Notes, Songs, and DDR! <br>
 		- 7 Achievements.`
 
-let winText = `Congratulations! You have reached the end and beaten this game as of ${VERSION.num}! If the version number is below 6, there's still more content!`
+let winText = `Congratulations! You have reached the end and beaten this game as of ${VERSION.num}! If the version number is below 7, there's still more content!`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything"]
+var doNotCallTheseFunctionsEveryTick = ["blowUpEverything", "arrowClicking_DDRM"]
 
 function getStartPoints(){
     return new Decimal(modInfo.initialStartPoints)
@@ -68,6 +72,9 @@ function getPointGen() {
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     if (hasUpgrade(layer, 13)) mult = mult.mul(upgradeEffect(layer, 13))
     if (hasUpgrade(layer, 23)) mult = mult.mul(125)
+
+    layer = "ddr"
+    if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     //exp
     layer = "n"
     if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
@@ -88,13 +95,13 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 1 Arrow",
+    "Current endgame: 2 Arrows and have Arrow upgrade 1",
     "The Rhythm Game Tree made by Justcubing97",
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.ddr.points.gte(1)
+	return player.ddr.points.gte(2) && hasUpgrade("ddr", 11)
 }
 
 

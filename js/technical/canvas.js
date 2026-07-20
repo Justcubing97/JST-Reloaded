@@ -2,6 +2,11 @@ var canvas;
 var ctx;
 
 window.addEventListener("resize", (_=>resizeCanvas()));
+document.addEventListener("keydown", function(event) {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "/"].includes(event.key)) {
+        event.preventDefault();
+    }
+});
 
 function retrieveCanvasData() {
 	let treeCanv = document.getElementById("treeCanvas")

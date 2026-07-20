@@ -52,6 +52,9 @@ addLayer("n", {
         layer = "s"
         if (hasMilestone(layer, 3)) mult = mult.mul(500)
         if (hasUpgrade(layer, 23)) mult = mult.mul(125)
+
+        layer = "ddr"
+        if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
         //exp 
         layer = "n"
         if (hasUpgrade(this.layer, 201)) mult = mult.pow(1.05)

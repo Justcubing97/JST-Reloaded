@@ -31,7 +31,7 @@ addLayer("ddr", {
     }, //do everything inside the gainMult()
     row: 2, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "D", description: "SHIFT+D: Reset for Arrows", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "A", description: "SHIFT+A: Reset for Arrows", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){
         if (hasChallenge("s", 11)) player.ddr.unlocked = true
@@ -57,9 +57,18 @@ addLayer("ddr", {
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
     upgrades: {
         11: {
-            title: "placeholder",
-            description: "???",
-            cost: new Decimal("1e234987234987234"),
+            title: "⇧ x → ♪ & 🎧",
+            effect() {
+                let base = player.ddr.points.add(2)
+                base = base.log(1.1).add(1).mul(25).pow(1.01)
+                return base
+            },
+            effectDisplay() {
+                let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " ME and Notes"
+                return text
+            },
+            description: "Arrows boost ME and Notes.",
+            cost: new Decimal("1"),
         },
     },
     tooltip() {return format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"},
