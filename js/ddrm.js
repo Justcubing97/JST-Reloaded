@@ -10,6 +10,11 @@ addLayer("ddrm", {
         almost: new Decimal(0),
         aEffect: new Decimal(1),
         miss: new Decimal(0),
+
+        combo: new Decimal(0),
+        highestCombo: new Decimal(0),
+        cEffect: new Decimal(0),    
+
         current: [],
         timer: 0,
         paused: false,
@@ -34,16 +39,32 @@ addLayer("ddrm", {
     findMults_DDRM(type){
         let mult = new Decimal(1)
         if (type == "m"){
+            mult = mult.mul(player.ddrm.cEffect)
             if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
+            if (hasChallenge("ddr", 11)) mult = mult.mul(3)
+            if (hasChallenge("ddr", 12)) mult = mult.mul(5)
 
             return mult
         }
         if (type == "g"){
+            mult = mult.mul(player.ddrm.cEffect)
+            if (hasChallenge("ddr", 11)) mult = mult.mul(3)
+            if (hasChallenge("ddr", 12)) mult = mult.mul(5)
 
             return mult
         }
         if (type == "a"){
+            mult = mult.mul(player.ddrm.cEffect)
             if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
+            if (hasChallenge("ddr", 12)) mult = mult.mul(5)
+
+            return mult
+        }
+        if (type == "c"){
+            mult = new Decimal(1)
+            if (inChallenge("ddr", 11) ||
+            inChallenge("ddr", 12)) mult = mult.mul(player.MEComboNerf)
+            if (hasChallenge("ddr", 11)) mult = mult.mul(2.5)
 
             return mult
         }
@@ -58,9 +79,8 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
-        }
-
-        if (getGridData("ddrm", 200 + column) == 1){
+            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+        } else if (getGridData("ddrm", 200 + column) == 1){
             setGridData("ddrm", 200 + column, 0)
 
             let index = player.ddrm.current.findIndex(x => x[1] == 200 + column)
@@ -68,9 +88,8 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m"))
-        }
-
-        if (getGridData("ddrm", 300 + column) == 1){
+            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+        } else if (getGridData("ddrm", 300 + column) == 1){
             setGridData("ddrm", 300 + column, 0)
 
             let index = player.ddrm.current.findIndex(x => x[1] == 300 + column)
@@ -78,9 +97,8 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
-        }
-
-        if (getGridData("ddrm", 400 + column) == 1){
+            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+        } else if (getGridData("ddrm", 400 + column) == 1){
             setGridData("ddrm", 400 + column, 0)
 
             let index = player.ddrm.current.findIndex(x => x[1] == 400 + column)
@@ -88,9 +106,7 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a"))
-        }
-
-        if (getGridData("ddrm", 500 + column) == 1){
+        } else if (getGridData("ddrm", 500 + column) == 1){
             setGridData("ddrm", 500 + column, 0)
 
             let index = player.ddrm.current.findIndex(x => x[1] == 500 + column)
@@ -272,6 +288,7 @@ addLayer("ddrm", {
                 if (player.ddrm.current[DDRMC][1] < 0){ //is it out of the play area?
                     player.ddrm.current.shift() //delete it!
                     player.ddrm.miss = player.ddrm.miss.add(1) //add a miss
+                    player.ddrm.combo = new Decimal(0)
                 }
             }
         }
@@ -279,22 +296,51 @@ addLayer("ddrm", {
         //update the effects
         player.ddrm.mEffect = player.ddrm.marvelous.add(1).pow(0.5).mul(15)
         player.ddrm.gEffect = player.ddrm.great.add(1).pow(0.5).mul(2)
-        player.ddrm.aEffect = player.ddrm.almost.add(1).log(500).div(25).add(1)
+        player.ddrm.aEffect = player.ddrm.almost.add(1).log(100).div(25).add(1)
+
+        if (hasChallenge("ddr", 12)) {
+            player.ddrm.mEffect = player.ddrm.mEffect.mul(50).pow(1.25)
+            player.ddrm.gEffect = player.ddrm.gEffect.mul(50).pow(1.25)
+            player.ddrm.aEffect = player.ddrm.aEffect.mul(1.1).pow(1.1)
+        }
+
+        //combo stuff
+        if (player.ddrm.combo.gte(player.ddrm.highestCombo)) player.ddrm.highestCombo = player.ddrm.combo
+        player.ddrm.cEffect = player.ddrm.highestCombo.add(1).pow(0.15)
     },
 
     tabFormat: [
         "main-display",
+        ["infobox", "minigame"],
         ["clickables", [1]],
         "blank",
-        ["display-text", function(){return `You have hit <h2 style="color: #8000FF; text-shadow: 0px 0px 10px #8000FF">${format(player.ddrm.marvelous)}</h2> Marvelous arrows, multiplying ME by x${format(player.ddrm.mEffect)}`}],
-        ["display-text", function(){return `You have hit <h2 style="color: #40FF40; text-shadow: 0px 0px 10px #40FF40">${format(player.ddrm.great)}</h2> Great arrows, multiplying Notes by x${format(player.ddrm.gEffect)}`}],
-        ["display-text", function(){return `You have hit <h2 style="color: #FF4040; text-shadow: 0px 0px 10px #FF4040">${format(player.ddrm.almost)}</h2> Almost arrows, multiplying Songs by x${format(player.ddrm.aEffect)}`}],
-        ["display-text", function(){return `You have missed <h2 style="color: #B0B0B0; text-shadow: 0px 0px 10px #B0B0B0">${format(player.ddrm.miss)}</h2> arrows`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #8000FF; text-shadow: 0px 0px 10px #8000FF">${format(player.ddrm.marvelous, 4)}</h2> Marvelous arrows, multiplying ME by x${format(player.ddrm.mEffect, 4)}`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #40FF40; text-shadow: 0px 0px 10px #40FF40">${format(player.ddrm.great, 4)}</h2> Great arrows, multiplying Notes by x${format(player.ddrm.gEffect, 4)}`}],
+        ["display-text", function(){return `You have hit <h2 style="color: #FF4040; text-shadow: 0px 0px 10px #FF4040">${format(player.ddrm.almost, 4)}</h2> Almost arrows, multiplying Songs by x${format(player.ddrm.aEffect, 4)}`}],
+        ["display-text", function(){return `You have missed <h2 style="color: #B0B0B0; text-shadow: 0px 0px 10px #B0B0B0">${format(player.ddrm.miss, 4)}</h2> arrows`}],
+        ["blank", "8px"],
+        ["display-text", function(){return `Your highest combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.highestCombo, 4)}</h2> arrows, multiplying the gain of M, G, and A arrows by x${format(player.ddrm.cEffect, 4)}`}],
+        ["display-text", function(){return `Your current combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.combo, 4)}</h2> arrows`}],
+        ["blank", "8px"],
         ["display-text", function(){return "Use arrow keys or click the white arrows to hit them! Hit / to pause DDR."}],
         "blank",
         "grid"
     ],
 
+    infoboxes: {
+        minigame: {
+            title: "DDR Minigame",
+            body() { return "This, is Ceiling Catapul- I mean the DDR minigame. Here's how it works. " +
+                "You can either press the 2nd row of arrows (white) or use the arrow keys to hit the notes. " +
+                "Depending on how close you get to the white arrows, you can either get Marvelous, Great, or Almost. M, G, and A for short. " +
+                "M arrows are gained by hitting the notes directly on the white arrows, G arrows gained by hitting them just before or after, " +
+                "and hit notes quite early for A arrows. <br><br> You also have a combo, in blue, and a highest combo, which has an effect. " +
+                "Missed arrows do nothing and are gained by... doing nothing. All of these values can be influenced by each other or through tree features. " +
+                "M and G hits increase the combo, usually by 1 but can be increased, and A hits do nothing. Missing an arrow resets your current combo. " +
+                "The two buttons on the top are for clearing and pausing the board, respectively. Use them if you're not playing the minigame." },
+            unlocked() {return true},
+        },
+    },
 
     layerShown(){
         if (player.ddr.points.gte(1)) player.ddrm.unlocked = true

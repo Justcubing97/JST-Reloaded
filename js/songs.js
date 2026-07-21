@@ -8,7 +8,10 @@ addLayer("s", {
         total: new Decimal(0),
     }},
     color: "#80FFB0",
-    requires: new Decimal("1e20"), // Can be a function that takes requirement increases into account
+    requires() {
+        if (inChallenge("ddr", 12)) return new Decimal("10").tetrate("1e100")
+        return new Decimal("1e20")
+    }, // Can be a function that takes requirement increases into account
     resource: "Songs", // Name of prestige currency
     baseResource: "Notes", // Name of resource prestige is based on
     baseAmount() {return player.n.points}, // Get the current amount of baseResource
@@ -27,6 +30,9 @@ addLayer("s", {
         if (hasUpgrade(layer, 204)) mult = mult.mul(1.5)
         if (hasUpgrade(layer, 42)) mult = mult.mul(1.25)
         if (hasUpgrade(layer, 112)) mult = mult.mul(1.1)
+
+        layer = "ddr"
+        if (hasChallenge(layer, 11)) mult = mult.mul(1.25)
 
         mult = mult.mul(player.ddrm.aEffect)
         //exp 
@@ -52,16 +58,21 @@ addLayer("s", {
 
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
+        if (hasUpgrade("ddr", 22)) keptUpgrades.push(11, 12, 13, 14, 21, 22, 23, 24)
 
-        let keptBuyables = []
+        let keptMilestones = []
+        if (hasUpgrade("ddr", 22)) keptMilestones.push("1", "2", "3", "4")
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
+        if (hasUpgrade("ddr", 23)) keep.push("total")
 
         // Stage 4, do the actual data reset
         layerDataReset(this.layer, keep);
 
         // Stage 5, add back in the specific subfeatures you saved earlier
+        player.s.upgrades.push(...keptUpgrades)
+        player.s.milestones.push(...keptMilestones)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
 
     tabFormat: {
@@ -203,6 +214,12 @@ addLayer("s", {
             requirementDescription: "7: 50 Songs",
             effectDescription: "You feel the FLOW STATE of music production. Unlock \"Power Outage\".",
             done() { return player.s.points.gte(50) },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        8: {
+            requirementDescription: "8: 101 Songs",
+            effectDescription: "After going to the local arcade, you have some newfound inspiration. x1e10 Notes.",
+            done() { return player.s.points.gte(101) },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
     },

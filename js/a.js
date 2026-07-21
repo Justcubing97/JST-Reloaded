@@ -61,5 +61,12 @@ addLayer("a", {
             tooltip() {return "DDR reset for the first time. +3 AP"},
             onComplete() {player.a.points = player.a.points.add(3)}
         },
+        22: {
+            name: "Infinite Musicality!",
+            done() {return player.points.gte("1.79e308")},
+            unlocked() {return true},
+            tooltip() {return "Have 1.79e308 ME. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
     },
 })

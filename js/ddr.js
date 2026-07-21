@@ -20,9 +20,12 @@ addLayer("ddr", {
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
+        let layer;
         let mult = new Decimal(1)
         //add
         //mul
+        layer = "ddr"
+        if (hasUpgrade(this.layer, 22)) mult = mult.mul(2)
         //exp 
         //other hypers
         //time dilations/chals
@@ -38,21 +41,6 @@ addLayer("ddr", {
         return player.ddr.unlocked
     },
     canReset(){return hasChallenge("s", 11)},
-
-    tabFormat: [
-        "main-display",
-        "prestige-button",
-        ["blank", "4px"],
-        ["display-text", function(){return `You have ${format(player.s.points)} Songs.`}],
-        ["blank", function() {if (!hasChallenge("s", 11)) return ["8px", "17px"]; else return ["0px", "0px"]}],
-        ["display-text", function(){if (!hasChallenge("s", 11)) return "You need to complete \"Power Outage\" first!"}],
-        "blank",
-        ["display-text", function(){return `You have made ${format(player.ddr.total)} Arrows in total.`}],
-        "blank",
-        "upgrades",
-        ["blank", "30px"],
-        "challenges",
-    ],
     
     passiveGeneration() {return false},
     doReset(resettingLayer) {
@@ -77,7 +65,7 @@ addLayer("ddr", {
             title: "⇧ x → ♪ & 🎧",
             effect() {
                 let base = player.ddr.total.add(2)
-                base = base.log(1.05).add(1).mul(base.pow(1.25)).pow(1.05)
+                base = base.log(1.01).add(1).mul(base.pow(1.5)).pow(1.25)
                 return base
             },
             effectDisplay() {
@@ -97,7 +85,122 @@ addLayer("ddr", {
             description: "You can buy max of the first Note buyable and keep it unlocked. x1,000,000 ME!",
             cost: new Decimal("5"),
         },
+        14: {
+            title: "More Time to Dance",
+            description: "x25,000 ME and Notes, and keep all Note, WN, and HN upgrades up to this point unlocked. Improve \"More Dynamic Boosts\".",
+            cost: new Decimal("10"),
+        },
+        21: {
+            title: "DANCE LEVEL INTRODUCTION",
+            description: "Unlock \"BEGINNER\".",
+            cost: new Decimal("25"),
+            unlocked() {return hasUpgrade(this.layer, 14)},
+        },
+        22: {
+            title: "Unstoppable Dancing",
+            description: "Keep the first 8 Song upgrades and the first 4 Song milestones. x2 Arrows.",
+            cost: new Decimal("100"),
+            unlocked() {return hasUpgrade(this.layer, 14)},
+        },
+        23: {
+            title: "⇧ ÷ → ♪ 💵",
+            effect() {
+                let base = player.ddr.points.add(1)
+                base = base.pow(5)
+                return base
+            },
+            effectDisplay() {
+                let text = "÷" + format(upgradeEffect(this.layer, this.id)) + " to cost"
+                return text
+            },
+            description: "Arrows divide the Note buyable 1 cost, keep total Songs, and x1e15 ME.",
+            cost: new Decimal("300"),
+        },
+        24: {
+            title: "Charting Challenge",
+            description: "Unlock \"BASIC\".",
+            cost: new Decimal("750"),
+            unlocked() {return hasUpgrade(this.layer, 14)},
+        },
     },
+
+    challenges: { //The softcaps of \"Feel the Tempo\" and \"More Dynamic Boosts\" start at 1,000,000.
+        11: {
+            name: "BEGINNER",
+            challengeDescription: "<i>\"This difficulty is aimed at <b>newcomers.</b> A perfect first test on the dance floor.\"</i> <br><br> ^0.75 ME and Notes. ME multiplies combo gain. This challenge resets your combo upon entry and exit.",
+            goalDescription: "Have a combo of at least 20.",
+            rewardDescription: "x3 Marvelous and Great arrows, x1.25 Songs, x2.5 combo gain, and x1e10 ME!",
+            canComplete: function() {return player.ddrm.combo.gte(20)},
+            unlocked() {return hasUpgrade(this.layer, 21)},
+            style() {
+                if (!hasChallenge(this.layer, this.id)) return {
+                    "width": "400px",
+                    "height": "275px",
+                }
+                return {
+                    "width": "400px",
+                    "height": "275px",
+                    "background": "#21C1CC",
+                }
+            },
+            onEnter() {player.ddrm.combo = new Decimal(0)},
+            onExit() {player.ddrm.combo = new Decimal(0)},
+        },
+        12: {
+            name: "BASIC",
+            challengeDescription: "<i>\"This difficulty is aimed at players who are <b>more familiar.</b> Let's crank the difficulty up a notch.\"</i> <br><br> The cost of Songs is <i>ever so slightly raised</i>. ME more harshly multiplies combo gain. This challenge resets your combo upon entry and exit.",
+            goalDescription: "Have a combo of at least 35.",
+            rewardDescription: "Improve Marvelous, Great, and Almost arrow effects, and x5 to all of their gains.",
+            canComplete: function() {return player.ddrm.combo.gte(35)},
+            unlocked() {return hasUpgrade(this.layer, 24)},
+            style() {
+                if (!hasChallenge(this.layer, this.id)) return {
+                    "width": "400px",
+                    "height": "275px",
+                }
+                return {
+                    "width": "400px",
+                    "height": "275px",
+                    "background": "#FFBA00",
+                }
+            },
+            onEnter() {player.ddrm.combo = new Decimal(0)},
+            onExit() {player.ddrm.combo = new Decimal(0)},
+        },
+    },
+
+    tabFormat: {
+        "Main": {
+            content: [
+                "main-display",
+                "prestige-button",
+                ["blank", "4px"],
+                ["display-text", function(){return `You have ${format(player.s.points)} Songs.`}],
+                ["blank", function() {if (!hasChallenge("s", 11)) return ["8px", "17px"]; else return ["0px", "0px"]}],
+                ["display-text", function(){if (!hasChallenge("s", 11)) return "You need to complete \"Power Outage\" first!"}],
+                "blank",
+                ["display-text", function(){return `You have made ${format(player.ddr.total)} Arrows in total.`}],
+                "blank",
+                "upgrades",
+            ]
+        },
+        "DANCE LEVELS": {
+            content: [
+                "main-display",
+                "prestige-button",
+                ["blank", "4px"],
+                ["display-text", function(){return `You have ${format(player.s.points)} Songs.`}],
+                ["blank", function() {if (!hasChallenge("s", 11)) return ["8px", "17px"]; else return ["0px", "0px"]}],
+                ["display-text", function(){if (!hasChallenge("s", 11)) return "You need to complete \"Power Outage\" first!"}],
+                "blank",
+                ["display-text", function(){return `You have made ${format(player.ddr.total)} Arrows in total.`}],
+                "blank",
+                "challenges",
+            ],
+            unlocked() {return hasUpgrade("ddr", 21)}
+        },
+    },
+
     tooltip() {
         if (!canReset(this.layer)) return format(player.ddr.points) + " Arrows (\"Power Outage\" needed to reset)"
         return format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"

@@ -53,6 +53,7 @@ addLayer("n", {
         layer = "s"
         if (hasMilestone(layer, 3)) mult = mult.mul(500)
         if (hasUpgrade(layer, 23)) mult = mult.mul(125)
+        if (hasMilestone(layer, 8)) mult = mult.mul("1e10")
 
         layer = "ddr"
         if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
@@ -65,6 +66,8 @@ addLayer("n", {
         layer = "s"
         //other hypers
         //time dilations/chals
+        layer = "ddr"
+        if (inChallenge(layer, 11)) mult = mult.pow(0.75)
         //final
         return mult
     }, //do everything inside the gainMult()
@@ -105,13 +108,13 @@ addLayer("n", {
                 "blank",
                 ["upgrades", [1, 2, 3, 4]],
                 ["blank", "25px"],
-                ["display-text", function(){if (hasUpgrade("n", 34)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.whole)}</h2> Whole Notes <br> (${format(player.n.wholeGain)}/sec)`; else return}],
-                ["display-text", function(){if (hasUpgrade("n", 34)) return `<span style="color:#BBBBBB">Start gaining Whole Notes at 1e12 Notes!`; else return}],
+                ["display-text", function(){if (hasUpgrade("n", 34) || hasUpgrade("ddr", 14)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.whole)}</h2> Whole Notes <br> (${format(player.n.wholeGain)}/sec)`; else return}],
+                ["display-text", function(){if (hasUpgrade("n", 34) || hasUpgrade("ddr", 14)) return `<span style="color:#BBBBBB">Start gaining Whole Notes at 1e12 Notes!`; else return}],
                 "blank",
                 ["upgrades", [10, 11]],
-                ["blank", function() {if (hasUpgrade("s", 12)) return ["1px", "30px"]; else return ["0px", "0px"]}],
-                ["display-text", function(){if (hasUpgrade("s", 12)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.half)}</h2> Half Notes <br> (${format(player.n.halfGain)}/sec)`; else return}],
-                ["display-text", function(){if (hasUpgrade("s", 12)) return `<span style="color:#BBBBBB">Start gaining Half Notes at 1e18 Notes!`; else return}],
+                ["blank", function() {if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return ["1px", "30px"]; else return ["0px", "0px"]}],
+                ["display-text", function(){if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.half)}</h2> Half Notes <br> (${format(player.n.halfGain)}/sec)`; else return}],
+                ["display-text", function(){if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return `<span style="color:#BBBBBB">Start gaining Half Notes at 1e18 Notes!`; else return}],
                 "blank",
                 ["upgrades", [20]],
                 ["blank", function() {if (false) return ["1px", "30px"]; else return ["0px", "0px"]}],
@@ -180,7 +183,7 @@ addLayer("n", {
             title: "Row 2!",
             description: "x3! ME.",
             cost: new Decimal("300"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("ddr", 14)},
         },
         22: {
             title: "More Dynamic Boosts",
@@ -191,37 +194,47 @@ addLayer("n", {
                 if (hasUpgrade(this.layer, 32)) base = base.mul(15)
 
                 if (hasUpgrade(this.layer, 24)) base = base.pow(1.25)
+                if (hasUpgrade("ddr", 14)) base = base.pow(1.5).mul("1e10")
+
+                let softcap = new Decimal(0.25)
+                let softcapStart = new Decimal("1e100")
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+
                 return base
             },
-            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " Notes"},
+            effectDisplay() {
+                let text = "x" + format(upgradeEffect(this.layer, this.id)) + " Notes"
+                if (upgradeEffect(this.layer, this.id).gte("1e100")) text += " (softcapped)"
+                return text
+            },
             description: "ME boosts Notes.",
             cost: new Decimal("1000"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("ddr", 14)},
         },
         23: {
             title: "Base-ic Manipulation",
             description: "+6 to ME base.",
             cost: new Decimal("4000"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("ddr", 14)},
         },
         24: {
             title: "Improvement",
             description: "Improve \"Feel the Tempo\" and \"More Dynamic Boosts.\"",
             cost: new Decimal("15000"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("ddr", 14)},
         },
 
         31: {
             title: "Advanced Pitch Training",
             description: "x10 Notes. Wow!",
             cost: new Decimal("1e5"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("ddr", 14)},
         },
         32: {
             title: "Scale Mastery",
             description: "x15 to \"More Dynamic Boosts\" effect.",
             cost: new Decimal("3e6"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("ddr", 14)},
         },
         33: {
             title: "Sheet Music Discovery",
@@ -235,26 +248,26 @@ addLayer("n", {
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " Notes"},
             description: "Notes boost themselves.",
             cost: new Decimal("2e8"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("ddr", 14)},
         },
         34: {
             title: "4 Beats",
             description: "Unlock Whole Notes and x4 ME and Notes.",
             cost: new Decimal("1e10"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("ddr", 14)},
         },
 
         41: {
             title: "DAW Arpeggiator",
             description: "x25 Notes, WN, and HN",
             cost: new Decimal("1e40"),
-            unlocked() {return hasMilestone("s", 2)},
+            unlocked() {return hasMilestone("s", 2) || hasUpgrade("ddr", 14)},
         },
         42: {
             title: "Rhythm Expert",
             description: "x1000 ME and x1.25 Songs!",
             cost: new Decimal("1e48"),
-            unlocked() {return hasMilestone("s", 2)},
+            unlocked() {return hasMilestone("s", 2) || hasUpgrade("ddr", 14)},
         },
         43: {
             title: "Not Half as Good",
@@ -267,13 +280,13 @@ addLayer("n", {
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
             description: "Half Notes boost ME.",
             cost: new Decimal("1e60"),
-            unlocked() {return hasMilestone("s", 2)},
+            unlocked() {return hasMilestone("s", 2) || hasUpgrade("ddr", 14)},
         },
         44: {
             title: "Full Square Timewall",
             description: "Trust me, the wait is worth it! x2500 ME and x500 WN.",
             cost: new Decimal("1e80"),
-            unlocked() {return hasMilestone("s", 2)},
+            unlocked() {return hasMilestone("s", 2) || hasUpgrade("ddr", 14)},
         },
 
 
@@ -285,7 +298,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("ddr", 14)},
         },
         102: {
             title: "Whole > Parts",
@@ -300,7 +313,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("ddr", 14)},
         },
         103: {
             title: "Triple Effect",
@@ -309,7 +322,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("ddr", 14)},
         },
         104: {
             title: "BIG Multiplier",
@@ -318,7 +331,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("ddr", 14)},
         },
         111: {
             title: "Googol's Buyable",
@@ -329,13 +342,13 @@ addLayer("n", {
                 
                 return base
             },
-            effectDisplay() {return `<span style="font-size:10px">/${format(upgradeEffect(this.layer, this.id))} to cost</span>`},
+            effectDisplay() {return `<span style="font-size:10px">÷${format(upgradeEffect(this.layer, this.id))} to cost</span>`},
             description: `<span style="font-size:10px">Whole Notes lower the cost of the first Note buyable.</span>`,
             cost: new Decimal("1e100"),
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasMilestone("s", 4)},
+            unlocked() {return hasMilestone("s", 4) || hasUpgrade("ddr", 14)},
         },
         112: {
             title: "BIGGER Multiplier",
@@ -344,7 +357,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasMilestone("s", 4)},
+            unlocked() {return hasMilestone("s", 4) || hasUpgrade("ddr", 14)},
         },
         113: {
             title: "Music Mastery",
@@ -353,7 +366,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasMilestone("s", 4)},
+            unlocked() {return hasMilestone("s", 4) || hasUpgrade("ddr", 14)},
         },
         114: {
             title: "Quirky Rhythms",
@@ -369,7 +382,7 @@ addLayer("n", {
             currencyDisplayName: "Whole Notes",
             currencyInternalName: "whole",
             currencyLayer: "n",
-            unlocked() {return hasMilestone("s", 4)},
+            unlocked() {return hasMilestone("s", 4) || hasUpgrade("ddr", 14)},
         },
 
         201: {
@@ -379,7 +392,7 @@ addLayer("n", {
             currencyDisplayName: "Half Notes",
             currencyInternalName: "half",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade("s", 12)},
+            unlocked() {return hasUpgrade("s", 12) || hasUpgrade("ddr", 14)},
         },
         202: {
             title: "Musical Multi",
@@ -388,7 +401,7 @@ addLayer("n", {
             currencyDisplayName: "Half Notes",
             currencyInternalName: "half",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade("s", 12)},
+            unlocked() {return hasUpgrade("s", 12) || hasUpgrade("ddr", 14)},
         },
         203: {
             title: "Whole Expansion",
@@ -403,7 +416,7 @@ addLayer("n", {
             currencyDisplayName: "Half Notes",
             currencyInternalName: "half",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade("s", 12)},
+            unlocked() {return hasUpgrade("s", 12) || hasUpgrade("ddr", 14)},
         },
         204: {
             title: "Efficient Workspace",
@@ -412,7 +425,7 @@ addLayer("n", {
             currencyDisplayName: "Half Notes",
             currencyInternalName: "half",
             currencyLayer: "n",
-            unlocked() {return hasUpgrade("s", 12)},
+            unlocked() {return hasUpgrade("s", 12) || hasUpgrade("ddr", 14)},
         },
     },
 
@@ -432,7 +445,8 @@ addLayer("n", {
 
                 let final = base.mul(multi)
                 if (hasUpgrade(this.layer, 111)) final = final.div(upgradeEffect(this.layer, 111))
-                return final
+                if (hasUpgrade("ddr", 23)) final = final.div(upgradeEffect("ddr", 23))
+                return final //if you add anything to the cost formula, make sure to update the buymax()!
             },
             title: "Consistent Production",
             display() { return "Multiplies Notes by 2 per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect()) },
@@ -457,6 +471,7 @@ addLayer("n", {
             buyMax() {
                 let timesBought = player.n.points
                 timesBought = timesBought.mul(upgradeEffect(this.layer, 111))
+                timesBought = timesBought.mul(upgradeEffect("ddr", 23))
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(new Decimal.pow("10", "20"))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -466,6 +481,7 @@ addLayer("n", {
                 let totalCost = new Decimal.pow("10", "20")
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 totalCost = totalCost.div(upgradeEffect(this.layer, 111))
+                totalCost = totalCost.div(upgradeEffect("ddr", 23))
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
                 polynomial = polynomial.div(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
@@ -477,7 +493,7 @@ addLayer("n", {
 
     update(diff){
         //whole notes
-        if (hasUpgrade("n", 34) && player.n.points.gte("1e12")){
+        if ((hasUpgrade("n", 34) || hasUpgrade("ddr", 14)) && player.n.points.gte("1e12")){
             let mult = player.n.points.div("1e12")
             if (hasMilestone("s", 1)) mult = mult.mul(3)
             if (hasUpgrade(this.layer, 41)) mult = mult.mul(25)
@@ -492,7 +508,7 @@ addLayer("n", {
         }
 
         //half notes
-        if (hasUpgrade("s", 12) && player.n.points.gte("1e18")){
+        if ((hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) && player.n.points.gte("1e18")){
             let mult = player.n.points.div("1e18")
             if (hasUpgrade(this.layer, 203)) mult = mult.mul(upgradeEffect(this.layer, 203))
             if (hasMilestone("s", 1)) mult = mult.mul(5)

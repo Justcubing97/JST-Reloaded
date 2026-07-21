@@ -22,7 +22,7 @@ document.addEventListener("click", async function(event) {
 	audio = new Audio(url);
 
 	audio.play();
-});
+}, {once: true});
 audio.addEventListener("ended", async function(event) {
 	superUniqueVariableNameThatIsOnlyUsedForMusic = Math.floor((Math.random() * 22) + 1)
     let response = await fetch(`songs/selection${superUniqueVariableNameThatIsOnlyUsedForMusic}.trgt`);

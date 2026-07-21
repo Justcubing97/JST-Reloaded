@@ -13,10 +13,15 @@ let modInfo = {
 // Set your version in num and name
 let VERSION = {
 	num: "2.1",
-	name: "DDR layer expansion",
+	name: "DDR expansion+",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.2</h2><br>
+		- Implemented a combo feature in the DDR minigame. <br>
+        - More DDR content! <br>
+        - Music! 22 hand-picked tracks made by Camellia and I - fits the rhythm game theme. <br>
+        - More achievements. <br><br>
 	<h2>v2.1</h2><br>
 		- Added effects from the DDR minigame. <br>
         - Fixed Note layer progression - no more timewall at 1e10 Notes! <br>
@@ -80,6 +85,8 @@ function getPointGen() {
     layer = "ddr"
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     if (hasUpgrade(layer, 13)) mult = mult.mul("1e6")
+    if (hasChallenge(layer, 11)) mult = mult.mul("1e10")
+    if (hasUpgrade(layer, 23)) mult = mult.mul("1e15")
         
     mult = mult.mul(player.ddrm.mEffect)
     //exp
@@ -91,24 +98,42 @@ function getPointGen() {
     layer = "n"
     layer = "s"
     if (inChallenge(layer, 11)) mult = mult.pow(0.5)
-    //finals
-    layer = "n"
+
+    layer = "ddr"
+    if (inChallenge(layer, 11)) mult = mult.pow(0.75)
+    //=====
+    //softcap stuff
+    let softcap1 = new Decimal(0.25)
+    let softcap1Start = new Decimal("1e1000")
+    if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap)))
+
+    //NOT ME GAIN RELATED STUFF AHEAD!
+    //mecombonerf for ddr challenges
+    if (inChallenge("ddr", 11)) player.MEComboNerf = player.points.add(2).log(10).div(350)
+    if (inChallenge("ddr", 12)) player.MEComboNerf = player.points.add(2).log(25).div(500)
+
 	return mult
 }
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+    MEComboNerf: new Decimal(1),
 }}
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 10 Arrows and have Arrow upgrade 3",
+    "Current endgame: beat BASIC DANCE LEVEL (DDR challenge)",
     "The Rhythm Game Tree made by Justcubing97",
+    function() {
+		if (inChallenge("ddr", 11) ||
+        inChallenge("ddr", 12)) return `<br><b>Musical Essence is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
+		else return ""
+	}
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.ddr.points.gte(10) && hasUpgrade("ddr", 13)
+	return hasChallenge("ddr", 12)
 }
 
 
@@ -147,6 +172,7 @@ addLayer("[LAYER HERE]", {
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: [NUMBER HERE], // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
+        let layer;
         let mult = new Decimal(1)
         //add
         //mul
