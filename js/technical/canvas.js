@@ -8,6 +8,35 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
+var superUniqueVariableNameThatIsOnlyUsedForMusic = 1
+var audio = new Audio("songs/selection1.trgt")
+document.addEventListener("click", async function(event) {
+	superUniqueVariableNameThatIsOnlyUsedForMusic = Math.floor((Math.random() * 22) + 1)
+    let response = await fetch(`songs/selection${superUniqueVariableNameThatIsOnlyUsedForMusic}.trgt`);
+	let blob = await response.blob();
+
+	let url = URL.createObjectURL(
+	    new Blob([blob], { type: "audio/mpeg" })
+	);
+
+	audio = new Audio(url);
+
+	audio.play();
+});
+audio.addEventListener("ended", async function(event) {
+	superUniqueVariableNameThatIsOnlyUsedForMusic = Math.floor((Math.random() * 22) + 1)
+    let response = await fetch(`songs/selection${superUniqueVariableNameThatIsOnlyUsedForMusic}.trgt`);
+	let blob = await response.blob();
+
+	let url = URL.createObjectURL(
+	    new Blob([blob], { type: "audio/mpeg" })
+	);
+
+	audio = new Audio(url);
+
+	audio.play();
+});
+
 function retrieveCanvasData() {
 	let treeCanv = document.getElementById("treeCanvas")
 	let treeTab = document.getElementById("treeTab")

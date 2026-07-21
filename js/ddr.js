@@ -77,7 +77,7 @@ addLayer("ddr", {
             title: "⇧ x → ♪ & 🎧",
             effect() {
                 let base = player.ddr.total.add(2)
-                base = base.log(1.05).add(1).mul(25).pow(1.1)
+                base = base.log(1.05).add(1).mul(base.pow(1.25)).pow(1.05)
                 return base
             },
             effectDisplay() {
