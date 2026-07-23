@@ -78,6 +78,12 @@ function achievementEffect(layer, id) {
 	return (tmp[layer].achievements[id].effect)
 }
 
+function grantAchievement(layer, id, music){
+    player[layer].achievements.push(id.toString())
+	if (music) doPopup("achievement", tmp[layer].achievements[id].name, "Now playing:", 3, tmp[layer].color)
+    else doPopup("achievement", tmp[layer].achievements[id].name, "Achievement Unlocked!", 3, tmp[layer].color)
+}
+
 function gridEffect(layer, id) {
 	return (gridRun(layer, 'getEffect', player[layer].grid[id], id))
 }

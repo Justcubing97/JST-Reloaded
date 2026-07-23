@@ -11,7 +11,7 @@ document.addEventListener("keydown", function(event) {
 var superUniqueVariableNameThatIsOnlyUsedForMusic = 1
 var audio = new Audio("songs/selection1.trgt")
 document.addEventListener("click", async function(event) {
-	superUniqueVariableNameThatIsOnlyUsedForMusic = Math.floor((Math.random() * 22) + 1)
+	superUniqueVariableNameThatIsOnlyUsedForMusic = 18
     let response = await fetch(`songs/selection${superUniqueVariableNameThatIsOnlyUsedForMusic}.trgt`);
 	let blob = await response.blob();
 
@@ -20,8 +20,9 @@ document.addEventListener("click", async function(event) {
 	);
 
 	audio = new Audio(url);
-
 	audio.play();
+	console.log(superUniqueVariableNameThatIsOnlyUsedForMusic)
+	grantAchievement("musicfocus", `${superUniqueVariableNameThatIsOnlyUsedForMusic}1`, true)
 }, {once: true});
 audio.addEventListener("ended", async function(event) {
 	superUniqueVariableNameThatIsOnlyUsedForMusic = Math.floor((Math.random() * 22) + 1)

@@ -115,6 +115,7 @@ addLayer("ddr", {
             },
             description: "Arrows divide the Note buyable 1 cost, keep total Songs, and x1e15 ME.",
             cost: new Decimal("300"),
+            unlocked() {return hasUpgrade(this.layer, 14)},
         },
         24: {
             title: "Charting Challenge",

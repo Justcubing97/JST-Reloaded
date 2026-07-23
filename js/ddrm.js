@@ -298,6 +298,10 @@ addLayer("ddrm", {
         player.ddrm.gEffect = player.ddrm.great.add(1).pow(0.5).mul(2)
         player.ddrm.aEffect = player.ddrm.almost.add(1).log(100).div(25).add(1)
 
+        if (player.ddrm.marvelous.eq(0)) player.ddrm.mEffect = new Decimal(1)
+        if (player.ddrm.great.eq(0)) player.ddrm.gEffect = new Decimal(1)
+        if (player.ddrm.almost.eq(0)) player.ddrm.aEffect = new Decimal(1)
+
         if (hasChallenge("ddr", 12)) {
             player.ddrm.mEffect = player.ddrm.mEffect.mul(50).pow(1.25)
             player.ddrm.gEffect = player.ddrm.gEffect.mul(50).pow(1.25)
