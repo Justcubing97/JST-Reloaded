@@ -799,7 +799,7 @@ addLayer("ddr", {
         player.ddr.gpg = mult
 
         player.ddr.groovePower = player.ddr.groovePower.add(player.ddr.gpg.mul(diff))
-        player.ddr.gpe = player.ddr.groovePower.log(player.ddr.streamImpact).mul(100).pow(10)
+        player.ddr.gpe = player.ddr.groovePower.add(1).log(player.ddr.streamImpact).mul(100).pow(10)
         
     },
 
