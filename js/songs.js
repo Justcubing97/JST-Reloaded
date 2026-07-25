@@ -6,6 +6,8 @@ addLayer("s", {
         unlocked: false,
 		points: new Decimal(0),
         total: new Decimal(0),
+
+        resetting: true,
     }},
     color: "#80FFB0",
     requires() {
@@ -25,16 +27,21 @@ addLayer("s", {
         layer = "n"
         layer = "s"
         if (hasMilestone(layer, 5)) mult = mult.add(1)
+        if (hasChallenge(layer, 12)) mult = mult.add(0.5)
         //mul
         layer = "n"
         if (hasUpgrade(layer, 204)) mult = mult.mul(1.5)
+        if (hasUpgrade(layer, 211)) mult = mult.mul(1.2)
         if (hasUpgrade(layer, 42)) mult = mult.mul(1.25)
         if (hasUpgrade(layer, 112)) mult = mult.mul(1.1)
+        if (hasUpgrade(layer, 313)) mult = mult.mul(upgradeEffect(layer, 313))
 
         layer = "ddr"
         if (hasChallenge(layer, 11)) mult = mult.mul(1.25)
+        if (hasMilestone(layer, 1)) mult = mult.mul(1.05)
 
         mult = mult.mul(player.ddrm.aEffect)
+        mult = mult.mul(buyableEffect(layer, 13))
         //exp 
         //other hypers
         //time dilations/chals
@@ -49,7 +56,8 @@ addLayer("s", {
         if (player.n.points.gte("1e20")) player.s.unlocked = true
         return player.n.points.gte("1e20") || player.s.unlocked
     },
-    passiveGeneration() {return false},
+    resetsNothing() {return hasUpgrade("ddr", 43) && !player.s.resetting},
+    autoPrestige() {return hasUpgrade("ddr", 44)},
     resetDescription: "Compose ",
     canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12)},
     doReset(resettingLayer) {
@@ -59,20 +67,34 @@ addLayer("s", {
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
         if (hasUpgrade("ddr", 22)) keptUpgrades.push(11, 12, 13, 14, 21, 22, 23, 24)
+        
+        if (hasUpgrade("s", 31)) keptUpgrades.push(31)
+        if (hasUpgrade("s", 32)) keptUpgrades.push(32)
+        if (hasUpgrade("s", 33)) keptUpgrades.push(33)
+        if (hasUpgrade("s", 34)) keptUpgrades.push(34)
 
         let keptMilestones = []
         if (hasUpgrade("ddr", 22)) keptMilestones.push("1", "2", "3", "4")
+        if (hasChallenge("ddr", 22)) keptMilestones.push("5", "6", "7", "8", "9", "10")
+
+        let keptChallenges = []
+        if (hasUpgrade("n", 303)) keptChallenges.push(11)
+        if (hasChallenge("s", 12)) keptChallenges.push(12)
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
         if (hasUpgrade("ddr", 23)) keep.push("total")
 
+        let iR = player.s.resetting
+
         // Stage 4, do the actual data reset
         layerDataReset(this.layer, keep);
 
         // Stage 5, add back in the specific subfeatures you saved earlier
+        player.s.resetting = iR
         player.s.upgrades.push(...keptUpgrades)
         player.s.milestones.push(...keptMilestones)
+        keptChallenges.forEach(element => player[this.layer].challenges[element] = 1)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
 
     tabFormat: {
@@ -86,7 +108,9 @@ addLayer("s", {
                 ["display-text", function(){return `You have composed ${format(player.s.total)} Songs in total.`}],
                 "blank",
                 "upgrades",
-                ["blank", "30px"],
+                "blank",
+                "clickables",
+                "blank",
                 "challenges",
             ]
         },
@@ -172,6 +196,31 @@ addLayer("s", {
             cost: new Decimal("18"),
             unlocked() {return hasUpgrade(this.layer, 14)}
         },
+
+        31: {
+            title: "Minigame Boost",
+            description: "x15 to combo and Almost arrow gain, and Almost arrow's effect multiplies Arrows.",
+            cost: new Decimal("210"),
+            unlocked() {return hasUpgrade("ddr", 44)}
+        },
+        32: {
+            title: "Groovin'",
+            description: "x1e10 to Groove Power gain.",
+            cost: new Decimal("215"),
+            unlocked() {return hasUpgrade("ddr", 44)}
+        },
+        33: {
+            title: "x1e21 (JST REFERENCE???)",
+            description: "x1e21 to ME and Notes.",
+            cost: new Decimal("228"),
+            unlocked() {return hasUpgrade("ddr", 44)}
+        },
+        34: {
+            title: "Hardest of the Hardest",
+            description: "Unlock \"CHALLENGE\".",
+            cost: new Decimal("238"),
+            unlocked() {return hasUpgrade("ddr", 44)}
+        },
     },
 
     milestones: {
@@ -222,6 +271,30 @@ addLayer("s", {
             done() { return player.s.points.gte(101) },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
+        9: {
+            requirementDescription: "9: 130 Songs",
+            effectDescription: "You learned some very handy DAW shortcuts. Note buyable 1's effect now multiplies by 3.",
+            done() { return player.s.points.gte(130) },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        10: {
+            requirementDescription: "10: 200 Songs",
+            effectDescription: "The last Song milestone of the DDR layer! The layer as a whole has a lot of room to expand, though. ^1.1 Arrows and Almost arrow's effect now multiplies combo gain.",
+            done() { return player.s.points.gte(130) },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+    },
+
+    clickables: {
+        11: {
+            title: "Does Composing reset? (Force DDR reset)",
+            canClick() {return true},
+            onClick() {
+                doReset("ddr", true)
+                player.s.resetting = !player.s.resetting
+            },
+            unlocked() {return hasUpgrade("ddr", 43)},
+        },
     },
 
     challenges: {
@@ -231,6 +304,18 @@ addLayer("s", {
             goalDescription: "Have 1e36 Notes.",
             rewardDescription: "Unlock Dance Dance Revolution.",
             canComplete: function() {return player.n.points.gte("1e36")},
+            unlocked() {return hasMilestone("s", 7)},
+            style() { return {
+                "width": "400px",
+                "height": "250px",
+            } }
+        },
+        12: {
+            name: "Week-Long Outage",
+            challengeDescription: "<i>\"The laptop has inevitably died. Thankfully you made a save right before it died... but where do you get power?\"</i> <br><br> ^0.01 to ME and Notes. Songs HAVE to reset, and Stream and Voltage values must be maxed.",
+            goalDescription: "Have 1,000 Notes.",
+            rewardDescription: "x1e15 GP, ME, and Notes. +0.5 Songs.",
+            canComplete: function() {return player.n.points.gte("1000") && player.s.resetting && player.ddr.voltage.log(1.2).div(-10).gte(1) && player.ddr.stream.log(player.ddr.streamImpact).div(10).gte(1)},
             unlocked() {return hasMilestone("s", 7)},
             style() { return {
                 "width": "400px",

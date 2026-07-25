@@ -16,6 +16,7 @@ addLayer("ddrm", {
         cEffect: new Decimal(0),    
 
         current: [],
+        speed: 1,
         timer: 0,
         paused: false,
     }},
@@ -36,13 +37,14 @@ addLayer("ddrm", {
         {key: "/", onPress(){player.ddrm.paused = !player.ddrm.paused}}
     ],
 
-    findMults_DDRM(type){
+    findMults_DDRM(type, comboArg){
         let mult = new Decimal(1)
         if (type == "m"){
             mult = mult.mul(player.ddrm.cEffect)
             if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
             if (hasChallenge("ddr", 11)) mult = mult.mul(3)
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
+            if (hasUpgrade("n", 301)) mult = mult.mul(4)
 
             return mult
         }
@@ -50,6 +52,8 @@ addLayer("ddrm", {
             mult = mult.mul(player.ddrm.cEffect)
             if (hasChallenge("ddr", 11)) mult = mult.mul(3)
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
+            if (hasUpgrade("n", 301)) mult = mult.mul(4)
+            if (hasMilestone("ddr", 4)) mult = mult.mul(15)
 
             return mult
         }
@@ -57,14 +61,31 @@ addLayer("ddrm", {
             mult = mult.mul(player.ddrm.cEffect)
             if (hasUpgrade("ddr", 12)) mult = mult.mul(2)
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
+            if (hasUpgrade("n", 301)) mult = mult.mul(4)
+            if (hasUpgrade("s", 31)) mult = mult.mul(15)
 
             return mult
         }
         if (type == "c"){
             mult = new Decimal(1)
             if (inChallenge("ddr", 11) ||
-            inChallenge("ddr", 12)) mult = mult.mul(player.MEComboNerf)
+            inChallenge("ddr", 12) ||
+            inChallenge("ddr", 21) ||
+            inChallenge("ddr", 22)) mult = mult.mul(player.MEComboNerf)
+
+            
             if (hasChallenge("ddr", 11)) mult = mult.mul(2.5)
+            if (hasUpgrade("n", 301)) mult = mult.mul(4)
+            if (hasUpgrade("n", 303)) mult = mult.mul(10)
+            if (hasMilestone("s", 10)) mult = mult.mul(player.ddrm.aEffect)
+            if (hasUpgrade("s", 31)) mult = mult.mul(15)
+
+            mult = mult.mul(buyableEffect("n", 12))
+
+            //specifics
+            if (comboArg == "m"){
+                if (hasUpgrade("ddr", 31)) mult = mult.mul(3)
+            }
 
             return mult
         }
@@ -78,8 +99,9 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
-            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g"))
+            if (inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "g"))
         } else if (getGridData("ddrm", 200 + column) == 1){
             setGridData("ddrm", 200 + column, 0)
 
@@ -87,8 +109,8 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m"))
-            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+            player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m"))
+            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m"))
         } else if (getGridData("ddrm", 300 + column) == 1){
             setGridData("ddrm", 300 + column, 0)
 
@@ -96,8 +118,9 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g"))
-            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c"))
+            player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g"))
+            if (inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "g"))
         } else if (getGridData("ddrm", 400 + column) == 1){
             setGridData("ddrm", 400 + column, 0)
 
@@ -105,7 +128,9 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a"))
+            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a"))
+            if (inChallenge("ddr", 22) || inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else if (hasUpgrade("ddr", 31)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "a"))
         } else if (getGridData("ddrm", 500 + column) == 1){
             setGridData("ddrm", 500 + column, 0)
 
@@ -113,7 +138,9 @@ addLayer("ddrm", {
             player.ddrm.current.splice(index, 1)
 
             player.ddrm.points = player.ddrm.points.add(1)
-            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a"))
+            player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a"))
+            if (inChallenge("ddr", 22) || inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else if (hasUpgrade("ddr", 31)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "a"))
         }
     },
 
@@ -257,7 +284,7 @@ addLayer("ddrm", {
 
     update(diff){
         player.ddrm.timer += 1
-        player.ddrm.timer = player.ddrm.timer % 12
+        player.ddrm.timer = Math.floor(player.ddrm.timer % 12)
 
         /*
         INFO:
@@ -281,14 +308,15 @@ addLayer("ddrm", {
         }
 
         for (var DDRMC = 0; DDRMC < player.ddrm.current.length; DDRMC++){ //this loop moves the notes
-            if (player.ddrm.timer % 3 == 0 && player.ddrm.paused){ //every other tick
+            if (player.ddrm.timer % 3 <= 0.01 && player.ddrm.paused){ //every few
                 player.ddrm.current[DDRMC][1] = player.ddrm.current[DDRMC][1] - 100 //shift the note in the array
                 setGridData("ddrm", player.ddrm.current[DDRMC][1], player.ddrm.current[DDRMC][0]) //changes the data
                 setGridData("ddrm", player.ddrm.current[DDRMC][1] + 100, "0") //removes the data
                 if (player.ddrm.current[DDRMC][1] < 0){ //is it out of the play area?
                     player.ddrm.current.shift() //delete it!
                     player.ddrm.miss = player.ddrm.miss.add(1) //add a miss
-                    player.ddrm.combo = new Decimal(0)
+                    if (hasUpgrade("ddr", 31)) player.ddrm.combo = Decimal.max(player.ddrm.combo.sub(50), new Decimal(0))
+                    else player.ddrm.combo = new Decimal(0)
                 }
             }
         }
@@ -311,6 +339,16 @@ addLayer("ddrm", {
         //combo stuff
         if (player.ddrm.combo.gte(player.ddrm.highestCombo)) player.ddrm.highestCombo = player.ddrm.combo
         player.ddrm.cEffect = player.ddrm.highestCombo.add(1).pow(0.15)
+        
+        if (hasUpgrade("n", 212)) player.ddrm.cEffect = player.ddrm.cEffect.pow(1.5)
+
+        //stream
+        player.ddrm.mEffect = player.ddrm.mEffect.div(player.ddr.stream)
+        player.ddrm.gEffect = player.ddrm.gEffect.div(player.ddr.stream)
+        player.ddrm.aEffect = player.ddrm.aEffect.div(player.ddr.stream)
+
+        //automation!
+        if (hasMilestone("ddr", 4))  player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m").div(100))
     },
 
     tabFormat: [

@@ -12,11 +12,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "2.2",
+	num: "2.3",
 	name: "DDR expansion+",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.3</h2><br>
+		- Properly credited Camellia. My bad! <br>
+        - TONS of new content! <br><br>
 	<h2>v2.2</h2><br>
 		- Implemented a combo feature in the DDR minigame. <br>
         - More DDR content! <br>
@@ -64,6 +67,8 @@ function getPointGen() {
     if (hasUpgrade(layer, 101)) mult = mult.add(3)
     if (hasUpgrade(layer, 103)) mult = mult.add(10)
     //mul
+    if (hasAchievement("a", 26)) mult = mult.mul("1e100")
+
     layer = "n"
     if (hasUpgrade(layer, 11)) mult = mult.mul(3)
     if (hasUpgrade(layer, 12)) mult = mult.mul(upgradeEffect(layer, 12))
@@ -76,41 +81,56 @@ function getPointGen() {
     if (hasUpgrade(layer, 43)) mult = mult.mul(upgradeEffect(layer, 43))
     if (hasUpgrade(layer, 44)) mult = mult.mul(2500)
     if (hasUpgrade(layer, 112)) mult = mult.mul("2e4")
+    if (hasUpgrade(layer, 302)) mult = mult.mul(upgradeEffect(layer, 302))
 
     layer = "s"
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     if (hasUpgrade(layer, 13)) mult = mult.mul(upgradeEffect(layer, 13))
     if (hasUpgrade(layer, 23)) mult = mult.mul(125)
+    if (hasUpgrade(layer, 33)) mult = mult.mul("1e21")
+    if (hasChallenge(layer, 12)) mult = mult.mul("1e15")
 
     layer = "ddr"
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     if (hasUpgrade(layer, 13)) mult = mult.mul("1e6")
     if (hasChallenge(layer, 11)) mult = mult.mul("1e10")
     if (hasUpgrade(layer, 23)) mult = mult.mul("1e15")
+    if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
+    if (hasUpgrade(layer, 43)) mult = mult.mul("1e20")
         
     mult = mult.mul(player.ddrm.mEffect)
+    mult = mult.mul(buyableEffect(layer, 21))
     //exp
     layer = "n"
     if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
+    if (hasUpgrade(layer, 304)) mult = mult.pow(1.15)
+
+    layer = "ddr"
+    if (hasMilestone(layer, 2)) mult = mult.pow(1.1)
     //hyper
     layer = "n"
     //time dilations/chals
     layer = "n"
     layer = "s"
     if (inChallenge(layer, 11)) mult = mult.pow(0.5)
+    if (inChallenge(layer, 12)) mult = mult.pow(0.01)
 
     layer = "ddr"
     if (inChallenge(layer, 11)) mult = mult.pow(0.75)
+    if (inChallenge(layer, 22)) mult = mult.pow(0.1)
+    mult = mult.pow(player.ddr.voltage)
     //=====
     //softcap stuff
     let softcap1 = new Decimal(0.25)
-    let softcap1Start = new Decimal("1e1000")
+    let softcap1Start = new Decimal("1e2000")
     if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap)))
 
     //NOT ME GAIN RELATED STUFF AHEAD!
     //mecombonerf for ddr challenges
     if (inChallenge("ddr", 11)) player.MEComboNerf = player.points.add(2).log(10).div(350)
     if (inChallenge("ddr", 12)) player.MEComboNerf = player.points.add(2).log(25).div(500)
+    if (inChallenge("ddr", 21)) player.MEComboNerf = new Decimal(0.98).pow(player.ddrm.combo)
+    if (inChallenge("ddr", 22)) player.MEComboNerf = player.points.add(2).log(100).div(1000)
 
 	return mult
 }
@@ -126,14 +146,16 @@ var displayThings = [
     "The Rhythm Game Tree made by Justcubing97",
     function() {
 		if (inChallenge("ddr", 11) ||
-        inChallenge("ddr", 12)) return `<br><b>Musical Essence is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
+        inChallenge("ddr", 12) ||
+        inChallenge("ddr", 22)) return `<br><b>Musical Essence is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
+		if (inChallenge("ddr", 21)) return `<br><b>Combo is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
 		else return ""
 	}
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasChallenge("ddr", 12)
+	return hasUpgrade("n", 314)
 }
 
 
@@ -163,6 +185,9 @@ addLayer("[LAYER HERE]", {
     startData() { return {
         unlocked: false,
 		points: new Decimal(0),
+
+        softcap1: new Decimal(0.25),
+        softcap1Start: new Decimal("1e1000"), //defaults for normal layers
     }},
     color: "[COLOR HERE]",
     requires: new Decimal([NUMBER HERE]), // Can be a function that takes requirement increases into account
@@ -182,6 +207,16 @@ addLayer("[LAYER HERE]", {
         //final
         return mult
     }, //do everything inside the gainMult()
+    getResetGain() {
+        let layer = "[LAYER HERE]"
+		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
+		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
+
+        if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            
+		gain = gain.times(tmp[layer].directMult)
+		return gain.floor().max(0);
+    },
     row: [ROW HERE], // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {key: "[KEY HERE]", description: "[KEY HERE]: Reset for [CURRENCY HERE", onPress(){if (canReset(this.layer)) doReset(this.layer)}},

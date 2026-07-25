@@ -15,6 +15,9 @@ addLayer("n", {
         halfGain: new Decimal(0),
         quarterGain: new Decimal(0),
         eighthGain: new Decimal(0),
+
+        softcap1: new Decimal(0.25),
+        softcap1Start: new Decimal("1e1000"),
     }},
     color: "#EEEEEE",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -47,6 +50,7 @@ addLayer("n", {
         if (hasUpgrade(layer, 103)) mult = mult.mul(5)
         if (hasUpgrade(layer, 104)) mult = mult.mul(25)
         if (hasUpgrade(layer, 41)) mult = mult.mul(25)
+        if (hasUpgrade(layer, 302)) mult = mult.mul(upgradeEffect(layer, 302))
 
         mult = mult.mul(buyableEffect(this.layer, 11))
 
@@ -54,9 +58,12 @@ addLayer("n", {
         if (hasMilestone(layer, 3)) mult = mult.mul(500)
         if (hasUpgrade(layer, 23)) mult = mult.mul(125)
         if (hasMilestone(layer, 8)) mult = mult.mul("1e10")
+        if (hasUpgrade(layer, 33)) mult = mult.mul("1e21")
+        if (hasChallenge(layer, 12)) mult = mult.mul("1e15")
 
         layer = "ddr"
         if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
+        if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
 
         mult = mult.mul(player.ddrm.gEffect)
         //exp 
@@ -64,19 +71,40 @@ addLayer("n", {
         if (hasUpgrade(this.layer, 201)) mult = mult.pow(1.05)
 
         layer = "s"
+
+        layer = "ddr"
+        if (hasMilestone(layer, 2)) mult = mult.pow(1.1)
         //other hypers
         //time dilations/chals
+        layer = "s"
+        if (inChallenge(layer, 12)) mult = mult.pow(0.01)
+        
         layer = "ddr"
         if (inChallenge(layer, 11)) mult = mult.pow(0.75)
+        if (inChallenge(layer, 22)) mult = mult.pow(0.1)
+        mult = mult.pow(player.ddr.voltage)
+        //softcaps
         //final
         return mult
     }, //do everything inside the gainMult()
+    getResetGain() {
+        let layer = "n"
+		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
+		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
+
+        if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            
+		gain = gain.times(tmp[layer].directMult)
+		return gain.floor().max(0);
+    },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {key: "N", description: "SHIFT+N: Reset for Notes", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return player.n.unlocked},
-    passiveGeneration() {return hasUpgrade("s", 14)},
+    passiveGeneration() {if (hasUpgrade("s", 14)) return 1
+        else return 0
+    },
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -85,6 +113,20 @@ addLayer("n", {
         let keptUpgrades = []
         if (hasMilestone("s", 2)) keptUpgrades.push(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34)
         if (hasMilestone("s", 3)) keptUpgrades.push(101, 102, 103, 104, 201, 202, 203, 204)
+
+        if (hasUpgrade("n", 301)) keptUpgrades.push(301)
+        if (hasUpgrade("n", 302)) keptUpgrades.push(302)
+        if (hasUpgrade("n", 303)) keptUpgrades.push(303)
+        if (hasUpgrade("n", 304)) keptUpgrades.push(304)
+
+        if (hasUpgrade("ddr", 42)) keptUpgrades.push(41, 42, 43, 44, 111, 112, 113, 114)
+
+        if (hasUpgrade("n", 214)) keptUpgrades.push(211, 212, 213, 214)
+
+        if (hasUpgrade("n", 311)) keptUpgrades.push(311)
+        if (hasUpgrade("n", 312)) keptUpgrades.push(312)
+        if (hasUpgrade("n", 313)) keptUpgrades.push(313)
+        if (hasUpgrade("n", 314)) keptUpgrades.push(314)
 
         let keptBuyables = []
 
@@ -110,16 +152,24 @@ addLayer("n", {
                 ["blank", "25px"],
                 ["display-text", function(){if (hasUpgrade("n", 34) || hasUpgrade("ddr", 14)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.whole)}</h2> Whole Notes <br> (${format(player.n.wholeGain)}/sec)`; else return}],
                 ["display-text", function(){if (hasUpgrade("n", 34) || hasUpgrade("ddr", 14)) return `<span style="color:#BBBBBB">Start gaining Whole Notes at 1e12 Notes!`; else return}],
+                ["display-text", function(){if (player.n.whole.gte("1e500")) return `<span style="color:#AAAAAA">Whole Note gain is softcapped by ^0.25 after 1e500!`; else return}],
                 "blank",
                 ["upgrades", [10, 11]],
                 ["blank", function() {if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return ["1px", "30px"]; else return ["0px", "0px"]}],
                 ["display-text", function(){if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.half)}</h2> Half Notes <br> (${format(player.n.halfGain)}/sec)`; else return}],
                 ["display-text", function(){if (hasUpgrade("s", 12) || hasUpgrade("ddr", 14)) return `<span style="color:#BBBBBB">Start gaining Half Notes at 1e18 Notes!`; else return}],
+                ["display-text", function(){if (player.n.half.gte("1e500")) return `<span style="color:#AAAAAA">Half Note gain is softcapped by ^0.25 after 1e500!`; else return}],
                 "blank",
-                ["upgrades", [20]],
-                ["blank", function() {if (false) return ["1px", "30px"]; else return ["0px", "0px"]}],
-                ["display-text", function(){if (false) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.whole)}</h2> Whole Notes <br> (${format(player.n.wholeGain)}/sec)`; else return}],
-                ["display-text", function(){if (false) return `<span style="color:#BBBBBB">Start gaining Whole Notes at 1e12 Notes!`; else return}],
+                ["upgrades", [20, 21]],
+                ["blank", function() {if (hasUpgrade("ddr", 32)) return ["1px", "30px"]; else return ["0px", "0px"]}],
+                ["display-text", function(){if (hasUpgrade("ddr", 32)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.quarter)}</h2> Quarter Notes <br> (${format(player.n.quarterGain)}/sec)`; else return}],
+                ["display-text", function(){
+                    let et = ""
+                    if (hasMilestone("ddr", 6)) et = "no longer"
+                    if (hasUpgrade("ddr", 32)) return `<span style="color:#BBBBBB">Start gaining Quarter Notes at 1e450 Notes - gain is ${et} logarithmic.`; else return
+                }],
+                "blank",
+                ["upgrades", [30, 31]],
             ],
         },
         "Buyables": {
@@ -153,6 +203,9 @@ addLayer("n", {
                 let softcap = new Decimal(0.25)
                 let softcapStart = new Decimal("1e25")
                 if (hasMilestone("s", 6)) softcapStart = softcapStart.mul("1e25")
+                if (hasUpgrade(this.layer, 213)) softcapStart = softcapStart.mul(upgradeEffect(this.layer, 213))
+
+
                 if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
                 return base
             },
@@ -242,7 +295,10 @@ addLayer("n", {
                 let base = player.n.points.add(1)
                 let lb = new Decimal(1.4)
                 if (hasUpgrade(this.layer, 103)) lb = new Decimal(1.05)
+
                 base = base.log(lb).add(2).div(2)
+
+                if (hasUpgrade("ddr", 33)) base = base.pow(upgradeEffect("ddr", 33))
                 return base
             },
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " Notes"},
@@ -274,7 +330,7 @@ addLayer("n", {
             effect() {
                 let base = player.n.half.add(1)
                 let lb = new Decimal(1.75)
-                base = base.log(lb).pow(1.5)
+                base = base.log(lb).pow(1.5).add(1)
                 return base
             },
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
@@ -305,6 +361,7 @@ addLayer("n", {
             effect() {
                 let base = player.n.whole.add(1)
                 base = base.pow(0.5)
+                if (hasUpgrade(this.layer, 304)) base = base.mul("1e25").pow(1.005)
                 return base
             },
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
@@ -372,7 +429,7 @@ addLayer("n", {
             title: "Quirky Rhythms",
             effect() {
                 let base = player.points.add(1)
-                base = base.log(1.25)
+                base = base.log(1.25).add(1)
     
                 return base
             },
@@ -427,6 +484,133 @@ addLayer("n", {
             currencyLayer: "n",
             unlocked() {return hasUpgrade("s", 12) || hasUpgrade("ddr", 14)},
         },
+        211: {
+            title: "Collaborations!",
+            description: "x1.2 Songs.",
+            cost: new Decimal("1e512"),
+            currencyDisplayName: "Half Notes",
+            currencyInternalName: "half",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 21)},
+        },
+        212: {
+            title: "Musical Lock-in",
+            description: "Highest combo's effect is improved.",
+            cost: new Decimal("1e540"),
+            currencyDisplayName: "Half Notes",
+            currencyInternalName: "half",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 21)},
+        },
+        213: {
+            title: "Delayed Reduction",
+            effect() {
+                let base = player.n.half.add(1)
+                base = base.pow(0.05)
+                return base
+            },
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " to softcap start"},
+            description: "Half Notes delay the softcap of \"Feel the Tempo\".",
+            cost: new Decimal("1e570"),
+            currencyDisplayName: "Half Notes",
+            currencyInternalName: "half",
+            currencyLayer: "n",
+            unlocked() {return hasUpgrade("ddr", 21)},
+        },
+        214: {
+            title: "Dance Hardcore",
+            description: "Unlock \"EXPERT\" and keep this row.",
+            cost: new Decimal("1e590"),
+            currencyDisplayName: "Half Notes",
+            currencyInternalName: "half",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 21)},
+        },
+    
+        301: {
+            title: "Can you Count to 4?",
+            description: "x4 all arrow gains and combo gains.",
+            cost: new Decimal("75"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasUpgrade("ddr", 32)},
+        },
+        302: {
+            title: "4/4 Time Signature",
+            effect() {
+                let base = player.n.quarter.add(1)
+                base = base.log(1.001).add(1)
+                return base
+            },
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME and Notes"},
+            description: "Quarter Notes boost ME and Notes.",
+            cost: new Decimal("1250"),
+            currencyDisplayName: "Half Notes",
+            currencyInternalName: "half",
+            currencyLayer: "n",
+            unlocked() {return hasUpgrade("ddr", 32)},
+        },
+        303: {
+            title: "Triple Currency Boost",
+            description: "x10 QN, Combo gain, and Arrows. Keep \"Power Outage\" completed.",
+            cost: new Decimal("5000"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasUpgrade("ddr", 32)},
+        },
+        304: {
+            title: "Simple Ode to Joy",
+            description: "Melodic fashion! Improve \"Whole > Parts\" and ^1.15 ME.",
+            cost: new Decimal("250000"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasUpgrade("ddr", 32)},
+        },
+        311: {
+            title: "Groove Energy",
+            description: "Lower the threshold of Groove Power to 1e300.",
+            cost: new Decimal("1e7"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 31)},
+        },
+        312: {
+            title: "DDR Cabinet Discount",
+            description: "Improve \"⇧ ÷ → ♪ 💵\".",
+            cost: new Decimal("75e6"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 31)},
+        },
+        313: {
+            title: "Even Faster Production",
+            effect() {
+                let base = player.n.quarter.add(1)
+                base = base.pow(0.01)
+                return base
+            },
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME and Notes"},
+            description: "Quarter Notes boost Songs.",
+            cost: new Decimal("1e10"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 31)},
+        },
+        314: {
+            title: "ATTACK!! PERFECT FULL COMBO!",
+            description: "Unlock \"Full Combo\" (NOT IMPLEMENTED).",
+            cost: new Decimal("1e13"),
+            currencyDisplayName: "Quarter Notes",
+            currencyInternalName: "quarter",
+            currencyLayer: "n",
+            unlocked() {return hasChallenge("ddr", 31)},
+        },
     },
 
     buyables: {
@@ -446,10 +630,15 @@ addLayer("n", {
                 let final = base.mul(multi)
                 if (hasUpgrade(this.layer, 111)) final = final.div(upgradeEffect(this.layer, 111))
                 if (hasUpgrade("ddr", 23)) final = final.div(upgradeEffect("ddr", 23))
+                if (hasChallenge("ddr", 22)) final = final.div("1e25")
                 return final //if you add anything to the cost formula, make sure to update the buymax()!
             },
             title: "Consistent Production",
-            display() { return "Multiplies Notes by 2 per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect()) },
+            display() {
+                let base = new Decimal(2)
+                if (hasMilestone("s", 9)) base = base.add(1)
+                return "Multiplies Notes by " + base + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+            },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 if (hasUpgrade("ddr", 13)){
@@ -464,6 +653,7 @@ addLayer("n", {
             },
             effect(x) {
                 let base = new Decimal(2)
+                if (hasMilestone("s", 9)) base = base.add(1)
                 let effect = base.pow(x)
                 return effect
             },
@@ -472,6 +662,8 @@ addLayer("n", {
                 let timesBought = player.n.points
                 timesBought = timesBought.mul(upgradeEffect(this.layer, 111))
                 timesBought = timesBought.mul(upgradeEffect("ddr", 23))
+                if (hasChallenge("ddr", 22)) timesBought = timesBought.mul("1e25")
+
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(new Decimal.pow("10", "20"))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -480,8 +672,70 @@ addLayer("n", {
 
                 let totalCost = new Decimal.pow("10", "20")
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
+
                 totalCost = totalCost.div(upgradeEffect(this.layer, 111))
                 totalCost = totalCost.div(upgradeEffect("ddr", 23))
+                if (hasChallenge("ddr", 22)) totalCost = totalCost.div("1e25")
+
+                let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
+                polynomial = polynomial.pow(timesBought).sub(1)
+                polynomial = polynomial.div(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
+                totalCost = totalCost.mul(polynomial)
+                return [totalCost, timesBought]
+            },
+        },
+
+        12: {
+            base() {return new Decimal("1e500")},
+            exponentialBase() {
+                let init = new Decimal("1e50")
+                return init
+            },
+            cost(x) {
+                let base = tmp[this.layer].buyables[this.id].base
+                let expbase = tmp[this.layer].buyables[this.id].exponentialBase
+                let multi = new Decimal(expbase).pow(x)
+
+                let final = base.mul(multi)
+                return final //if you add anything to the cost formula, make sure to update the buymax()!
+            },
+            title: "Combo Multiplier",
+            display() {
+                return "x1.5 Combo gain per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                if (false){
+                    let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
+                    let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
+                    player[this.layer].points = player[this.layer].points.sub(cost)
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                } else {
+                    player[this.layer].points = player[this.layer].points.sub(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
+            },
+            effect(x) {
+                let base = new Decimal(1.5)
+                let effect = base.pow(x)
+                return effect
+            },
+            unlocked() {return hasMilestone("ddr", 1)},
+            buyMax() {
+                let timesBought = player.n.points
+                //insert cost effects here
+
+                timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
+                timesBought = timesBought.div(new Decimal.pow("10", "500"))
+                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
+                timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
+                timesBought = timesBought.floor()
+
+                let totalCost = new Decimal.pow("10", "500")
+                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
+
+                //insert cost effects here
+
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
                 polynomial = polynomial.div(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
@@ -502,6 +756,12 @@ addLayer("n", {
             if (hasUpgrade(this.layer, 114)) mult = mult.mul(upgradeEffect(this.layer, 114))
 
             if (hasMilestone("s", 4)) mult = mult.pow(1.1)
+                
+            if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
+
+            let softcap = new Decimal(0.25)
+            let softcapStart = new Decimal("1e500")
+            if (mult.gte(softcapStart)) mult = mult.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
             player.n.wholeGain = mult
             player.n.whole = player.n.whole.add(player.n.wholeGain.mul(diff))
@@ -516,11 +776,41 @@ addLayer("n", {
             if (hasUpgrade(this.layer, 41)) mult = mult.mul(25)
             if (hasUpgrade("s", 22)) mult = mult.mul(upgradeEffect("s", 22))
             if (hasUpgrade(this.layer, 114)) mult = mult.mul(upgradeEffect(this.layer, 114))
+            if (hasUpgrade("ddr", 42)) mult = mult.mul("1e10")
 
             if (hasMilestone("s", 4)) mult = mult.pow(1.01)
+                
+            if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
+
+            let softcap = new Decimal(0.25)
+            let softcapStart = new Decimal("1e500")
+            if (mult.gte(softcapStart)) mult = mult.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
             player.n.halfGain = mult
             player.n.half = player.n.half.add(player.n.halfGain.mul(diff))
+        }
+
+        //1/4 notes
+        if ((hasUpgrade("ddr", 32)) && player.n.points.gte("1e450")){
+            let mult = player.n.points.div("1e450")
+            let qnlb = new Decimal(10)
+            if (hasChallenge("ddr", 31)) qnlb = qnlb.sub(8)
+
+            if (hasMilestone("ddr", 6)) mult = mult.pow(0.01)
+            else mult = mult.add(1).log(qnlb).add(1)
+
+            if (hasUpgrade("n", 303)) mult = mult.mul(10)
+            if (hasChallenge("ddr", 22)) mult = mult.mul(5)
+            if (hasMilestone("ddr", 4)) mult = mult.mul(15)
+  
+            if (hasMilestone("ddr", 2)) mult = mult.pow(1.25)
+
+            let softcap = new Decimal(0.25)
+            let softcapStart = new Decimal("1e500")
+            if (mult.gte(softcapStart)) mult = mult.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+
+            player.n.quarterGain = mult
+            player.n.quarter = player.n.quarter.add(player.n.quarterGain.mul(diff))
         }
     },
 
@@ -534,8 +824,8 @@ addLayer("n", {
             }
         }
 
-        for (const id of [11]) {
-            if (canBuyBuyable(layer, id)) {
+        for (const id of [11, 12]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
                 return "cyan"
             }
         }
@@ -543,16 +833,25 @@ addLayer("n", {
         return ""
     },
     shouldNotify() {
-        let a = tmp[this.layer].buyables[11].buyMax
         let layer = "n"
-        for (const id of [11]) {
-            if (canBuyBuyable(layer, id) && hasUpgrade("s", 21)) {
+        for (const id of [11, 12]) {
+            if (canBuyBuyable(layer, id) && hasUpgrade("s", 21) && tmp[layer].buyables[id].unlocked) {
                 return true
             }
         }
         return false
     },
+    automate() {
+        let layer = "n"
+        if (canBuyBuyable(layer, 11) && hasChallenge("ddr", 21) && tmp[layer].buyables[11].unlocked) {
+            tmp[layer].buyables[11].buy()
+        }
+    },
 
     branches: [["s", 1]],
-    tooltip() {return format(player.n.points) + " Notes (+" + format(getResetGain("n")) + " Notes on reset)"},
+    tooltip() {
+        let text = format(player.n.points) + " Notes (+" + format(getResetGain("n")) + " Notes on reset)"
+        if (player.n.points.gte(player.n.softcap1Start)) text += "<br>[FIRST SOFTCAP - 1e1000]"
+        return text
+    },
 })

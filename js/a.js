@@ -68,5 +68,37 @@ addLayer("a", {
             tooltip() {return "Have 1.79e308 ME. +3 AP"},
             onComplete() {player.a.points = player.a.points.add(3)}
         },
+        23: {
+            name: "Unbeatable Play",
+            done() {return player.ddrm.combo.gte("500") &&
+                player.ddrm.marvelous.gte("1e3") &&
+                player.ddrm.great.gte("1e3") &&
+                player.ddrm.almost.gte("1e3")
+            },
+            unlocked() {return true},
+            tooltip() {return "Have at least 1,000 Marvelous, Great, and Almost arrows and have a combo of at least 500. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        24: {
+            name: "What Difficulty is This?",
+            done() {return hasUpgrade("ddr", 41)},
+            unlocked() {return true},
+            tooltip() {return "Unlock the GROOVE RADAR. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        25: {
+            name: "Dance Floor Mastery",
+            done() {return hasChallenge("ddr", 31)},
+            unlocked() {return true},
+            tooltip() {return "Complete \"CHALLENGE\" DANCE LEVEL. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        26: {
+            name: "Encore Extra Stage",
+            done() {return hasUpgrade("n", 314)},
+            unlocked() {return true},
+            tooltip() {return "Unlock \"Full Combo\". +3 AP / Row completion bonus: x1e100 ME! WOW!"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
     },
 })
