@@ -142,7 +142,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: beat BASIC DANCE LEVEL (DDR challenge)",
+    "Current endgame: 40 total Note upgrades.",
     "The Rhythm Game Tree made by Justcubing97",
     function() {
 		if (inChallenge("ddr", 11) ||
