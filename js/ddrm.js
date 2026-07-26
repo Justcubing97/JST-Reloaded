@@ -29,6 +29,24 @@ addLayer("ddrm", {
         return ("Dance Dance Revolution Minigame")
     },
 
+    doReset(resettingLayer) {
+        // Stage 1, almost always needed, makes resetting this layer not delete your progress
+        if (layers[resettingLayer].row <= this.row) return;
+
+        // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
+        let keptUpgrades = []
+
+        let keptBuyables = []
+
+        // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
+        let keep = [];
+
+        // Stage 4, do the actual data reset
+        layerDataReset(this.layer, keep);
+
+        // Stage 5, add back in the specific subfeatures you saved earlier
+    }, //THANK YOU ESCAPEE FROM THE TMT SERVER
+
     hotkeys: [
         {key: "ArrowLeft", onPress(){tmp.ddrm.arrowClicking_DDRM(1)}},
         {key: "ArrowDown", onPress(){tmp.ddrm.arrowClicking_DDRM(2)}},
@@ -45,6 +63,7 @@ addLayer("ddrm", {
             if (hasChallenge("ddr", 11)) mult = mult.mul(3)
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
             if (hasUpgrade("n", 301)) mult = mult.mul(4)
+            if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
             return mult
         }
@@ -54,6 +73,7 @@ addLayer("ddrm", {
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
             if (hasUpgrade("n", 301)) mult = mult.mul(4)
             if (hasMilestone("ddr", 4)) mult = mult.mul(15)
+            if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
             return mult
         }
@@ -63,6 +83,7 @@ addLayer("ddrm", {
             if (hasChallenge("ddr", 12)) mult = mult.mul(5)
             if (hasUpgrade("n", 301)) mult = mult.mul(4)
             if (hasUpgrade("s", 31)) mult = mult.mul(15)
+            if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
             return mult
         }
@@ -79,8 +100,14 @@ addLayer("ddrm", {
             if (hasUpgrade("n", 303)) mult = mult.mul(10)
             if (hasMilestone("s", 10)) mult = mult.mul(player.ddrm.aEffect)
             if (hasUpgrade("s", 31)) mult = mult.mul(15)
+            if (player.ddrfc.points.gte(4)) mult = mult.mul("1e10")
 
             mult = mult.mul(buyableEffect("n", 12))
+            mult = mult.mul(buyableEffect("ddr", 32))
+            
+            let softcap = new Decimal(0.1)
+            let softcapStart = new Decimal("1e500")
+            if (mult.gte(softcapStart)) mult = mult.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap)))
 
             //specifics
             if (comboArg == "m"){
@@ -101,6 +128,7 @@ addLayer("ddrm", {
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g"))
             if (inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else if (inChallenge("ddr", 32) && Math.random() < 0.025) player.ddrm.combo = new Decimal(0)
             else player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "g"))
         } else if (getGridData("ddrm", 200 + column) == 1){
             setGridData("ddrm", 200 + column, 0)
@@ -110,7 +138,8 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m"))
-            player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m"))
+            if (inChallenge("ddr", 32)) player.ddrm.combo = new Decimal(0)
+            else player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m"))
         } else if (getGridData("ddrm", 300 + column) == 1){
             setGridData("ddrm", 300 + column, 0)
 
@@ -120,6 +149,7 @@ addLayer("ddrm", {
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g"))
             if (inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            else if (inChallenge("ddr", 32) && Math.random() < 0.025) player.ddrm.combo = new Decimal(0)
             else player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "g"))
         } else if (getGridData("ddrm", 400 + column) == 1){
             setGridData("ddrm", 400 + column, 0)
@@ -129,7 +159,7 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a"))
-            if (inChallenge("ddr", 22) || inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            if (inChallenge("ddr", 22) || inChallenge("ddr", 31) || inChallenge("ddr", 32)) player.ddrm.combo = new Decimal(0)
             else if (hasUpgrade("ddr", 31)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "a"))
         } else if (getGridData("ddrm", 500 + column) == 1){
             setGridData("ddrm", 500 + column, 0)
@@ -139,7 +169,7 @@ addLayer("ddrm", {
 
             player.ddrm.points = player.ddrm.points.add(1)
             player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a"))
-            if (inChallenge("ddr", 22) || inChallenge("ddr", 31)) player.ddrm.combo = new Decimal(0)
+            if (inChallenge("ddr", 22) || inChallenge("ddr", 31) || inChallenge("ddr", 32)) player.ddrm.combo = new Decimal(0)
             else if (hasUpgrade("ddr", 31)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "a"))
         }
     },
@@ -321,6 +351,13 @@ addLayer("ddrm", {
             }
         }
 
+        //automation!
+        if (hasMilestone("ddr", 4)) player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m").div(100))
+        if (hasMilestone("ddr", 7)) player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g").div(100))
+        if (hasMilestone("ddr", 8)) player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a").div(100))
+
+        if (player.ddrfc.points.gte(6)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m").div(100))
+
         //update the effects
         player.ddrm.mEffect = player.ddrm.marvelous.add(1).pow(0.5).mul(15)
         player.ddrm.gEffect = player.ddrm.great.add(1).pow(0.5).mul(2)
@@ -336,19 +373,27 @@ addLayer("ddrm", {
             player.ddrm.aEffect = player.ddrm.aEffect.mul(1.1).pow(1.1)
         }
 
+        if (hasMilestone("ddr", 10)) player.ddrm.mEffect = player.ddrm.mEffect.pow(1.15)
+        if (hasMilestone("ddr", 11)) player.ddrm.aEffect = player.ddrm.aEffect.mul(1.5)
+        if (hasMilestone("ddr", 13)) player.ddrm.aEffect = player.ddrm.aEffect.mul(1.25)
+
         //combo stuff
+        let mult = new Decimal(1)
         if (player.ddrm.combo.gte(player.ddrm.highestCombo)) player.ddrm.highestCombo = player.ddrm.combo
-        player.ddrm.cEffect = player.ddrm.highestCombo.add(1).pow(0.15)
+        mult = player.ddrm.highestCombo.add(1).pow(0.15)
         
-        if (hasUpgrade("n", 212)) player.ddrm.cEffect = player.ddrm.cEffect.pow(1.5)
+        if (hasMilestone("ddr", 10)) mult = mult.mul("1e6")
+
+        if (hasMilestone("ddr", 7)) mult = mult.pow(1.75)
+        if (hasUpgrade("n", 212)) mult = mult.pow(1.5)
+        mult = mult.pow(buyableEffect("ddr", 23))
+
+        player.ddrm.cEffect = mult
 
         //stream
         player.ddrm.mEffect = player.ddrm.mEffect.div(player.ddr.stream)
         player.ddrm.gEffect = player.ddrm.gEffect.div(player.ddr.stream)
         player.ddrm.aEffect = player.ddrm.aEffect.div(player.ddr.stream)
-
-        //automation!
-        if (hasMilestone("ddr", 4))  player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m").div(100))
     },
 
     tabFormat: [

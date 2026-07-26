@@ -18,6 +18,8 @@ addLayer("n", {
 
         softcap1: new Decimal(0.25),
         softcap1Start: new Decimal("1e1000"),
+        softcap2: new Decimal(0.1),
+        softcap2Start: new Decimal("1e20000"),
     }},
     color: "#EEEEEE",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -66,6 +68,11 @@ addLayer("n", {
         if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
 
         mult = mult.mul(player.ddrm.gEffect)
+
+        if (player.ddrfc.points.gte(2)) mult = mult.mul("1e10")
+        if (player.ddrfc.points.gte(3)) mult = mult.mul("1e10")
+        if (player.ddrfc.points.gte(4)) mult = mult.mul("1e100")
+
         //exp 
         layer = "n"
         if (hasUpgrade(this.layer, 201)) mult = mult.pow(1.05)
@@ -90,12 +97,16 @@ addLayer("n", {
     getResetGain() {
         let layer = "n"
 		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
-		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
+		let mult = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 
-        if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+        if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
             
-		gain = gain.times(tmp[layer].directMult)
-		return gain.floor().max(0);
+        if (inChallenge("ddr", 32)) mult = mult.add(1).log("1e10")
+        mult = mult.mul(buyableEffect("ddr", 33))
+    
+        if (mult.gte(player[layer].softcap2Start)) mult = mult.pow(player[layer].softcap2).mul(new Decimal(player[layer].softcap2Start).pow(decimalOne.sub(player[layer].softcap2)))
+
+		return mult.floor().max(0);
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
@@ -127,6 +138,8 @@ addLayer("n", {
         if (hasUpgrade("n", 312)) keptUpgrades.push(312)
         if (hasUpgrade("n", 313)) keptUpgrades.push(313)
         if (hasUpgrade("n", 314)) keptUpgrades.push(314)
+            
+        if (resettingLayer == "bs") keptUpgrades = []
 
         let keptBuyables = []
 
@@ -205,14 +218,11 @@ addLayer("n", {
                 if (hasMilestone("s", 6)) softcapStart = softcapStart.mul("1e25")
                 if (hasUpgrade(this.layer, 213)) softcapStart = softcapStart.mul(upgradeEffect(this.layer, 213))
 
-
                 if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
                 return base
             },
             effectDisplay() {
                 let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " ME"
-                if (upgradeEffect(this.layer, this.id).gte("1e50") && hasMilestone("s", 6)) text += " (softcapped)"
-                else if (upgradeEffect(this.layer, this.id).gte("1e25") && !hasMilestone("s", 6)) text += " (softcapped)"
                 return text
             },
             description: "Notes boost Musical Essence.",
@@ -257,7 +267,6 @@ addLayer("n", {
             },
             effectDisplay() {
                 let text = "x" + format(upgradeEffect(this.layer, this.id)) + " Notes"
-                if (upgradeEffect(this.layer, this.id).gte("1e100")) text += " (softcapped)"
                 return text
             },
             description: "ME boosts Notes.",
@@ -594,7 +603,7 @@ addLayer("n", {
                 base = base.pow(0.01)
                 return base
             },
-            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME and Notes"},
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " Songs"},
             description: "Quarter Notes boost Songs.",
             cost: new Decimal("1e10"),
             currencyDisplayName: "Quarter Notes",
@@ -604,7 +613,7 @@ addLayer("n", {
         },
         314: {
             title: "ATTACK!! PERFECT FULL COMBO!",
-            description: "Unlock \"Full Combo\" (NOT IMPLEMENTED).",
+            description: "Unlock \"Full Combo\".",
             cost: new Decimal("1e13"),
             currencyDisplayName: "Quarter Notes",
             currencyInternalName: "quarter",
@@ -631,6 +640,7 @@ addLayer("n", {
                 if (hasUpgrade(this.layer, 111)) final = final.div(upgradeEffect(this.layer, 111))
                 if (hasUpgrade("ddr", 23)) final = final.div(upgradeEffect("ddr", 23))
                 if (hasChallenge("ddr", 22)) final = final.div("1e25")
+                final = final.div(buyableEffect("ddr", 31))
                 return final //if you add anything to the cost formula, make sure to update the buymax()!
             },
             title: "Consistent Production",
@@ -663,6 +673,7 @@ addLayer("n", {
                 timesBought = timesBought.mul(upgradeEffect(this.layer, 111))
                 timesBought = timesBought.mul(upgradeEffect("ddr", 23))
                 if (hasChallenge("ddr", 22)) timesBought = timesBought.mul("1e25")
+                timesBought = timesBought.mul(buyableEffect("ddr", 31))
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(new Decimal.pow("10", "20"))
@@ -676,6 +687,7 @@ addLayer("n", {
                 totalCost = totalCost.div(upgradeEffect(this.layer, 111))
                 totalCost = totalCost.div(upgradeEffect("ddr", 23))
                 if (hasChallenge("ddr", 22)) totalCost = totalCost.div("1e25")
+                totalCost = totalCost.div(buyableEffect("ddr", 31))
 
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
@@ -689,6 +701,7 @@ addLayer("n", {
             base() {return new Decimal("1e500")},
             exponentialBase() {
                 let init = new Decimal("1e50")
+                if (hasMilestone("ddr", 11)) init = new Decimal("1e20")
                 return init
             },
             cost(x) {
@@ -705,13 +718,13 @@ addLayer("n", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (false){
+                if (hasUpgrade("s", 42)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
-                    player[this.layer].points = player[this.layer].points.sub(this.cost())
+                    player[this.layer].points = player[this.layer].points.sub(this.cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
                 }
             },
@@ -843,15 +856,15 @@ addLayer("n", {
     },
     automate() {
         let layer = "n"
-        if (canBuyBuyable(layer, 11) && hasChallenge("ddr", 21) && tmp[layer].buyables[11].unlocked) {
-            tmp[layer].buyables[11].buy()
-        }
+        if (canBuyBuyable(layer, 11) && hasChallenge("ddr", 21) && tmp[layer].buyables[11].unlocked) tmp[layer].buyables[11].buy()
+        if (canBuyBuyable(layer, 12) && hasMilestone("ddr", 12) && tmp[layer].buyables[12].unlocked) tmp[layer].buyables[12].buy()
     },
 
     branches: [["s", 1]],
     tooltip() {
         let text = format(player.n.points) + " Notes (+" + format(getResetGain("n")) + " Notes on reset)"
-        if (player.n.points.gte(player.n.softcap1Start)) text += "<br>[FIRST SOFTCAP - 1e1000]"
+        if (player.n.points.gte(player.n.softcap2Start)) text += "<br>[SECOND SOFTCAP - 1e20000]"
+        else if (player.n.points.gte(player.n.softcap1Start)) text += "<br>[FIRST SOFTCAP - 1e1000]"
         return text
     },
 })

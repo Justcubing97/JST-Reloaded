@@ -42,6 +42,10 @@ addLayer("s", {
 
         mult = mult.mul(player.ddrm.aEffect)
         mult = mult.mul(buyableEffect(layer, 13))
+
+        if (player.ddrfc.points.gte(2)) mult = mult.mul(1.5)
+        if (player.ddrfc.points.gte(3)) mult = mult.mul(1.25)
+        if (player.ddrfc.points.gte(4)) mult = mult.mul(2.5)
         //exp 
         //other hypers
         //time dilations/chals
@@ -59,7 +63,7 @@ addLayer("s", {
     resetsNothing() {return hasUpgrade("ddr", 43) && !player.s.resetting},
     autoPrestige() {return hasUpgrade("ddr", 44)},
     resetDescription: "Compose ",
-    canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12)},
+    canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12) || hasUpgrade(layer, 11)},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -73,13 +77,24 @@ addLayer("s", {
         if (hasUpgrade("s", 33)) keptUpgrades.push(33)
         if (hasUpgrade("s", 34)) keptUpgrades.push(34)
 
+        if (hasUpgrade("s", 41)) keptUpgrades.push(41)
+        if (hasUpgrade("s", 42)) keptUpgrades.push(42)
+        if (hasUpgrade("s", 43)) keptUpgrades.push(43)
+        if (hasUpgrade("s", 44)) keptUpgrades.push(44)
+
+        if (resettingLayer == "bs") keptUpgrades = []
+
         let keptMilestones = []
         if (hasUpgrade("ddr", 22)) keptMilestones.push("1", "2", "3", "4")
         if (hasChallenge("ddr", 22)) keptMilestones.push("5", "6", "7", "8", "9", "10")
+            
+        if (resettingLayer == "bs") keptMilestones = []
 
         let keptChallenges = []
         if (hasUpgrade("n", 303)) keptChallenges.push(11)
         if (hasChallenge("s", 12)) keptChallenges.push(12)
+
+        if (resettingLayer == "bs") keptChallenges = []
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
@@ -221,6 +236,31 @@ addLayer("s", {
             cost: new Decimal("238"),
             unlocked() {return hasUpgrade("ddr", 44)}
         },
+
+        41: {
+            title: "Mega Arrows",
+            description: "x1e15 Arrows.",
+            cost: new Decimal("1.75e9"),
+            unlocked() {return hasMilestone("ddr", 12)}
+        },
+        42: {
+            title: "Mega Buyables",
+            description: "You can bulk-buy the second Note buyable.",
+            cost: new Decimal("1e13"),
+            unlocked() {return hasMilestone("ddr", 12)}
+        },
+        43: {
+            title: "Mega Automation",
+            description: "Automatically buy the DDR buyables.",
+            cost: new Decimal("2e17"),
+            unlocked() {return hasMilestone("ddr", 12)}
+        },
+        44: {
+            title: "Mega Unlock",
+            description: "Unlock <b>Beat Saber.",
+            cost: new Decimal("1e20"),
+            unlocked() {return hasMilestone("ddr", 12)}
+        },
     },
 
     milestones: {
@@ -324,7 +364,7 @@ addLayer("s", {
         },
     },
 
-    branches: [["ddr", 1]],
+    branches: [["ddr", 1], ["ddrfc", 1]],
     tooltip() {
         if (canReset(this.layer)) return format(player.s.points) + " Songs (+" + format(getResetGain("s")) + " Songs on reset)"
         return format(player.s.points) + " Songs (Unable to reset)"

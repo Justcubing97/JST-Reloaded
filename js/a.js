@@ -100,5 +100,33 @@ addLayer("a", {
             tooltip() {return "Unlock \"Full Combo\". +3 AP / Row completion bonus: x1e100 ME! WOW!"},
             onComplete() {player.a.points = player.a.points.add(3)}
         },
+        31: {
+            name: "Groovin' Googol",
+            done() {return player.ddr.groovePower.gte("1e100")},
+            unlocked() {return true},
+            tooltip() {return "Have 1e100 Groove Power. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        32: {
+            name: "Inflated Dancing",
+            done() {return getBuyableAmount("ddr", 22)},
+            unlocked() {return true},
+            tooltip() {return "Max out \"Machine Enhancer\". +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        33: {
+            name: "Infinity Combo",
+            done() {return player.ddrm.combo.gte("1.79e308")},
+            unlocked() {return true},
+            tooltip() {return "Have a combo of 1.79e308. +3 AP"},
+            onComplete() {player.a.points = player.a.points.add(3)}
+        },
+        34: {
+            name: "Slash the beats.",
+            done() {return player.bs.points.gte(1)},
+            unlocked() {return true},
+            tooltip() {return "Beat Saber reset for the first time. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
     },
 })

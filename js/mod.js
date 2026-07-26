@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Rhythm Game Tree",
 	author: "Justcubing97",
 	pointsName: "Musical Essence",
-	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "tree.js", "ddrm.js"],
+	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "ddrfc.js", "bs.js", "tree.js", "ddrm.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "2.3",
-	name: "DDR expansion+",
+	num: "3.0",
+	name: "Beat Saber intro",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v3.0</h2><br>
+		- Finished off the DDR layer! <br>
+        - BEAT SABER LAYER INTRO! <br><br>
 	<h2>v2.3</h2><br>
 		- Properly credited Camellia. My bad! <br>
         - TONS of new content! <br><br>
@@ -100,6 +103,14 @@ function getPointGen() {
         
     mult = mult.mul(player.ddrm.mEffect)
     mult = mult.mul(buyableEffect(layer, 21))
+
+    if (player.ddrfc.points.gte(1)) mult = mult.mul("1e25")
+    if (player.ddrfc.points.gte(2)) mult = mult.mul("1e25")
+    if (player.ddrfc.points.gte(3)) mult = mult.mul("1e25")
+    if (player.ddrfc.points.gte(4)) mult = mult.mul("1e250")
+
+    layer = "bs"
+    if (hasUpgrade(layer, 11)) mult = mult.mul("1e1000")
     //exp
     layer = "n"
     if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
@@ -150,12 +161,15 @@ var displayThings = [
         inChallenge("ddr", 22)) return `<br><b>Musical Essence is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
 		if (inChallenge("ddr", 21)) return `<br><b>Combo is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
 		else return ""
-	}
+	},
+    function() {
+		if (player.points.gte("1e2000")) return "<b>FIRST SOFTCAP: 1e2000</b>"
+	},
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasUpgrade("n", 314)
+	return hasUpgrade("bs", 11)
 }
 
 
@@ -178,10 +192,10 @@ function fixOldSave(oldVersion){
 
 /*
 
-addLayer("[LAYER HERE]", {
-    name: "[LAYER HERE]", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "[SYMBOL HERE]", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: [POSITION HERE], // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+addLayer("LAYERHERE", {
+    name: "LAYERHERE", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "SYMBOLHERE", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: POSITIONHERE, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: false,
 		points: new Decimal(0),
@@ -189,13 +203,18 @@ addLayer("[LAYER HERE]", {
         softcap1: new Decimal(0.25),
         softcap1Start: new Decimal("1e1000"), //defaults for normal layers
     }},
-    color: "[COLOR HERE]",
-    requires: new Decimal([NUMBER HERE]), // Can be a function that takes requirement increases into account
-    resource: "[CURRENCY HERE]", // Name of prestige currency
-    baseResource: "[CURRENCY HERE]", // Name of resource prestige is based on
-    baseAmount() {return player.[LAYER HERE].points}, // Get the current amount of baseResource
+    color: "COLORHERE",
+	nodeStyle() {
+		const style = {};
+		style.background = "linear-gradient( SECCOLORHERE, PRIMCOLORHERE)";
+		return style;
+	},
+    requires: new Decimal(NUMBERHERE), // Can be a function that takes requirement increases into account
+    resource: "CURRENCYHERE", // Name of prestige currency
+    baseResource: "CURRENCYHERE", // Name of resource prestige is based on
+    baseAmount() {return player.LAYERHERE.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: [NUMBER HERE], // Prestige currency exponent
+    exponent: NUMBERHERE, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         let layer;
         let mult = new Decimal(1)
@@ -206,23 +225,27 @@ addLayer("[LAYER HERE]", {
         //time dilations/chals
         //final
         return mult
-    }, //do everything inside the gainMult()
+    }, //primary multi
     getResetGain() {
-        let layer = "[LAYER HERE]"
+        let layer = "LAYERHERE"
 		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
 		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 
         if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+        //put after first softcap things after this line
             
 		gain = gain.times(tmp[layer].directMult)
 		return gain.floor().max(0);
     },
-    row: [ROW HERE], // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "[KEY HERE]", description: "[KEY HERE]: Reset for [CURRENCY HERE", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    row: ROWHERE, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [ //use shift for currencies, regulars for minigames
+        {key: "KEYHERE", description: "KEYDESCHERE: Reset for CURRENCYHERE", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return player.[LAYER HERE].unlocked},
-    passiveGeneration() {[PASSIVE GEN REQUIREMENT HERE]},
+    layerShown(){
+        if (BOOLHERE) player.LAYERHERE.unlocked = true
+        return player.LAYERHERE.unlocked
+    },
+    passiveGeneration() {BOOLHERE}, //use autoPrestige() if static!
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -247,7 +270,7 @@ addLayer("[LAYER HERE]", {
             cost: new Decimal("1e234987234987234"),
         },
     },
-    tooltip() {return format(player.[LAYER HERE].points) + " [CURRENCY HERE] (+" + format(getResetGain([LAYER HERE])) + " [CURRENCY HERE] on reset)"},
+    tooltip() {return format(player.LAYERHERE.points) + " CURRENCYHERE (+" + format(getResetGain("LAYERHERE")) + " CURRENCYHERE on reset)"},
 })
 
 */
