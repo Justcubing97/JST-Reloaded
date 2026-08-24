@@ -3,7 +3,7 @@ var themes = ["default", "aqua", "violet", "light", "darkness"]
 
 var colors = {
 	default: {
-		1: "#ffffff",//Branch color 1
+		1: "#dfdfdf",//Branch color 1
 		2: "#bfbfbf",//Branch color 2
 		3: "#7f7f7f",//Branch color 3
 		color: "#dfdfdf",
@@ -13,8 +13,8 @@ var colors = {
 		background_tooltip: "rgba(0, 0, 0, 0.75)",
 	},
 	aqua: {
-		1: "#ffffff",//Branch color 1
-		2: "#bfbfbf",//Branch color 2
+		1: "#bfdfff",//Branch color 1
+		2: "#9fbfdf",//Branch color 2
 		3: "#7f7f7f",//Branch color 3
 		color: "#bfdfff",
 		points: "#dfefff",
@@ -23,8 +23,8 @@ var colors = {
 		background_tooltip: "rgba(0, 15, 31, 0.75)",
 	},
 	violet: {
-		1: "#ffffff",//Branch color 1
-		2: "#bfbfbf",//Branch color 2
+		1: "#d0c0ff",//Branch color 1
+		2: "#b0a0df",//Branch color 2
 		3: "#7f7f7f",//Branch color 3
 		color: "#d0c0ff",
 		points: "#efd0ff",
@@ -33,8 +33,8 @@ var colors = {
 		background_tooltip: "rgba(21, 0, 31, 0.75)",
 	},
 	light: {
-		1: "#ffffff",//Branch color 1
-		2: "#bfbfbf",//Branch color 2
+		1: "#5a5a5a",//Branch color 1
+		2: "#3a3a3a",//Branch color 2
 		3: "#7f7f7f",//Branch color 3
 		color: "#5a5a5a",
 		points: "#606060",
@@ -43,8 +43,8 @@ var colors = {
 		background_tooltip: "rgba(200, 200, 200, 0.75)",
 	},
 	darkness: {
-		1: "#ffffff",//Branch color 1
-		2: "#bfbfbf",//Branch color 2
+		1: "#3a3a3a",//Branch color 1
+		2: "#1a1a1a",//Branch color 2
 		3: "#7f7f7f",//Branch color 3
 		color: "#1a1a1a",
 		points: "#202020",

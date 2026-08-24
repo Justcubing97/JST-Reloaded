@@ -6,6 +6,7 @@ addLayer("a", {
     color: "yellow",
     resource: "Achievement Power", 
     row: "side",
+    position: 0,
     tooltip() { // Optional, tooltip displays when the layer is locked
         return ("Achievements")
     },
@@ -76,7 +77,7 @@ addLayer("a", {
                 player.ddrm.almost.gte("1e3")
             },
             unlocked() {return true},
-            tooltip() {return "Have at least 1,000 Marvelous, Great, and Almost arrows and have a combo of at least 500. +3 AP"},
+            tooltip() {return "Have at least 1,000 Marvelous, Great, and Almost arrows and have a DDR combo of at least 500. +3 AP"},
             onComplete() {player.a.points = player.a.points.add(3)}
         },
         24: {
@@ -126,6 +127,35 @@ addLayer("a", {
             done() {return player.bs.points.gte(1)},
             unlocked() {return true},
             tooltip() {return "Beat Saber reset for the first time. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        35: {
+            name: "Faster Recovery",
+            done() {return hasUpgrade("bs", 14)},
+            unlocked() {return true},
+            tooltip() {return "Have 1 row of Beat Saber upgrades. That took a while, didn't it? +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        36: {
+            name: "Apprentice Ninja",
+            done() {return player.bsm.highestCombo.gte(25)},
+            unlocked() {return true},
+            tooltip() {return "Have a combo of at least 25 in Beat Saber. +5 AP / Row completion bonus: x500 Songs and x4 Cubes."},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+
+        41: {
+            name: "First (1e)Million Steps",
+            done() {return player.points.gte("e1e6")},
+            unlocked() {return true},
+            tooltip() {return "Have 1e1,000,000 Musical Essence. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        42: {
+            name: "Jumpin' n' Movin'",
+            done() {return player.d.points.gte(1)},
+            unlocked() {return true},
+            tooltip() {return "Have 1 Distance. +5 AP"},
             onComplete() {player.a.points = player.a.points.add(5)}
         },
     },

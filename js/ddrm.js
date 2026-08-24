@@ -19,12 +19,18 @@ addLayer("ddrm", {
         speed: 1,
         timer: 0,
         paused: false,
+        
+        softcap1: new Decimal(0.1),
+        softcap1Start: new Decimal("e1e6"), //defaults for normal layers
+        softcap2: new Decimal(0.05),
+        softcap2Start: new Decimal("e2e6"), //defaults for normal layers
     }},
 	color: "#C70078",
     symbol: "👯",
 
     resource: "Hits", 
     row: "side",
+    position: 1,
     tooltip() { // Optional, tooltip displays when the layer is locked
         return ("Dance Dance Revolution Minigame")
     },
@@ -32,6 +38,7 @@ addLayer("ddrm", {
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
+        if (layers[resettingLayer].row <= 2) return;
 
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
@@ -56,6 +63,7 @@ addLayer("ddrm", {
     ],
 
     findMults_DDRM(type, comboArg){
+        let layer = "ddrm"
         let mult = new Decimal(1)
         if (type == "m"){
             mult = mult.mul(player.ddrm.cEffect)
@@ -65,6 +73,8 @@ addLayer("ddrm", {
             if (hasUpgrade("n", 301)) mult = mult.mul(4)
             if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
+            if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            if (mult.gte(player[layer].softcap2Start)) mult = mult.pow(player[layer].softcap2).mul(new Decimal(player[layer].softcap2Start).pow(decimalOne.sub(player[layer].softcap2)))
             return mult
         }
         if (type == "g"){
@@ -75,6 +85,8 @@ addLayer("ddrm", {
             if (hasMilestone("ddr", 4)) mult = mult.mul(15)
             if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
+            if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            if (mult.gte(player[layer].softcap2Start)) mult = mult.pow(player[layer].softcap2).mul(new Decimal(player[layer].softcap2Start).pow(decimalOne.sub(player[layer].softcap2)))
             return mult
         }
         if (type == "a"){
@@ -85,6 +97,9 @@ addLayer("ddrm", {
             if (hasUpgrade("s", 31)) mult = mult.mul(15)
             if (player.ddrfc.points.gte(3)) mult = mult.mul(25)
 
+                
+            if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            if (mult.gte(player[layer].softcap2Start)) mult = mult.pow(player[layer].softcap2).mul(new Decimal(player[layer].softcap2Start).pow(decimalOne.sub(player[layer].softcap2)))
             return mult
         }
         if (type == "c"){
@@ -92,7 +107,7 @@ addLayer("ddrm", {
             if (inChallenge("ddr", 11) ||
             inChallenge("ddr", 12) ||
             inChallenge("ddr", 21) ||
-            inChallenge("ddr", 22)) mult = mult.mul(player.MEComboNerf)
+            inChallenge("ddr", 22) && !hasUpgrade("bs", 12)) mult = mult.mul(player.MEComboNerf)
 
             
             if (hasChallenge("ddr", 11)) mult = mult.mul(2.5)
@@ -104,6 +119,8 @@ addLayer("ddrm", {
 
             mult = mult.mul(buyableEffect("n", 12))
             mult = mult.mul(buyableEffect("ddr", 32))
+        
+            if (hasUpgrade("bs", 22)) mult = mult.pow(1.15)
             
             let softcap = new Decimal(0.1)
             let softcapStart = new Decimal("1e500")
@@ -334,19 +351,28 @@ addLayer("ddrm", {
             let num = Math.floor(Math.random() * 4) + 1 //chooses column
             let quantize = 1 //initializes color
             player.ddrm.current.push([quantize, 1100 + num]) //pushes the chosen color and column to the array
-            
         }
 
         for (var DDRMC = 0; DDRMC < player.ddrm.current.length; DDRMC++){ //this loop moves the notes
+            let deleteThreshold = 0
+            if (hasUpgrade("bs", 12)) deleteThreshold = 300
             if (player.ddrm.timer % 3 <= 0.01 && player.ddrm.paused){ //every few
                 player.ddrm.current[DDRMC][1] = player.ddrm.current[DDRMC][1] - 100 //shift the note in the array
                 setGridData("ddrm", player.ddrm.current[DDRMC][1], player.ddrm.current[DDRMC][0]) //changes the data
                 setGridData("ddrm", player.ddrm.current[DDRMC][1] + 100, "0") //removes the data
-                if (player.ddrm.current[DDRMC][1] < 0){ //is it out of the play area?
+                if (player.ddrm.current[DDRMC][1] < deleteThreshold){ //is it out of the play area?
                     player.ddrm.current.shift() //delete it!
-                    player.ddrm.miss = player.ddrm.miss.add(1) //add a miss
-                    if (hasUpgrade("ddr", 31)) player.ddrm.combo = Decimal.max(player.ddrm.combo.sub(50), new Decimal(0))
-                    else player.ddrm.combo = new Decimal(0)
+                    if (hasUpgrade("bs", 12)){
+                        player.ddrm.marvelous = player.ddrm.marvelous.add(tmp.ddrm.findMults_DDRM("m", "m"))
+                        player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g"))
+                        player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a"))
+
+                        player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m"))
+                    } else {
+                        player.ddrm.miss = player.ddrm.miss.add(1) //add a miss
+                        if (hasUpgrade("ddr", 31)) player.ddrm.combo = Decimal.max(player.ddrm.combo.sub(50), new Decimal(0))
+                        else player.ddrm.combo = new Decimal(0)
+                    }
                 }
             }
         }
@@ -356,7 +382,7 @@ addLayer("ddrm", {
         if (hasMilestone("ddr", 7)) player.ddrm.great = player.ddrm.great.add(tmp.ddrm.findMults_DDRM("g", "g").div(100))
         if (hasMilestone("ddr", 8)) player.ddrm.almost = player.ddrm.almost.add(tmp.ddrm.findMults_DDRM("a", "a").div(100))
 
-        if (player.ddrfc.points.gte(6)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m").div(100))
+        if (player.ddrfc.points.gte(6) || hasUpgrade("bs", 24)) player.ddrm.combo = player.ddrm.combo.add(tmp.ddrm.findMults_DDRM("c", "m").div(100))
 
         //update the effects
         player.ddrm.mEffect = player.ddrm.marvelous.add(1).pow(0.5).mul(15)
@@ -379,7 +405,7 @@ addLayer("ddrm", {
 
         //combo stuff
         let mult = new Decimal(1)
-        if (player.ddrm.combo.gte(player.ddrm.highestCombo)) player.ddrm.highestCombo = player.ddrm.combo
+        player.ddrm.highestCombo = Decimal.max(player.ddrm.highestCombo, player.ddrm.combo)
         mult = player.ddrm.highestCombo.add(1).pow(0.15)
         
         if (hasMilestone("ddr", 10)) mult = mult.mul("1e6")
@@ -401,13 +427,15 @@ addLayer("ddrm", {
         ["infobox", "minigame"],
         ["clickables", [1]],
         "blank",
+        ["display-text", function(){if (player.ddrm.marvelous.gte(player.ddrm.softcap1Start)) return `<b>FIRST SOFTCAP - e1,000,000</b>`; else return ""}],
+        ["display-text", function(){if (player.ddrm.marvelous.gte(player.ddrm.softcap2Start)) return `<b>SECOND SOFTCAP - e2,000,000</b>`; else return ""}],
         ["display-text", function(){return `You have hit <h2 style="color: #8000FF; text-shadow: 0px 0px 10px #8000FF">${format(player.ddrm.marvelous, 4)}</h2> Marvelous arrows, multiplying ME by x${format(player.ddrm.mEffect, 4)}`}],
         ["display-text", function(){return `You have hit <h2 style="color: #40FF40; text-shadow: 0px 0px 10px #40FF40">${format(player.ddrm.great, 4)}</h2> Great arrows, multiplying Notes by x${format(player.ddrm.gEffect, 4)}`}],
         ["display-text", function(){return `You have hit <h2 style="color: #FF4040; text-shadow: 0px 0px 10px #FF4040">${format(player.ddrm.almost, 4)}</h2> Almost arrows, multiplying Songs by x${format(player.ddrm.aEffect, 4)}`}],
         ["display-text", function(){return `You have missed <h2 style="color: #B0B0B0; text-shadow: 0px 0px 10px #B0B0B0">${format(player.ddrm.miss, 4)}</h2> arrows`}],
         ["blank", "8px"],
-        ["display-text", function(){return `Your highest combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.highestCombo, 4)}</h2> arrows, multiplying the gain of M, G, and A arrows by x${format(player.ddrm.cEffect, 4)}`}],
-        ["display-text", function(){return `Your current combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.combo, 4)}</h2> arrows`}],
+        ["display-text", function(){return `Your highest DDR combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.highestCombo, 4)}</h2> arrows, multiplying the gain of M, G, and A arrows by x${format(player.ddrm.cEffect, 4)}`}],
+        ["display-text", function(){return `Your current DDR combo is <h2 style="color: #0080FF; text-shadow: 0px 0px 10px #0080FF">${format(player.ddrm.combo, 4)}</h2> arrows`}],
         ["blank", "8px"],
         ["display-text", function(){return "Use arrow keys or click the white arrows to hit them! Hit / to pause DDR."}],
         "blank",

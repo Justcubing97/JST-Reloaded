@@ -40,8 +40,8 @@ addLayer("ddrfc", {
         if (hasUpgrade("n", 314)) player.ddrfc.unlocked = true
         return player.ddrfc.unlocked
     },
-    resetsNothing() {return false},
-    autoPrestige() {return false},
+    resetsNothing() {return hasUpgrade("bs", 34)},
+    autoPrestige() {return hasUpgrade("bs", 34)},
     canBuyMax() {return false},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
@@ -77,26 +77,29 @@ addLayer("ddrfc", {
                     if (player.ddrfc.points.gte(4)) text = "<h3>x1e325 ME<br>x1e120 Notes<br>x4.6875 Songs<br>x25 M, G, and A arrows<br>x1e10 combo gain</h3>"
                     if (player.ddrfc.points.gte(5)) text = "<h3>x1e325 ME<br>x1e120 Notes<br>x4.6875 Songs<br>x25 M, G, and A arrows<br>x1e10 combo gain<br><br>QoL: bulk-buy the DDR buyables.</h3>"
                     if (player.ddrfc.points.gte(6)) text = "<h3>x1e325 ME<br>x1e120 Notes<br>x4.6875 Songs<br>x25 M, G, and A arrows<br>x1e10 combo gain<br><br>QoL: bulk-buy the DDR buyables.<br>QoL: passively generate 1% of the combo gained from Marvelous arrows.</h3>"
+                    if (player.ddrfc.points.gte(7)) text = "<h3>x1e10,325 ME<br>x1e120 Notes<br>x4.6875 Songs<br>x25 M, G, and A arrows<br>x1e10 combo gain<br>x100,000 Arrows<br>x2.5 Cubes<br><br></h3>" +
+                                                    "<h3>QoL: bulk-buy the DDR buyables.<br>QoL: passively generate 1% of the combo gained from Marvelous arrows.</h3>"
                     return text
                 }],
                 ["blank", "24px"],
                 ["display-text", function(){return `Full Combo Tier <h2 style="color: #63b0e7; text-shadow: 0px 0px 10px #63b0e7">${format(player.ddrfc.points.add(1))}</h2> will provide an additional...`}],
                 "blank",
                 ["display-text", function(){
-                    let text = ""
+                    let text = "<h3>x1e25 ME</h3>"
                     if (player.ddrfc.points.gte(1)) text = "<h3>x1e25 ME<br>1e10 Notes<br>x1.5 Songs</h3>"
                     if (player.ddrfc.points.gte(2)) text = "<h3>x1e25 ME<br>x1e10 Notes<br>x1.25 Songs<br>x25 M, G, and A arrows</h3>"
                     if (player.ddrfc.points.gte(3)) text = "<h3>x1e250 ME<br>x1e100 Notes<br>x2.5 Songs<br>x1e10 combo gain</h3>"
                     if (player.ddrfc.points.gte(4)) text = "<h3>QoL: bulk-buy the DDR buyables.</h3>"
                     if (player.ddrfc.points.gte(5)) text = "<h3>QoL: passively generate 1% of the combo gained from Marvelous arrows.</h3>"
-                    if (player.ddrfc.points.gte(6)) text = "<h3>???</h3>"
+                    if (player.ddrfc.points.gte(6)) text = "<h3>x1e10,000 ME (after third softcap)<br>x100,000 Arrows (after first softcap)<br>x2.5 Cubes</h3>"
+                    if (player.ddrfc.points.gte(7)) text = "<h3>???</h3>"
                     return text
                 }],
             ]
         },
     },
 
-    branches: [["bs", 1]],
+    branches: [["bs", 1], ["d", 1]],
     tooltip() {
         if (canReset(this.layer)) return format(player.ddrfc.points) + " Full Combo Tiers (+" + format(getResetGain("ddrfc")) + " Full Combo Tiers on reset)"
         return format(player.ddrfc.points) + " Full Combo Tiers (Unable to reset)"

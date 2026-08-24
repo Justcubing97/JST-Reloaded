@@ -18,6 +18,12 @@ addLayer("ddr", {
 
         streamImpact: new Decimal(20),
         gpThreshold: new Decimal("1e350"),
+
+        streamMultBoost: new Decimal(10),
+        voltageMultBoost: new Decimal(1000),
+        airMultBoost: new Decimal(1),
+        freezeMultBoost: new Decimal(1),
+        chaosMultBoost: new Decimal(1),
         
         softcap1: new Decimal(0.25),
         softcap1Start: new Decimal("1e300"), //defaults for normal layers
@@ -58,9 +64,15 @@ addLayer("ddr", {
 
         layer = "bs"
         if (hasUpgrade(layer, 11)) mult = mult.mul(100)
+        if (hasUpgrade(layer, 23)) mult = mult.mul(upgradeEffect(layer, 23))
+
+        mult = mult.mul(player.bsm.cutEffect)
         //exp
         layer = "s"
         if (hasMilestone(layer, 10)) mult = mult.pow(1.25)
+
+        layer = "bs"
+        if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
         //other hypers
         //time dilations/chals
         //final
@@ -72,6 +84,12 @@ addLayer("ddr", {
 		let mult = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 
         if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
+            
+        if (hasUpgrade("n", 402)) mult = mult.mul(upgradeEffect("n", 402))
+            
+        if (player.ddrfc.points.gte(7)) mult = mult.mul("1e5")
+
+        mult = mult.mul(buyableEffect("bs", 31))
 
 		return mult.floor().max(0);
     },
@@ -85,7 +103,10 @@ addLayer("ddr", {
     },
     canReset(){return hasChallenge("s", 11)},
     
-    passiveGeneration() {return false},
+    passiveGeneration() {
+        if (hasUpgrade("bs", 24)) return 1
+        return 0
+    },
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -93,15 +114,22 @@ addLayer("ddr", {
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
 
-        let keptBuyables = []
+        let keptChallenges = []
+        if (hasUpgrade("bs", 32)) keptChallenges.push(11, 12, 21, 22, 31, 32)
+
+        let keptGP = new Decimal(0)
+        if (hasUpgrade("bs", 32)) keptGP = player.ddr.groovePower
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
+        if (hasUpgrade("bs", 14)) keep.push("milestones")
 
         // Stage 4, do the actual data reset
         layerDataReset(this.layer, keep);
 
         // Stage 5, add back in the specific subfeatures you saved earlier
+        keptChallenges.forEach(element => player[this.layer].challenges[element] = 1)
+        if (hasUpgrade("bs", 32)) player.ddr.groovePower = keptGP
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
     upgrades: {
         11: {
@@ -137,13 +165,13 @@ addLayer("ddr", {
             title: "DANCE LEVEL INTRODUCTION",
             description: "Unlock \"BEGINNER\".",
             cost: new Decimal("25"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)},
         },
         22: {
             title: "Unstoppable Dancing",
             description: "Keep the first 8 Song upgrades and the first 4 Song milestones. x2 Arrows.",
             cost: new Decimal("100"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)},
         },
         23: {
             title: "⇧ ÷ → ♪ 💵",
@@ -159,25 +187,25 @@ addLayer("ddr", {
             },
             description: "Arrows divide the Note buyable 1 cost, keep total Songs, and x1e15 ME.",
             cost: new Decimal("300"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)},
         },
         24: {
             title: "Charting Challenge",
             description: "Unlock \"BASIC\".",
             cost: new Decimal("750"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)},
         },
         31: {
             title: "Better Machine",
-            description: "Missing a note now reduces the combo by 50 (stays above zero), Almost arrows now add to the combo, and Marvelous arrows add x3 times more. x5 Arrows.",
+            description: "Missing a note now reduces the DDR combo by 50 (stays above zero), Almost arrows now add to the DDR combo, and Marvelous arrows add x3 times more. x5 Arrows.",
             cost: new Decimal("3000"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("bs", 14)},
         },
         32: {
             title: "1 2 3 4",
             description: "Unlock Quarter Notes (in Notes tab).",
             cost: new Decimal("15000"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("bs", 14)},
         },
         33: {
             title: "⇧ x → 🎼 💪",
@@ -192,37 +220,37 @@ addLayer("ddr", {
             },
             description: "\"Sheet Music Discovery\"'s effect is raised to Arrows at a reduced rate.",
             cost: new Decimal("40000"),
-            unlocked() {return hasUpgrade(this.layer, 14)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("bs", 14)},
         },
         34: {
             title: "Practice Required",
             description: "Unlock \"DIFFICULT\".",
             cost: new Decimal("250000"),
-            unlocked() {return hasUpgrade(this.layer, 24)},
+            unlocked() {return hasUpgrade(this.layer, 24) || hasUpgrade("bs", 14)},
         },
         41: {
             title: "Gameplay Variety Intro",
             description: "Unlock GROOVE RADAR.",
             cost: new Decimal("8e5"),
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("bs", 14)},
         },
         42: {
             title: "smol qol",
             description: "keep the 4th row of note upgs and 2nd row of wn upgs, x1e10 hn",
             cost: new Decimal("3.5e6"),
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("bs", 14)},
         },
         43: {
             title: "Preserving Production",
             description: "Composing Songs no longer resets anything. x1e20 ME.",
             cost: new Decimal("12.5e6"),
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("bs", 14)},
         },
         44: {
             title: "Auto Production",
             description: "You can automatically compose Songs. Unlock a third row of Song upgrades.",
             cost: new Decimal("30e6"),
-            unlocked() {return hasUpgrade(this.layer, 34)},
+            unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("bs", 14)},
         },
     },
 
@@ -264,7 +292,7 @@ addLayer("ddr", {
         },
         7: {
             requirementDescription: "7: 1e77 Groove Power",
-            effectDescription: "You challenge some of your friends on the dance floor. Effortless battle. Highest combo's effect is improved and generate 1% of Great arrows you would gain from the minigame.",
+            effectDescription: "You challenge some of your friends on the dance floor. Effortless battle. Highest DDR combo's effect is improved and generate 1% of Great arrows you would gain from the minigame.",
             done() { return player.ddr.groovePower.gte("1e77") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
@@ -327,7 +355,7 @@ addLayer("ddr", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
@@ -381,15 +409,16 @@ addLayer("ddr", {
             },
             title: "DDR MAX",
             display() {
-                return "The introduction of Freeze Arrows. I can't say anything good nor bad about these. x125 Groove Power per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "The introduction of Freeze Arrows. I can't say anything good nor bad about these. x125 Groove Power per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(500)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -410,6 +439,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(500)) timesBought = new Decimal(500)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -439,15 +469,16 @@ addLayer("ddr", {
             },
             title: "DDR EXTREME",
             display() {
-                return "Welcome to the \"Marvelous\" judgement era. I personally love the idea of something better than \"Perfect\". x1.05 Songs per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "Welcome to the \"Marvelous\" judgement era. I personally love the idea of something better than \"Perfect\". x1.05 Songs per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(500)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -468,6 +499,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(500)) timesBought = new Decimal(500)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -497,15 +529,16 @@ addLayer("ddr", {
             },
             title: "DDR SuperNOVA",
             display() {
-                return "You can now use e-AMUSEMENT! I don't use this feature as I'm a casual player. x1e10 ME per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "You can now use e-AMUSEMENT! I don't use this feature as I'm a casual player. x1e10 ME per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(500)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -526,6 +559,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(500)) timesBought = new Decimal(500)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -559,11 +593,11 @@ addLayer("ddr", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -593,6 +627,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(10)) timesBought = new Decimal(10)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -605,7 +640,7 @@ addLayer("ddr", {
                 totalCost = totalCost.mul(polynomial)
                 return [totalCost, timesBought]
             },
-            purchaseLimit() {return new Decimal(10)}
+            purchaseLimit() {return new Decimal(10)},
         },
         23: {
             base() {return new Decimal("1e12")},
@@ -623,15 +658,16 @@ addLayer("ddr", {
             },
             title: "DDR X",
             display() {
-                return "The difficulty ratings have been expanded from 10 to 20. I'm stuck at around 7-8, though. ^1.05 to GP and HC effects per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: ^" + format(this.effect())
+                return "The difficulty ratings have been expanded from 10 to 20. I'm stuck at around 7-8, though. ^1.05 to GP and HC effects per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: ^" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(250)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -652,6 +688,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(250)) timesBought = new Decimal(250)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -681,15 +718,16 @@ addLayer("ddr", {
             },
             title: "DDR 2013",
             display() {
-                return "This cabinet's design is much more appealing. I like this design. ÷1e250 to the cost of the first Note buyable per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: ÷" + format(this.effect())
+                return "This cabinet's design is much more appealing. I like this design. ÷1e250 to the cost of the first Note buyable per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: ÷" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(250)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -710,6 +748,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(250)) timesBought = new Decimal(250)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -739,15 +778,16 @@ addLayer("ddr", {
             },
             title: "DDR A",
             display() {
-                return "WE GOT REVISED SCORING AND GRADING LET'S GOOOOOOO- This is the cabinet my arcade has. x50 combo gain per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "WE GOT REVISED SCORING AND GRADING LET'S GOOOOOOO- This is the cabinet my arcade has. x50 DDR combo gain per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(150)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -768,6 +808,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(150)) timesBought = new Decimal(150)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -797,15 +838,16 @@ addLayer("ddr", {
             },
             title: "DDR WORLD",
             display() {
-                return "rip groove radar :( you will be missed. The current version that I have never experienced!. x1e50 Notes after softcap per purchase!" + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "rip groove radar :( you will be missed. The current version that I have never experienced!. x1e50 Notes after softcap per purchase!" + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "/" + tmp[this.layer].buyables[this.id].purchaseLimit + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
+            purchaseLimit() {return new Decimal(200)},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (player.ddrfc.points.gte(5)){
+                if (player.ddrfc.points.gte(5) || hasUpgrade("bs", 13)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     player[this.layer].points = player[this.layer].points.sub(cost)
-                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
+                    setBuyableAmount(this.layer, this.id, Decimal.min(getBuyableAmount(this.layer, this.id).add(amount), tmp[this.layer].buyables[this.id].purchaseLimit))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -826,6 +868,7 @@ addLayer("ddr", {
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
+                if (timesBought.gte(200)) timesBought = new Decimal(200)
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
                 totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
@@ -844,9 +887,9 @@ addLayer("ddr", {
     challenges: { //The softcaps of \"Feel the Tempo\" and \"More Dynamic Boosts\" start at 1,000,000.
         11: {
             name: "BEGINNER",
-            challengeDescription: "<i>\"This difficulty is aimed at <b>newcomers.</b> A perfect first test on the dance floor.\"</i> <br><br> ^0.75 ME and Notes. ME multiplies combo gain. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 20.",
-            rewardDescription: "x3 Marvelous and Great arrows, x1.25 Songs, x2.5 combo gain, and x1e10 ME!",
+            challengeDescription: "<i>\"This difficulty is aimed at <b>newcomers.</b> A perfect first test on the dance floor.\"</i> <br><br> ^0.75 ME and Notes. ME multiplies DDR combo gain. This challenge resets your DDR combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 20.",
+            rewardDescription: "x3 Marvelous and Great arrows, x1.25 Songs, x2.5 DDR combo gain, and x1e10 ME!",
             canComplete: function() {return player.ddrm.combo.gte(20)},
             unlocked() {return hasUpgrade(this.layer, 21)},
             style() {
@@ -865,8 +908,8 @@ addLayer("ddr", {
         },
         12: {
             name: "BASIC",
-            challengeDescription: "<i>\"This difficulty is aimed at players who are <b>more familiar.</b> Let's crank the difficulty up a notch.\"</i> <br><br> The cost of Songs is <i>ever so slightly raised</i>. ME more harshly multiplies combo gain. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 35.",
+            challengeDescription: "<i>\"This difficulty is aimed at players who are <b>more familiar.</b> Let's crank the difficulty up a notch.\"</i> <br><br> The cost of Songs is <i>ever so slightly raised</i>. ME more harshly multiplies DDR combo gain. This challenge resets your combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 35.",
             rewardDescription: "Improve Marvelous, Great, and Almost arrow effects, and x5 to all of their gains and Arrows.",
             canComplete: function() {return player.ddrm.combo.gte(35)},
             unlocked() {return hasUpgrade(this.layer, 24)},
@@ -886,8 +929,8 @@ addLayer("ddr", {
         },
         21: {
             name: "DIFFICULT",
-            challengeDescription: "<i>\"This difficulty is aimed at <b>intermediate players.</b> I hope your rhythm is good.\"</i> <br><br> Combo multiplies combo gain. Combo boosts do not work. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 40.",
+            challengeDescription: "<i>\"This difficulty is aimed at <b>intermediate players.</b> I hope your rhythm is good.\"</i> <br><br> DDR combo multiplies itself. DDR combo boosts do not work. This challenge resets your DDR combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 40.",
             rewardDescription: "Autobuy Note buyable 1, and unlock another row of HN upgrades. x5 QN.",
             canComplete: function() {return player.ddrm.combo.gte(40)},
             unlocked() {return hasUpgrade(this.layer, 34)},
@@ -907,8 +950,8 @@ addLayer("ddr", {
         },
         22: {
             name: "EXPERT",
-            challengeDescription: "<i>\"This difficulty is aimed at <b>experienced players.</b> A wonderful challenge for the avid.\"</i> <br><br> ME multiplies combo gain, ME and Notes are raised to ^0.1, and Almost arrows reset your combo. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 75.",
+            challengeDescription: "<i>\"This difficulty is aimed at <b>experienced players.</b> A wonderful challenge for the avid.\"</i> <br><br> ME multiplies DDR combo gain, ME and Notes are raised to ^0.1, and Almost arrows reset your DDR combo. This challenge resets your DDR combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 75.",
             rewardDescription: "Keep Song milestones 5-10 and x5 QN. ÷1e25 to Note buyable 1's cost.",
             canComplete: function() {return player.ddrm.combo.gte(75)},
             unlocked() {return hasUpgrade("n", 214)},
@@ -928,8 +971,8 @@ addLayer("ddr", {
         },
         31: {
             name: "CHALLENGE",
-            challengeDescription: "<i>\"This difficulty is aimed at <b>very experienced players.</b> Do not try this at home!\"</i> <br><br> Almost and Great arrows reset your combo. Combo boosts do not work. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 65k.",
+            challengeDescription: "<i>\"This difficulty is aimed at <b>very experienced players.</b> Do not try this at home!\"</i> <br><br> Almost and Great arrows reset your DDR combo. DDR combo boosts do not work. This challenge resets your combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 65k.",
             rewardDescription: "Unlock another row of QN upgrades. QN now uses a logarithm of base 2.",
             canComplete: function() {return player.ddrm.combo.gte(65000)},
             unlocked() {return hasUpgrade("s", 34)},
@@ -949,8 +992,8 @@ addLayer("ddr", {
         },
         32: {
             name: "DOUBLE",
-            challengeDescription: "<i>\"<b>Single player was not enough for you.</b>\"</i> <br><br> Notes gain is log(1e10) after its first softcap. Almost and Marvelous arrows reset your combo. Great arrows have a 2.5% chance to reset your combo as well. This challenge resets your combo upon entry and exit.",
-            goalDescription: "Have a combo of at least 50k.",
+            challengeDescription: "<i>\"<b>Single player was not enough for you.</b>\"</i> <br><br> Notes gain is log(1e10) after its first softcap. Almost and Marvelous arrows reset your DDR combo. Great arrows have a 2.5% chance to reset your DDR combo as well. This challenge resets your DDR combo upon entry and exit.",
+            goalDescription: "Have a DDR combo of at least 50k.",
             rewardDescription: "Add 5 levels to DDR through DDR X!",
             canComplete: function() {return player.ddrm.combo.gte("5e4")},
             onComplete() {
@@ -1007,7 +1050,7 @@ addLayer("ddr", {
                 "blank",
                 "challenges",
             ],
-            unlocked() {return hasUpgrade("ddr", 21)}
+            unlocked() {return hasUpgrade("ddr", 21) || hasUpgrade("bs", 21)}
         },
         "GROOVE RADAR": {
             content: [
@@ -1035,7 +1078,7 @@ addLayer("ddr", {
                 "blank",
                 "milestones",
             ],
-            unlocked() {return hasUpgrade("ddr", 41)}
+            unlocked() {return hasUpgrade("ddr", 41) || hasUpgrade("bs", 21)}
         },
     },
 
@@ -1060,7 +1103,7 @@ addLayer("ddr", {
             width: 727,
             height: 75,
             display() {
-                let text = `Stream: M, G, and A arrow effects are divided by ÷${format(player.ddr.stream)}. Boost per value: x10`
+                let text = `Stream: M, G, and A arrow effects are divided by ÷${format(player.ddr.stream)}. Boost per value: x${format(player.ddr.streamMultBoost)}`
                 return text
             },
             progress() {
@@ -1077,7 +1120,7 @@ addLayer("ddr", {
             width: 727,
             height: 75,
             display() {
-                let text = `Voltage: Musical Essence and Notes are raised to ^${format(player.ddr.voltage)}. Boost per value: x1000`
+                let text = `Voltage: Musical Essence and Notes are raised to ^${format(player.ddr.voltage)}. Boost per value: x${format(player.ddr.voltageMultBoost)}`
                 return text
             },
             progress() {
@@ -1139,7 +1182,7 @@ addLayer("ddr", {
             title: "Decrease Voltage level by -1",
             canClick() {return true},
             onClick() {
-                if (player.ddr.voltage.gte(1)) return;
+                if (player.ddr.voltage.gte(0.99)) return;
                 player.ddr.voltage = player.ddr.voltage.mul(1.2)
                 doReset("ddr", true)
             },
@@ -1169,15 +1212,19 @@ addLayer("ddr", {
 
         //gp threshold
         player.ddr.gpThreshold = new Decimal("1e350")
-        if (hasUpgrade("n", 311)) player.ddr.gpThreshold = player.ddr.gpThreshold.div("1e50")
+        if (hasUpgrade("n", 311)) player.ddr.gpThreshold = new Decimal("1e300")
+        if (hasUpgrade("bs", 12)) player.ddr.gpThreshold = new Decimal("1e250")
 
         //groove power
         let mult = new Decimal(0)
         if (player.points.gte(player.ddr.gpThreshold) && (player.ddr.stream.neq(1) || player.ddr.voltage.neq(1))) mult = mult.add(1)
         mult = mult.mul(player.points.add(1).log(10).div(5))
 
-        mult = mult.mul(new Decimal(10).pow(player.ddr.stream.log(player.ddr.streamImpact)))
-        mult = mult.mul(new Decimal(1000).pow(player.ddr.voltage.log(1.2).div(-1)))
+        if (hasUpgrade("bs", 21)) player.ddr.streamMultBoost = new Decimal("1e10")
+        if (hasUpgrade("bs", 21)) player.ddr.voltageMultBoost = new Decimal("1e15")
+
+        mult = mult.mul(new Decimal(player.ddr.streamMultBoost).pow(player.ddr.stream.log(player.ddr.streamImpact)))
+        mult = mult.mul(new Decimal(player.ddr.voltageMultBoost).pow(player.ddr.voltage.log(1.2).div(-1)))
 
         //gp boosts
         if (hasUpgrade("s", 32)) mult = mult.mul("1e10")
@@ -1194,6 +1241,12 @@ addLayer("ddr", {
         mult = mult.pow(buyableEffect("ddr", 23))
         player.ddr.gpe = mult
         
+        let layer = "ddr"
+        for (const id of [12, 13, 21, 22, 23, 31, 32, 33]) {
+            if (getBuyableAmount("ddr", id).gte(tmp["ddr"].buyables[id].purchaseLimit)) {
+                setBuyableAmount("ddr", id, tmp["ddr"].buyables[id].purchaseLimit)
+            }
+        }
     },
 
     glowColor() {
@@ -1212,6 +1265,12 @@ addLayer("ddr", {
             }
         }
 
+        for (const id of [11, 12, 21, 22, 31, 32]) {
+            if (tmp[layer].challenges[id].canComplete && inChallenge(layer, id)) {
+                return "red"
+            }
+        }
+
         return ""
     },
     shouldNotify() {
@@ -1226,15 +1285,19 @@ addLayer("ddr", {
     automate() {
         let layer = "ddr"
         for (const id of [11, 12, 13, 21, 22, 23, 31, 32, 33]) {
-            if (canBuyBuyable(layer, id) && hasUpgrade("s", 43) && tmp[layer].buyables[id].unlocked) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                if (hasUpgrade("s", 43) || hasUpgrade("bs", 13))
                 tmp[layer].buyables[id].buy()
             }
         }
     },
+    autoUpgrade() {return hasUpgrade("bs", 14)},
 
-    branches: [["ddrfc", 1], ["bs", 1]],
+    branches: [["ddrfc", 1], ["bs", 1], ["d", 1]],
     tooltip() {
-        if (!canReset(this.layer)) return format(player.ddr.points) + " Arrows (\"Power Outage\" needed to reset)"
-        return format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"
+        let text = format(player.ddr.points) + " Arrows (+" + format(getResetGain("ddr")) + " Arrows on reset)"
+        if (!canReset(this.layer)) text = format(player.ddr.points) + " Arrows (\"Power Outage\" needed to reset)"
+        else if (player.ddr.points.gte(player.ddr.softcap1Start)) text += "<br>[FIRST SOFTCAP - 1e300]"
+        return text
     },
 })

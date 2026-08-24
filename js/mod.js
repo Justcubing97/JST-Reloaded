@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Rhythm Game Tree",
 	author: "Justcubing97",
 	pointsName: "Musical Essence",
-	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "ddrfc.js", "bs.js", "tree.js", "ddrm.js"],
+	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "ddrfc.js", "bs.js", "d.js", "tree.js", "ddrm.js", "bsm.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,17 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "3.0",
-	name: "Beat Saber intro",
+	num: "3.1",
+	name: "Distance layer + Beat Saber Minigame",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v3.1</h2><br>
+		- A LOT of new content! <br>
+        - Beat Saber Campaign implemented. <br>
+        - More achievements. <br>
+        - Distance layer! <br>
+        - Beat Saber Minigame! <br><br>
 	<h2>v3.0</h2><br>
 		- Finished off the DDR layer! <br>
         - BEAT SABER LAYER INTRO! <br><br>
@@ -46,7 +52,16 @@ let winText = `Congratulations! You have reached the end and beaten this game as
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything", "arrowClicking_DDRM", "findMults_DDRM"]
+var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",
+    "arrowClicking_DDRM",
+    "findMults_DDRM",
+    
+    "findColors_BSM",
+    "findDirections_BSM",
+    "findClicks_BSM",
+    "findMults_BSM",
+    "findMults_DIST"
+]
 
 function getStartPoints(){
     return new Decimal(modInfo.initialStartPoints)
@@ -111,6 +126,10 @@ function getPointGen() {
 
     layer = "bs"
     if (hasUpgrade(layer, 11)) mult = mult.mul("1e1000")
+
+    mult = mult.mul(buyableEffect(layer, 22))
+
+    mult = mult.mul(player.bsm.badEffect)
     //exp
     layer = "n"
     if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
@@ -118,6 +137,9 @@ function getPointGen() {
 
     layer = "ddr"
     if (hasMilestone(layer, 2)) mult = mult.pow(1.1)
+
+    layer = "bs"
+    if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
     //hyper
     layer = "n"
     //time dilations/chals
@@ -134,7 +156,17 @@ function getPointGen() {
     //softcap stuff
     let softcap1 = new Decimal(0.25)
     let softcap1Start = new Decimal("1e2000")
-    if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap)))
+    if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap1)))
+
+    let softcap2 = new Decimal(0.2)
+    let softcap2Start = new Decimal("1e500000")
+    if (mult.gte(softcap2Start)) mult = mult.pow(softcap2).mul(new Decimal(softcap2Start).pow(decimalOne.sub(softcap2)))
+
+    let softcap3 = new Decimal(0.15)
+    let softcap3Start = new Decimal("e1e6")
+    if (mult.gte(softcap3Start)) mult = mult.pow(softcap3).mul(new Decimal(softcap3Start).pow(decimalOne.sub(softcap3)))
+        
+    if (player.ddrfc.points.gte(7)) mult = mult.mul("1e10000")
 
     //NOT ME GAIN RELATED STUFF AHEAD!
     //mecombonerf for ddr challenges
@@ -153,7 +185,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 40 total Note upgrades.",
+    "Current endgame: 10/10 5B in the Beat Saber Campaign.",
     "The Rhythm Game Tree made by Justcubing97",
     function() {
 		if (inChallenge("ddr", 11) ||
@@ -162,14 +194,14 @@ var displayThings = [
 		if (inChallenge("ddr", 21)) return `<br><b>Combo is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
 		else return ""
 	},
-    function() {
-		if (player.points.gte("1e2000")) return "<b>FIRST SOFTCAP: 1e2000</b>"
-	},
+    function() {if (player.points.gte("1e2000")) return "<b>FIRST SOFTCAP: 1e2000</b>"},
+    function() {if (player.points.gte("1e500000")) return "<b>SECOND SOFTCAP: 1e500000</b>"},
+    function() {if (player.points.gte("e1e6")) return "<b>THIRD SOFTCAP: e1000000</b>"},
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasUpgrade("bs", 11)
+	return getBuyableAmount("bs", 52).gte(10)
 }
 
 

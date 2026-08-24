@@ -29,6 +29,8 @@ addLayer("s", {
         if (hasMilestone(layer, 5)) mult = mult.add(1)
         if (hasChallenge(layer, 12)) mult = mult.add(0.5)
         //mul
+        if (hasAchievement("a", 36)) mult = mult.mul(500)
+
         layer = "n"
         if (hasUpgrade(layer, 204)) mult = mult.mul(1.5)
         if (hasUpgrade(layer, 211)) mult = mult.mul(1.2)
@@ -46,7 +48,12 @@ addLayer("s", {
         if (player.ddrfc.points.gte(2)) mult = mult.mul(1.5)
         if (player.ddrfc.points.gte(3)) mult = mult.mul(1.25)
         if (player.ddrfc.points.gte(4)) mult = mult.mul(2.5)
+
+        layer = "bs"
+        mult = mult.mul(buyableEffect(layer, 21))
         //exp 
+        layer = "bs"
+        if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
         //other hypers
         //time dilations/chals
         //final
@@ -61,9 +68,9 @@ addLayer("s", {
         return player.n.points.gte("1e20") || player.s.unlocked
     },
     resetsNothing() {return hasUpgrade("ddr", 43) && !player.s.resetting},
-    autoPrestige() {return hasUpgrade("ddr", 44)},
+    autoPrestige() {return hasUpgrade("ddr", 44) || hasUpgrade("bs", 24)},
     resetDescription: "Compose ",
-    canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12) || hasUpgrade(layer, 11)},
+    canBuyMax() {return hasMilestone(this.layer, 1) || hasUpgrade("ddr", 12) || hasUpgrade("bs", 11)},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (layers[resettingLayer].row <= this.row) return;
@@ -85,16 +92,18 @@ addLayer("s", {
         if (resettingLayer == "bs") keptUpgrades = []
 
         let keptMilestones = []
-        if (hasUpgrade("ddr", 22)) keptMilestones.push("1", "2", "3", "4")
-        if (hasChallenge("ddr", 22)) keptMilestones.push("5", "6", "7", "8", "9", "10")
+        if (hasUpgrade("ddr", 22)) keptMilestones.push(1, 2, 3, 4)
+        if (hasChallenge("ddr", 22)) keptMilestones.push(5, 6, 7, 8, 9, 10)
             
         if (resettingLayer == "bs") keptMilestones = []
+        if (hasMilestone("s", 11)) keptMilestones.push(11)
 
         let keptChallenges = []
         if (hasUpgrade("n", 303)) keptChallenges.push(11)
         if (hasChallenge("s", 12)) keptChallenges.push(12)
 
         if (resettingLayer == "bs") keptChallenges = []
+        if (hasUpgrade("bs", 24)) keptChallenges.push(11, 12)
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
@@ -185,7 +194,7 @@ addLayer("s", {
             title: "Repeated Assistance",
             description: "Unlock a Notes buyable and improve \"Music Experience\".",
             cost: new Decimal("8"),
-            unlocked() {return hasUpgrade(this.layer, 14)}
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)}
         },
         22: {
             title: "Album Release",
@@ -197,69 +206,69 @@ addLayer("s", {
             effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
             description: "Total Songs composed boost HN.",
             cost: new Decimal("12"),
-            unlocked() {return hasUpgrade(this.layer, 14)}
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)}
         },
         23: {
             title: "Small but Powerful Boost",
             description: "x125 ME and Notes. Trust me!",
             cost: new Decimal("16"),
-            unlocked() {return hasUpgrade(this.layer, 14)}
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)}
         },
         24: {
             title: "Purely Whole",
             description: "x1000 WN. And improve the 5th WN upgrade while I'm here.",
             cost: new Decimal("18"),
-            unlocked() {return hasUpgrade(this.layer, 14)}
+            unlocked() {return hasUpgrade(this.layer, 14) || hasUpgrade("bs", 14)}
         },
 
         31: {
             title: "Minigame Boost",
-            description: "x15 to combo and Almost arrow gain, and Almost arrow's effect multiplies Arrows.",
+            description: "x15 to DDR combo and Almost arrow gain, and Almost arrow's effect multiplies Arrows.",
             cost: new Decimal("210"),
-            unlocked() {return hasUpgrade("ddr", 44)}
+            unlocked() {return hasUpgrade("ddr", 44) || hasUpgrade("bs", 14)}
         },
         32: {
             title: "Groovin'",
             description: "x1e10 to Groove Power gain.",
             cost: new Decimal("215"),
-            unlocked() {return hasUpgrade("ddr", 44)}
+            unlocked() {return hasUpgrade("ddr", 44) || hasUpgrade("bs", 14)}
         },
         33: {
             title: "x1e21 (JST REFERENCE???)",
             description: "x1e21 to ME and Notes.",
             cost: new Decimal("228"),
-            unlocked() {return hasUpgrade("ddr", 44)}
+            unlocked() {return hasUpgrade("ddr", 44) || hasUpgrade("bs", 14)}
         },
         34: {
             title: "Hardest of the Hardest",
             description: "Unlock \"CHALLENGE\".",
             cost: new Decimal("238"),
-            unlocked() {return hasUpgrade("ddr", 44)}
+            unlocked() {return hasUpgrade("ddr", 44) || hasUpgrade("bs", 14)}
         },
 
         41: {
             title: "Mega Arrows",
             description: "x1e15 Arrows.",
             cost: new Decimal("1.75e9"),
-            unlocked() {return hasMilestone("ddr", 12)}
+            unlocked() {return hasMilestone("ddr", 12) || hasUpgrade("bs", 14)}
         },
         42: {
             title: "Mega Buyables",
             description: "You can bulk-buy the second Note buyable.",
             cost: new Decimal("1e13"),
-            unlocked() {return hasMilestone("ddr", 12)}
+            unlocked() {return hasMilestone("ddr", 12) || hasUpgrade("bs", 14)}
         },
         43: {
             title: "Mega Automation",
             description: "Automatically buy the DDR buyables.",
             cost: new Decimal("2e17"),
-            unlocked() {return hasMilestone("ddr", 12)}
+            unlocked() {return hasMilestone("ddr", 12) || hasUpgrade("bs", 14)}
         },
         44: {
             title: "Mega Unlock",
-            description: "Unlock <b>Beat Saber.",
+            description: "Unlock <b>Beat Saber.</b>",
             cost: new Decimal("1e20"),
-            unlocked() {return hasMilestone("ddr", 12)}
+            unlocked() {return hasMilestone("ddr", 12) || hasUpgrade("bs", 14)}
         },
     },
 
@@ -319,8 +328,14 @@ addLayer("s", {
         },
         10: {
             requirementDescription: "10: 200 Songs",
-            effectDescription: "The last Song milestone of the DDR layer! The layer as a whole has a lot of room to expand, though. ^1.1 Arrows and Almost arrow's effect now multiplies combo gain.",
+            effectDescription: "The last Song milestone of the DDR layer! The layer as a whole has a lot of room to expand, though. ^1.1 Arrows and Almost arrow's effect now multiplies DDR combo gain.",
             done() { return player.s.points.gte(130) },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        11: {
+            requirementDescription: "11: 1e33 Songs",
+            effectDescription: "OKAY I'M SORRY WHAT?!?!? Unlock a 5th row of Note upgrades.",
+            done() { return player.s.points.gte("1e33") },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
     },
@@ -356,13 +371,14 @@ addLayer("s", {
             goalDescription: "Have 1,000 Notes.",
             rewardDescription: "x1e15 GP, ME, and Notes. +0.5 Songs.",
             canComplete: function() {return player.n.points.gte("1000") && player.s.resetting && player.ddr.voltage.log(1.2).div(-10).gte(1) && player.ddr.stream.log(player.ddr.streamImpact).div(10).gte(1)},
-            unlocked() {return hasMilestone("s", 7)},
+            unlocked() {return hasMilestone("ddr", 3)},
             style() { return {
                 "width": "400px",
                 "height": "250px",
             } }
         },
     },
+    autoUpgrade() {return hasUpgrade("bs", 14)},
 
     branches: [["ddr", 1], ["ddrfc", 1]],
     tooltip() {
