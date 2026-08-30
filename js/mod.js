@@ -12,11 +12,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "3.1",
-	name: "Distance layer + Beat Saber Minigame",
+	num: "3.2",
+	name: "Beat Saber layer continued",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v3.2</h2><br>
+		- Some new content! <br>
+        - More achievements. <br>
+        - More campaign things! <br><br>
 	<h2>v3.1</h2><br>
 		- A LOT of new content! <br>
         - Beat Saber Campaign implemented. <br>
@@ -152,21 +156,41 @@ function getPointGen() {
     if (inChallenge(layer, 11)) mult = mult.pow(0.75)
     if (inChallenge(layer, 22)) mult = mult.pow(0.1)
     mult = mult.pow(player.ddr.voltage)
+
+    layer = "bs"
+    if (inChallenge(layer, 11)) mult = mult.pow(0.001)
     //=====
     //softcap stuff
     let softcap1 = new Decimal(0.25)
+    softcap1 = softcap1.add(buyableEffect("bs", 81))
+    softcap1 = softcap1.div(player.ddr.air)
+
     let softcap1Start = new Decimal("1e2000")
     if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap1)))
 
     let softcap2 = new Decimal(0.2)
+    softcap2 = softcap2.add(buyableEffect("bs", 81))
+    softcap2 = softcap2.div(player.ddr.air)
+    
     let softcap2Start = new Decimal("1e500000")
     if (mult.gte(softcap2Start)) mult = mult.pow(softcap2).mul(new Decimal(softcap2Start).pow(decimalOne.sub(softcap2)))
 
     let softcap3 = new Decimal(0.15)
+    softcap3 = softcap3.add(buyableEffect("bs", 81))
+    softcap3 = softcap3.div(player.ddr.air)
+
     let softcap3Start = new Decimal("e1e6")
     if (mult.gte(softcap3Start)) mult = mult.pow(softcap3).mul(new Decimal(softcap3Start).pow(decimalOne.sub(softcap3)))
         
     if (player.ddrfc.points.gte(7)) mult = mult.mul("1e10000")
+    if (player.ddrfc.points.gte(8)) mult = mult.mul("1e250000")
+        
+    if (hasUpgrade("d", 61)) mult = mult.mul(upgradeEffect("d", 61))
+    if (hasUpgrade("d", 62)) mult = mult.mul(upgradeEffect("d", 62))
+    if (hasUpgrade("d", 63)) mult = mult.mul(upgradeEffect("d", 63))
+    if (hasUpgrade("d", 64)) mult = mult.mul(upgradeEffect("d", 64))
+        
+    if (hasUpgrade("n", 413)) mult = mult.pow(1.25)
 
     //NOT ME GAIN RELATED STUFF AHEAD!
     //mecombonerf for ddr challenges
@@ -185,7 +209,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 10/10 5B in the Beat Saber Campaign.",
+    "Current endgame: 5/5 the EASY Beat Saber difficulty.",
     "The Rhythm Game Tree made by Justcubing97",
     function() {
 		if (inChallenge("ddr", 11) ||
@@ -201,7 +225,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return getBuyableAmount("bs", 52).gte(10)
+	return challengeCompletions("bs", 11) >= 5
 }
 
 

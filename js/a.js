@@ -110,7 +110,7 @@ addLayer("a", {
         },
         32: {
             name: "Inflated Dancing",
-            done() {return getBuyableAmount("ddr", 22)},
+            done() {return getBuyableAmount("ddr", 22).gte(10)},
             unlocked() {return true},
             tooltip() {return "Max out \"Machine Enhancer\". +3 AP"},
             onComplete() {player.a.points = player.a.points.add(3)}
@@ -156,6 +156,27 @@ addLayer("a", {
             done() {return player.d.points.gte(1)},
             unlocked() {return true},
             tooltip() {return "Have 1 Distance. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        43: {
+            name: "Jaroslav Beck: \"Big Combo\"",
+            done() {return player.bsm.highestCombo.gte("1e10")},
+            unlocked() {return true},
+            tooltip() {return "Have 1 dialogue (10^10 or 1e10) BS combo. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        44: {
+            name: "Expert+++++++++",
+            done() {return hasUpgrade("bs", 64)},
+            unlocked() {return true},
+            tooltip() {return "Unlock BS difficulties. +5 AP"},
+            onComplete() {player.a.points = player.a.points.add(5)}
+        },
+        45: {
+            name: "Perpetual Workout",
+            done() {return player.bs.points.gte("1e100")},
+            unlocked() {return true},
+            tooltip() {return "Have 1e100 Cubes. +5 AP"},
             onComplete() {player.a.points = player.a.points.add(5)}
         },
     },

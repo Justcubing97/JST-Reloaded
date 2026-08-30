@@ -68,6 +68,9 @@ addLayer("bsm", {
             mult = mult.mul(player.bsm.cEffect)
             if (hasUpgrade("bs", 33)) mult = mult.mul(15)
             mult = mult.mul(buyableEffect("bs", 42))
+            mult = mult.mul(new Decimal(15).pow(challengeCompletions(layer, 11)))
+            
+            if (hasUpgrade("ddr", 51)) mult = mult.pow(upgradeEffect("ddr", 51))
 
             return mult
         }
@@ -81,6 +84,12 @@ addLayer("bsm", {
             if (hasUpgrade("d", 23)) mult = mult.mul(5)
             if (hasUpgrade("d", 24)) mult = mult.mul(6)
             mult = mult.mul(buyableEffect("bs", 41))
+            if (hasUpgrade("bs", 41)) mult = mult.mul(upgradeEffect("bs", 41))
+            if (player.ddrfc.points.gte(8)) mult = mult.mul(50)
+            if (hasUpgrade("ddr", 52)) mult = mult.mul(player.ddrm.aEffect)
+
+            if (hasUpgrade("ddr", 51)) mult = mult.pow(upgradeEffect("ddr", 51))
+            if (hasUpgrade("d", 74)) mult = mult.pow(1.25)
             
             if (arg == "c"){
                 return mult
@@ -701,11 +710,19 @@ addLayer("bsm", {
         let mult = new Decimal(1)
         mult = player.bsm.points.add(1).log(2).add(1).pow(2.5)
         if (hasUpgrade("bs", 31)) mult = mult.mul(15)
+        if (hasUpgrade("d", 41)) mult = mult.pow(1.25)
+        if (hasUpgrade("d", 42)) mult = mult.pow(1.5)
+        if (hasUpgrade("d", 43)) mult = mult.pow(1.75)
+        if (hasUpgrade("d", 44)) mult = mult.pow(2)
 
         player.bsm.cutEffect = mult
         //=====
         mult = player.bsm.bad.add(1).pow(100)
         if (hasUpgrade("bs", 31)) mult = mult.pow(1.5)
+        if (hasUpgrade("d", 41)) mult = mult.pow(1.25)
+        if (hasUpgrade("d", 42)) mult = mult.pow(1.5)
+        if (hasUpgrade("d", 43)) mult = mult.pow(1.75)
+        if (hasUpgrade("d", 44)) mult = mult.pow(2)
 
         player.bsm.badEffect = mult
         //=====

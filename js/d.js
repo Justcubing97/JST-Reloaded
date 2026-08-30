@@ -31,11 +31,19 @@ addLayer("d", {
         let mult = new Decimal(1)
         //add
         //mul
+        layer = "ddr"
+        if (hasUpgrade("bs", 42)) mult = mult.mul(player.ddr.gpeDist)
+
         layer = "bs"
         mult = mult.mul(buyableEffect(layer, 51))
+        mult = mult.mul(new Decimal(2).pow(challengeCompletions(layer, 11)))
 
         layer = "d"
         mult = mult.mul(buyableEffect(layer, 13))
+        
+        if (hasUpgrade("d", 71)) mult = mult.mul(25)
+        if (hasUpgrade("d", 72)) mult = mult.mul(20)
+        if (hasUpgrade("d", 73)) mult = mult.mul(15)
         //exp 
         //other hypers
         //time dilations/chals
@@ -114,16 +122,28 @@ addLayer("d", {
     findMults_DIST() {
         let mult = new Decimal(1)
 
-        mult = mult.add(player.d.points.pow(0.25))
+        let expDist = new Decimal(0.25)
+        if (hasUpgrade("bs", 43)) expDist = expDist.add(0.1)
+
+        mult = mult.mul(player.d.points.add(1).pow(expDist))
+
+        if (hasUpgrade("ddr", 53)) mult = mult.mul(upgradeEffect("ddr", 53))
+            
+        if (hasUpgrade("bs", 52)) mult = mult.mul(upgradeEffect("bs", 52))
+
+        if (hasUpgrade("d", 71)) mult = mult.mul(25)
+        if (hasUpgrade("d", 72)) mult = mult.mul(20)
 
         mult = mult.mul(buyableEffect("d", 12))
+        mult = mult.mul(buyableEffect("bs", 62))
+        mult = mult.mul(new Decimal(2).pow(challengeCompletions(layer, 11)))
         
-        return mult
+        return mult //this returns movement
     },
     
     upgrades: {
         11: {
-            title: "Quectometer 1 (10^<sup>-30</sup>)",
+            title: "Quectometer 1 (10<sup>-30</sup>)",
             description: "+2 to max Stamina and x2 Cubes.",
             cost: new Decimal("250"),
             currencyDisplayName: "Movement",
@@ -132,7 +152,7 @@ addLayer("d", {
             unlocked() {return true},
         },
         12: {
-            title: "Quectometer 2 (10^<sup>-30</sup>)",
+            title: "Quectometer 2 (10<sup>-30</sup>)",
             description: "+3 to max Stamina and x3 Cubes.",
             cost: new Decimal("500"),
             currencyDisplayName: "Movement",
@@ -141,7 +161,7 @@ addLayer("d", {
             unlocked() {return true},
         },
         13: {
-            title: "Quectometer 3 (10^<sup>-30</sup>)",
+            title: "Quectometer 3 (10<sup>-30</sup>)",
             description: "+5 to max Stamina and x5 Cubes.",
             cost: new Decimal("750"),
             currencyDisplayName: "Movement",
@@ -150,7 +170,7 @@ addLayer("d", {
             unlocked() {return true},
         },
         14: {
-            title: "Quectometer 4 (10^<sup>-30</sup>)",
+            title: "Quectometer 4 (10<sup>-30</sup>)",
             description: "+10 to max Stamina and x10 Cubes.",
             cost: new Decimal("1000"),
             currencyDisplayName: "Movement",
@@ -160,7 +180,7 @@ addLayer("d", {
         },
 
         21: {
-            title: "Rontometer 1 (10^<sup>-27</sup>)",
+            title: "Rontometer 1 (10<sup>-27</sup>)",
             description: "x100 Cuts and x3 BS combo.",
             cost: new Decimal("3000"),
             currencyDisplayName: "Movement",
@@ -169,7 +189,7 @@ addLayer("d", {
             unlocked() {return hasUpgrade("d", 14)},
         },
         22: {
-            title: "Rontometer 2 (10^<sup>-27</sup>)",
+            title: "Rontometer 2 (10<sup>-27</sup>)",
             description: "x125 Cuts and x4 BS combo.",
             cost: new Decimal("6000"),
             currencyDisplayName: "Movement",
@@ -178,7 +198,7 @@ addLayer("d", {
             unlocked() {return hasUpgrade("d", 14)},
         },
         23: {
-            title: "Rontometer 3 (10^<sup>-27</sup>)",
+            title: "Rontometer 3 (10<sup>-27</sup>)",
             description: "x175 Cuts and x5 BS combo.",
             cost: new Decimal("12000"),
             currencyDisplayName: "Movement",
@@ -187,13 +207,252 @@ addLayer("d", {
             unlocked() {return hasUpgrade("d", 14)},
         },
         24: {
-            title: "Rontometer 4 (10^<sup>-27</sup>)",
+            title: "Rontometer 4 (10<sup>-27</sup>)",
             description: "x250 Cuts and x6 BS combo.",
-            cost: new Decimal("12000"),
+            cost: new Decimal("24000"),
             currencyDisplayName: "Movement",
             currencyInternalName: "movement",
             currencyLayer: "d",
             unlocked() {return hasUpgrade("d", 14)},
+        },
+        31: {
+            title: "Yoctometer 1 (10<sup>-24</sup>)",
+            description: "x10000 Songs and Eighth Notes.",
+            cost: new Decimal("500000"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 24)},
+        },
+        32: {
+            title: "Yoctometer 2 (10<sup>-24</sup>)",
+            description: "x20000 Songs and Eighth Notes.",
+            cost: new Decimal("1.5e6"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 24)},
+        },
+        33: {
+            title: "Yoctometer 3 (10<sup>-24</sup>)",
+            description: "x40000 Songs and Eighth Notes.",
+            cost: new Decimal("4.5e6"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 24)},
+        },
+        34: {
+            title: "Yoctometer 4 (10<sup>-24</sup>)",
+            description: "x80000 Songs and Eighth Notes.",
+            cost: new Decimal("13.5e6"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 24)},
+        },
+
+        41: {
+            title: "Zeptometer 1 (10<sup>-21</sup>)",
+            description: "^1.25 to Cuts and Bad Cuts effect.",
+            cost: new Decimal("1e9"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 34)},
+        },
+        42: {
+            title: "Zeptometer 2 (10<sup>-21</sup>)",
+            description: "^1.5 to Cuts and Bad Cuts effect.",
+            cost: new Decimal("3e9"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 34)},
+        },
+        43: {
+            title: "Zeptometer 3 (10<sup>-21</sup>)",
+            description: "^1.75 to Cuts and Bad Cuts effect.",
+            cost: new Decimal("9e9"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 34)},
+        },
+        44: {
+            title: "Zeptometer 4 (10<sup>-21</sup>)",
+            description: "^2 to Cuts and Bad Cuts effect.",
+            cost: new Decimal("27e9"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 34)},
+        },
+        51: {
+            title: "Attometer 1 (10<sup>-18</sup>)",
+            description: "x4 Cubes and ^1.1 Arrows after first softcap.",
+            cost: new Decimal("2e11"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 44)},
+        },
+        52: {
+            title: "Attometer 2 (10<sup>-18</sup>)",
+            description: "x8 Cubes and ^1.08 Arrows after first softcap.",
+            cost: new Decimal("2e14"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 44)},
+        },
+        53: {
+            title: "Attometer 3 (10<sup>-18</sup>)",
+            description: "x16 Cubes and ^1.06 Arrows after first softcap.",
+            cost: new Decimal("2e17"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 44)},
+        },
+        54: {
+            title: "Attometer 4 (10<sup>-18</sup>)",
+            description: "x32 Cubes and ^1.04 Arrows after first softcap.",
+            cost: new Decimal("2e20"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 44)},
+        },
+
+        61: {
+            title: "Femtometer 1 (10<sup>-15</sup>)",
+            effect(){
+                let base = player.d.points.add(1)
+                base = base.pow(125)
+                if (hasUpgrade("d", 62)) base = base.mul(upgradeEffect("d", 62))
+                if (hasUpgrade("d", 63)) base = base.mul(upgradeEffect("d", 63))
+                if (hasUpgrade("d", 64)) base = base.mul(upgradeEffect("d", 64))
+
+                let softcap = new Decimal(0.5)
+                let softcapStart = new Decimal("e5e5")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+
+            },
+            effectDisplay(){ return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
+            description: "Distance boosts ME after third softcap.",
+            cost: new Decimal("1e33"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 54)},
+        },
+        62: {
+            title: "Femtometer 2 (10<sup>-15</sup>)",
+            effect(){
+                let base = player.d.points.add(1)
+                base = base.pow(120)
+                
+                if (hasUpgrade("d", 63)) base = base.mul(upgradeEffect("d", 63))
+                if (hasUpgrade("d", 64)) base = base.mul(upgradeEffect("d", 64))
+
+                let softcap = new Decimal(0.5)
+                let softcapStart = new Decimal("e5e5")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+
+            },
+            effectDisplay(){ return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
+            description: "Distance boosts ME after third softcap and Femtometer 1's effect.",
+            cost: new Decimal("1e37"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 54)},
+        },
+        63: {
+            title: "Femtometer 3 (10<sup>-15</sup>)",
+            effect(){
+                let base = player.d.points.add(1)
+                base = base.pow(115)
+                
+                if (hasUpgrade("d", 64)) base = base.mul(upgradeEffect("d", 64))
+
+                let softcap = new Decimal(0.5)
+                let softcapStart = new Decimal("e5e5")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+
+            },
+            effectDisplay(){ return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
+            description: "Distance boosts ME after third softcap and Femtometer 1-2's effect.",
+            cost: new Decimal("1e41"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 54)},
+        },
+        64: {
+            title: "Femtometer 4 (10<sup>-15</sup>)",
+            effect(){
+                let base = player.d.points.add(1)
+                base = base.pow(110)
+
+                let softcap = new Decimal(0.5)
+                let softcapStart = new Decimal("e5e5")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+
+            },
+            effectDisplay(){ return "x" + format(upgradeEffect(this.layer, this.id)) + " ME"},
+            description: "Distance boosts ME after third softcap and Femtometer 1-3's effect.",
+            cost: new Decimal("1e45"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 54)},
+        },
+
+        71: {
+            title: "Picometer 1 (10<sup>-12</sup>)",
+            description: "Stamina drains x1,000,000 faster, but x25 Cubes, Distance, and Movement.",
+            cost: new Decimal("1e60"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 64)},
+        },
+        72: {
+            title: "Picometer 2 (10<sup>-12</sup>)",
+            description: "Stamina drains x10,000,000 faster, but x20 Cubes, Distance, and Movement.",
+            cost: new Decimal("1e65"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 64)},
+        },
+        73: {
+            title: "Picometer 3 (10<sup>-12</sup>)",
+            description: "Stamina drains x100,000,000 faster, but x15 Cubes, Distance, and Movement.",
+            cost: new Decimal("1e70"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 64)},
+        },
+        74: {
+            title: "Picometer 4 (10<sup>-12</sup>)",
+            description: "A little different! ^1.25 Arrows after first softcap, along with Cubes and BS combo.",
+            cost: new Decimal("1e75"),
+            currencyDisplayName: "Movement",
+            currencyInternalName: "movement",
+            currencyLayer: "d",
+            unlocked() {return hasUpgrade("d", 64)},
         },
     },
 
@@ -230,6 +489,7 @@ addLayer("d", {
             },
             effect(x) {
                 let base = new Decimal(1.05)
+                base = base.add(buyableEffect("bs", 72))
                 let effect = base.pow(x)
                 return effect
             },
@@ -293,6 +553,7 @@ addLayer("d", {
             },
             effect(x) {
                 let base = new Decimal(1.25)
+                base = base.add(buyableEffect("bs", 72))
                 let effect = base.pow(x)
                 return effect
             },
@@ -329,6 +590,11 @@ addLayer("d", {
             exponentialBase() {
                 let init = new Decimal("250")
                 if (getBuyableAmount(this.layer, this.id).gte(5)) init = init.mul(1.5)
+                if (getBuyableAmount(this.layer, this.id).gte(10)) init = init.mul(3)
+                if (getBuyableAmount(this.layer, this.id).gte(15)) init = init.mul(4.5)
+                if (getBuyableAmount(this.layer, this.id).gte(20)) init = init.mul(6)
+                if (getBuyableAmount(this.layer, this.id).gte(25)) init = init.mul(7.5)
+                if (getBuyableAmount(this.layer, this.id).gte(30)) init = init.mul(9)
                 return init
             },
             cost(x) {
@@ -471,7 +737,9 @@ addLayer("d", {
         if (hasUpgrade(layer, 14)) mult = mult.add(10)
 
         mult = mult.mul(buyableEffect(layer, 11))
+        if (player.ddrfc.points.gte(11)) mult = mult.mul(15000)
 
+        if (hasUpgrade("bs", 52)) mult = mult.mul(upgradeEffect("bs", 52))
 
         player.d.maxStamina = mult
 
@@ -479,7 +747,14 @@ addLayer("d", {
         if (!inChallenge("d", 11)) {
             player.d.stamina = Decimal.abs(Decimal.min(player.d.maxStamina, player.d.stamina.mul(1.25)))
         } else {
-            player.d.stamina = player.d.stamina.sub(new Decimal(1).mul(diff))
+            let drainRate = new Decimal(1)
+            
+            drainRate = drainRate.mul(buyableEffect("bs", 62))
+            if (hasUpgrade("d", 71)) drainRate = drainRate.mul("1e7")
+            if (hasUpgrade("d", 72)) drainRate = drainRate.mul("1e8")
+            if (hasUpgrade("d", 73)) drainRate = drainRate.mul("1e9")
+            
+            player.d.stamina = player.d.stamina.sub(drainRate.mul(diff))
             if (player.d.stamina.lte(0.05)) doReset("d", true)
         }
 
@@ -487,8 +762,10 @@ addLayer("d", {
         //calculate max tiles
         mult = new Decimal(3)
         if (hasUpgrade("n", 403)) mult = mult.add(2)
+            
+        mult = mult.add(buyableEffect("bs", 61))
 
-        player.d.maxTiles = Decimal.min(mult, new Decimal(45))
+        player.d.maxTiles = Decimal.min(mult, new Decimal(40))
 
         if (player.d.current.length < player.d.maxTiles) {
             let c = Math.floor(Math.random() * 9) + 1
@@ -500,12 +777,15 @@ addLayer("d", {
         mult = player.d.movement.add(1).log("1e10")
 
         if (hasUpgrade("n", 404)) mult = mult.mul(25)
+        if (hasMilestone("s", 13)) mult = mult.mul(10)
 
         player.d.moveSEffect = mult
 
         mult = player.d.movement.add(1).log(100).add(1)
         
         if (hasUpgrade("n", 404)) mult = mult.mul(25)
+
+        if (hasMilestone("s", 13)) mult = mult.pow(1.5)
 
         player.d.moveCEffect = mult
     },

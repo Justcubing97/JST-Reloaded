@@ -37,10 +37,12 @@ addLayer("s", {
         if (hasUpgrade(layer, 42)) mult = mult.mul(1.25)
         if (hasUpgrade(layer, 112)) mult = mult.mul(1.1)
         if (hasUpgrade(layer, 313)) mult = mult.mul(upgradeEffect(layer, 313))
+        if (hasUpgrade(layer, 411)) mult = mult.mul(upgradeEffect(layer, 411))
 
         layer = "ddr"
         if (hasChallenge(layer, 11)) mult = mult.mul(1.25)
         if (hasMilestone(layer, 1)) mult = mult.mul(1.05)
+        if (hasMilestone(layer, 13)) mult = mult.mul("1e10")
 
         mult = mult.mul(player.ddrm.aEffect)
         mult = mult.mul(buyableEffect(layer, 13))
@@ -48,10 +50,17 @@ addLayer("s", {
         if (player.ddrfc.points.gte(2)) mult = mult.mul(1.5)
         if (player.ddrfc.points.gte(3)) mult = mult.mul(1.25)
         if (player.ddrfc.points.gte(4)) mult = mult.mul(2.5)
+        if (player.ddrfc.points.gte(8)) mult = mult.mul("1e6")
 
         layer = "bs"
         mult = mult.mul(buyableEffect(layer, 21))
-        //exp 
+
+        layer = "d"
+        if (hasUpgrade(layer, 31)) mult = mult.mul(10000)
+        if (hasUpgrade(layer, 32)) mult = mult.mul(20000)
+        if (hasUpgrade(layer, 33)) mult = mult.mul(40000)
+        if (hasUpgrade(layer, 34)) mult = mult.mul(80000)
+        //exp
         layer = "bs"
         if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
         //other hypers
@@ -97,6 +106,10 @@ addLayer("s", {
             
         if (resettingLayer == "bs") keptMilestones = []
         if (hasMilestone("s", 11)) keptMilestones.push(11)
+        if (hasMilestone("s", 12)) keptMilestones.push(12)
+        if (hasMilestone("s", 13)) keptMilestones.push(13)
+        if (hasMilestone("s", 14)) keptMilestones.push(14)
+        if (hasMilestone("s", 15)) keptMilestones.push(15)
 
         let keptChallenges = []
         if (hasUpgrade("n", 303)) keptChallenges.push(11)
@@ -336,6 +349,30 @@ addLayer("s", {
             requirementDescription: "11: 1e33 Songs",
             effectDescription: "OKAY I'M SORRY WHAT?!?!? Unlock a 5th row of Note upgrades.",
             done() { return player.s.points.gte("1e33") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        12: {
+            requirementDescription: "12: 1e70 Songs",
+            effectDescription: "If each atom in the universe was a unique song, we are <i>logarithmically</i> approaching the limit. Unlock the second row of EN upgrades.",
+            done() { return player.s.points.gte("1e33") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        13: {
+            requirementDescription: "13: 1e95 Songs",
+            effectDescription: "Almost at a googol songs! x1,000,000 EN, and improve Movement's effects.",
+            done() { return player.s.points.gte("1e95") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        14: {
+            requirementDescription: "14: 1.23e123 Songs",
+            effectDescription: "A placeholder milestone. Quarter Notes have a more drastic effect on Eighth Note generation.",
+            done() { return player.s.points.gte("1.23e123") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+        },
+        15: {
+            requirementDescription: "15: 1e135 Songs",
+            effectDescription: "I love Arrows. We should give them a x1e100 Boost after first softcap!",
+            done() { return player.s.points.gte("1e135") },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
     },

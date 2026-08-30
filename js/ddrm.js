@@ -402,6 +402,8 @@ addLayer("ddrm", {
         if (hasMilestone("ddr", 10)) player.ddrm.mEffect = player.ddrm.mEffect.pow(1.15)
         if (hasMilestone("ddr", 11)) player.ddrm.aEffect = player.ddrm.aEffect.mul(1.5)
         if (hasMilestone("ddr", 13)) player.ddrm.aEffect = player.ddrm.aEffect.mul(1.25)
+            
+        if (hasUpgrade("ddr", 52)) player.ddrm.aEffect = player.ddrm.aEffect.pow(1.5)
 
         //combo stuff
         let mult = new Decimal(1)

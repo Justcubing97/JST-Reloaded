@@ -9,6 +9,7 @@ addLayer("ddr", {
         groovePower: new Decimal(0),
         gpg: new Decimal(1),
         gpe: new Decimal(1),
+        gpeDist: new Decimal(1),
 
         stream: new Decimal(1),
         voltage: new Decimal(1),
@@ -21,7 +22,7 @@ addLayer("ddr", {
 
         streamMultBoost: new Decimal(10),
         voltageMultBoost: new Decimal(1000),
-        airMultBoost: new Decimal(1),
+        airMultBoost: new Decimal("1e100"),
         freezeMultBoost: new Decimal(1),
         chaosMultBoost: new Decimal(1),
         
@@ -75,6 +76,8 @@ addLayer("ddr", {
         if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
         //other hypers
         //time dilations/chals
+        layer = "bs"
+        if (inChallenge(layer, 11)) mult = mult.pow(0.001)
         //final
         return mult
     }, //do everything inside the gainMult()
@@ -87,9 +90,24 @@ addLayer("ddr", {
             
         if (hasUpgrade("n", 402)) mult = mult.mul(upgradeEffect("n", 402))
             
+        if (hasUpgrade("bs", 43)) mult = mult.mul("1e100")
+            
         if (player.ddrfc.points.gte(7)) mult = mult.mul("1e5")
+        if (player.ddrfc.points.gte(8)) mult = mult.mul("1e15")
 
         mult = mult.mul(buyableEffect("bs", 31))
+        
+        if (hasMilestone("s", 15)) mult = mult.mul("1e100")
+
+        if (hasUpgrade("n", 412)) mult = mult.pow(1.02)
+        if (hasUpgrade("d", 51)) mult = mult.pow(1.1)
+        if (hasUpgrade("d", 52)) mult = mult.pow(1.08)
+        if (hasUpgrade("d", 53)) mult = mult.pow(1.06)
+        if (hasUpgrade("d", 54)) mult = mult.pow(1.04)
+            
+        mult = mult.pow(buyableEffect("bs", 82))
+        
+        if (hasUpgrade("d", 74)) mult = mult.pow(1.25)
 
 		return mult.floor().max(0);
     },
@@ -120,6 +138,20 @@ addLayer("ddr", {
         let keptGP = new Decimal(0)
         if (hasUpgrade("bs", 32)) keptGP = player.ddr.groovePower
 
+        let keptBars = {
+            stream: new Decimal(1),
+            voltage: new Decimal(1),
+            air: new Decimal(1),
+            freeze: new Decimal(1),
+            chaos: new Decimal(1),
+        }
+
+        keptBars.stream = player.ddr.stream
+        keptBars.voltage = player.ddr.voltage
+        keptBars.air = player.ddr.air
+        keptBars.freeze = player.ddr.freeze
+        keptBars.chaos = player.ddr.chaos
+
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
         if (hasUpgrade("bs", 14)) keep.push("milestones")
@@ -130,6 +162,12 @@ addLayer("ddr", {
         // Stage 5, add back in the specific subfeatures you saved earlier
         keptChallenges.forEach(element => player[this.layer].challenges[element] = 1)
         if (hasUpgrade("bs", 32)) player.ddr.groovePower = keptGP
+
+        player.ddr.stream = keptBars.stream
+        player.ddr.voltage = keptBars.voltage
+        player.ddr.air = keptBars.air
+        player.ddr.freeze = keptBars.freeze
+        player.ddr.chaos = keptBars.chaos
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
     upgrades: {
         11: {
@@ -252,6 +290,43 @@ addLayer("ddr", {
             cost: new Decimal("30e6"),
             unlocked() {return hasUpgrade(this.layer, 34) || hasUpgrade("bs", 14)},
         },
+
+        51: {
+            title: "⇧ x → ⏹️ x + 👎",
+            effect() {
+                let base = player.ddr.points.add(1)
+                base = base.pow(0.00005)
+                return base
+            },
+            effectDisplay() {
+                let text = "^" + format(upgradeEffect(this.layer, this.id)) + " to BS combo and Bad Cuts"
+                return text
+            },
+            description: "Arrows raise BS combo and Bad Cuts.",
+            cost: new Decimal("1e1485"),
+            unlocked() {return hasUpgrade("bs", 44)},
+        },
+        52: {
+            title: "Underrated Effect",
+            description: "The Almost arrow effect boosts BS combo and is improved.",
+            cost: new Decimal("1e1720"),
+            unlocked() {return hasUpgrade("bs", 44)},
+        },
+        53: {
+            title: "Upscroll Velocity Override",
+            effect() {
+                let base = player.ddr.points.add(1)
+                base = base.pow(0.001)
+                return base
+            },
+            effectDisplay() {
+                let text = "x" + format(upgradeEffect(this.layer, this.id)) + " Movement"
+                return text
+            },
+            description: "Arrows boost Movement.",
+            cost: new Decimal("1e1900"),
+            unlocked() {return hasUpgrade("bs", 44)},
+        },
     },
 
     milestones: {
@@ -330,6 +405,12 @@ addLayer("ddr", {
             requirementDescription: "12: 1e500 Groove Power",
             effectDescription: "x1e10 Arrows. Almost arrow's effect is improved again.",
             done() { return player.ddr.groovePower.gte("1e500") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        13: {
+            requirementDescription: "13: 1e2500 Groove Power",
+            effectDescription: "You will get this one in the Beat Saber layer. x1e10 Songs.",
+            done() { return player.ddr.groovePower.gte("1e2500") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
     },
@@ -1066,7 +1147,13 @@ addLayer("ddr", {
                 ["infobox", "grooveRadar"],
                 "blank",
                 ["display-text", function(){return `You have <h2 style="color: #379be2; text-shadow: 0px 0px 10px #379be2">${format(player.ddr.groovePower)}</h2> Groove Power, which multiplies ME, Notes, WN, and HN by x${format(player.ddr.gpe)} <br> (${format(player.ddr.gpg)}/sec)`}],
-                ["display-text", function(){return `<span style="color:#BBBBBB">Start gaining Groove Power at 1e350 Notes!`}],
+                ["display-text", function(){
+                    if (hasUpgrade("bs", 42))return `Groove Power is also multiplying Distance by x${format(player.ddr.gpeDist)}`
+                }],
+                ["display-text", function(){
+                    if (player.ddr.air.gte(2)) return `<span style="color:#BBBBBB">Start gaining Groove Power at 1e327,600 ME, because Air is active!`
+                    return `<span style="color:#BBBBBB">Start gaining Groove Power at 1e350 Notes!`
+                }],
                 "blank",
                 ["bar", "stream"],
                 ["blank", "8px"],
@@ -1075,6 +1162,10 @@ addLayer("ddr", {
                 ["bar", "voltage"],
                 ["blank", "8px"],
                 ["clickables", [2]],
+                "blank",
+                ["bar", "air"],
+                ["blank", "8px"],
+                ["clickables", [3]],
                 "blank",
                 "milestones",
             ],
@@ -1131,6 +1222,23 @@ addLayer("ddr", {
             },
             fillStyle() { return {"background-color": "#2280C2",} },
         },
+        air: {
+            direction: RIGHT,
+            width: 727,
+            height: 75,
+            display() {
+                let text = `Air: Musical Essence's and Notes' 1st-3rd softcap exponents are divided by ÷${format(player.ddr.air)}. Boost per value: x${format(player.ddr.airMultBoost)}`
+                return text
+            },
+            progress() {
+                let prog = new Decimal(0)
+                prog = player.ddr.air.log(100).div(10)
+                
+                return prog
+            },
+            fillStyle() { return {"background-color": "#E00000",} },
+            unlocked() {return hasUpgrade("bs", 42)},
+        },
     },
 
     clickables: {
@@ -1141,6 +1249,7 @@ addLayer("ddr", {
                 if (player.ddr.stream.gte(player.ddr.streamImpact.pow(10))) return;
                 player.ddr.stream = player.ddr.stream.mul(player.ddr.streamImpact)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         12: {
@@ -1150,6 +1259,7 @@ addLayer("ddr", {
                 if (player.ddr.stream.lte(1)) return;
                 player.ddr.stream = player.ddr.stream.div(player.ddr.streamImpact)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         13: {
@@ -1158,6 +1268,7 @@ addLayer("ddr", {
             onClick() {
                 player.ddr.stream = player.ddr.streamImpact.pow(10)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         14: {
@@ -1166,6 +1277,7 @@ addLayer("ddr", {
             onClick() {
                 player.ddr.stream = new Decimal(1)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
 
@@ -1176,6 +1288,7 @@ addLayer("ddr", {
                 if (player.ddr.voltage.lte(0.17)) return;
                 player.ddr.voltage = player.ddr.voltage.div(1.2)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         22: {
@@ -1185,6 +1298,7 @@ addLayer("ddr", {
                 if (player.ddr.voltage.gte(0.99)) return;
                 player.ddr.voltage = player.ddr.voltage.mul(1.2)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         23: {
@@ -1193,6 +1307,7 @@ addLayer("ddr", {
             onClick() {
                 player.ddr.voltage = new Decimal(1).div(new Decimal(1.2).pow(10))
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
             },
         },
         24: {
@@ -1201,6 +1316,42 @@ addLayer("ddr", {
             onClick() {
                 player.ddr.voltage = new Decimal(1)
                 doReset("ddr", true)
+                if (hasUpgrade("bs", 42)) doReset("bs", true)
+            },
+        },
+
+        31: {
+            title: "Increase Air level by +1",
+            canClick() {return true},
+            onClick() {
+                if (player.ddr.air.gte(new Decimal(100).pow(10))) return;
+                player.ddr.air = player.ddr.air.mul(100)
+                doReset("bs", true)
+            },
+        },
+        32: {
+            title: "Decrease Air level by -1",
+            canClick() {return true},
+            onClick() {
+                if (player.ddr.air.lte(2)) return;
+                player.ddr.air = player.ddr.air.div(100)
+                doReset("bs", true)
+            },
+        },
+        33: {
+            title: "Maximize Air level",
+            canClick() {return true},
+            onClick() {
+                player.ddr.air = new Decimal(1).mul(new Decimal(100).pow(10))
+                doReset("bs", true)
+            },
+        },
+        34: {
+            title: "Minimize Air level",
+            canClick() {return true},
+            onClick() {
+                player.ddr.air = new Decimal(1)
+                doReset("bs", true)
             },
         },
     },
@@ -1215,21 +1366,35 @@ addLayer("ddr", {
         if (hasUpgrade("n", 311)) player.ddr.gpThreshold = new Decimal("1e300")
         if (hasUpgrade("bs", 12)) player.ddr.gpThreshold = new Decimal("1e250")
 
+        if (player.ddr.air.gte(2)) player.ddr.gpThreshold = new Decimal("1e327600")
+
         //groove power
         let mult = new Decimal(0)
         if (player.points.gte(player.ddr.gpThreshold) && (player.ddr.stream.neq(1) || player.ddr.voltage.neq(1))) mult = mult.add(1)
         mult = mult.mul(player.points.add(1).log(10).div(5))
 
-        if (hasUpgrade("bs", 21)) player.ddr.streamMultBoost = new Decimal("1e10")
-        if (hasUpgrade("bs", 21)) player.ddr.voltageMultBoost = new Decimal("1e15")
+        //[]MultBoost
+        let mb = new Decimal(10)
+        if (hasUpgrade("bs", 21)) mb = new Decimal("1e10")
+        player.ddr.streamMultBoost = mb
+
+        mb = new Decimal(1000)
+        if (hasUpgrade("bs", 21)) mb = new Decimal("1e15")
+        player.ddr.voltageMultBoost = mb
+
+        mb = new Decimal("1e100")
+        player.ddr.airMultBoost = mb
 
         mult = mult.mul(new Decimal(player.ddr.streamMultBoost).pow(player.ddr.stream.log(player.ddr.streamImpact)))
         mult = mult.mul(new Decimal(player.ddr.voltageMultBoost).pow(player.ddr.voltage.log(1.2).div(-1)))
+        if (hasUpgrade("bs", 42)) mult = mult.mul(new Decimal(player.ddr.airMultBoost).pow(player.ddr.air.log(100)))
 
         //gp boosts
         if (hasUpgrade("s", 32)) mult = mult.mul("1e10")
         if (hasChallenge("s", 12)) mult = mult.mul("1e15")
         mult = mult.mul(buyableEffect("ddr", 12))
+    
+        if (hasUpgrade("bs", 51)) mult = mult.mul(upgradeEffect("bs", 51))
 
         player.ddr.gpg = mult
 
@@ -1240,10 +1405,15 @@ addLayer("ddr", {
         
         mult = mult.pow(buyableEffect("ddr", 23))
         player.ddr.gpe = mult
+
+        if (hasUpgrade("bs", 42)) {
+            mult = Decimal.max(player.ddr.groovePower.div("1e1530"))
+            mult = mult.add(1).log(25).add(1).mul(15)
+            player.ddr.gpeDist = mult
+        }
         
-        let layer = "ddr"
         for (const id of [12, 13, 21, 22, 23, 31, 32, 33]) {
-            if (getBuyableAmount("ddr", id).gte(tmp["ddr"].buyables[id].purchaseLimit)) {
+            if (getBuyableAmount("ddr", id).gte(tmp["ddr"].buyables[id].purchaseLimit && hasUpgrade("bs", 13))) {
                 setBuyableAmount("ddr", id, tmp["ddr"].buyables[id].purchaseLimit)
             }
         }

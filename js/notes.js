@@ -95,6 +95,9 @@ addLayer("n", {
         if (inChallenge(layer, 11)) mult = mult.pow(0.75)
         if (inChallenge(layer, 22)) mult = mult.pow(0.1)
         mult = mult.pow(player.ddr.voltage)
+
+        layer = "bs"
+        if (inChallenge(layer, 11)) mult = mult.pow(0.001)
         //softcaps
         //final
         return mult
@@ -104,18 +107,24 @@ addLayer("n", {
 		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
 		let mult = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 
+        player[layer].softcap1 = player[layer].softcap1.div(player.ddr.air)
         if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
             
         if (inChallenge("ddr", 32)) mult = mult.add(1).log("1e10")
         mult = mult.mul(buyableEffect("ddr", 33))
     
+        player[layer].softcap2 = player[layer].softcap2.div(player.ddr.air)
         if (mult.gte(player[layer].softcap2Start)) mult = mult.pow(player[layer].softcap2).mul(new Decimal(player[layer].softcap2Start).pow(decimalOne.sub(player[layer].softcap2)))
 
         if (hasUpgrade("n", 51)) mult = mult.mul(upgradeEffect(layer, 51))
+        if (player.ddrfc.points.gte(8)) mult = mult.mul("1e50000")
         if (hasUpgrade("n", 401)) mult = mult.pow(1.005)
             
+        player[layer].softcap3 = player[layer].softcap3.div(player.ddr.air)
         if (mult.gte(player[layer].softcap3Start)) mult = mult.pow(player[layer].softcap3).mul(new Decimal(player[layer].softcap3Start).pow(decimalOne.sub(player[layer].softcap3)))
 
+        mult = mult.pow(buyableEffect("bs", 71))
+            
 		return mult.floor().max(0);
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -157,6 +166,10 @@ addLayer("n", {
         if (hasUpgrade("n", 402)) keptUpgrades.push(402)
         if (hasUpgrade("n", 403)) keptUpgrades.push(403)
         if (hasUpgrade("n", 404)) keptUpgrades.push(404)
+        if (hasUpgrade("n", 411)) keptUpgrades.push(411)
+        if (hasUpgrade("n", 412)) keptUpgrades.push(412)
+        if (hasUpgrade("n", 413)) keptUpgrades.push(413)
+        if (hasUpgrade("n", 414)) keptUpgrades.push(414)
 
         let keptBuyables = []
 
@@ -203,9 +216,9 @@ addLayer("n", {
                 ["blank", function() {if (hasUpgrade("n", 54)) return ["1px", "30px"]; else return ["0px", "0px"]}],
                 ["display-text", function(){if (hasUpgrade("n", 54)) return `You have <h2 style="color: #EEEEEE; text-shadow: 0px 0px 10px #EEEEEE">${format(player.n.eighth)}</h2> Eighth Notes <br> (${format(player.n.eighthGain)}/sec)`; else return}],
                 ["display-text", function(){if (hasUpgrade("n", 54)) return `<span style="color:#BBBBBB">Eighth Note gain is dependent on Quarter Notes!`; else return}],
-                ["display-text", function(){if (player.n.eighth.gte("1e100")) return `<span style="color:#AAAAAA">Eighth Note gain is softcapped by ^0.25 after 1e100!`; else return}],
+                ["display-text", function(){if (player.n.eighth.gte("1e500")) return `<span style="color:#AAAAAA">Eighth Note gain is softcapped by ^0.25 after 1e100!`; else return}],
                 "blank",
-                ["upgrades", [40]],
+                ["upgrades", [40, 41]],
             ],
         },
         "Buyables": {
@@ -737,6 +750,67 @@ addLayer("n", {
             currencyLayer: "n",
             unlocked() {return hasUpgrade("n", 54)},
         },
+
+        411: {
+            title: "Musical Distancing",
+            effect() {
+                let base = player.d.points.add(1)
+                base = base.pow(0.75)
+
+                let softcap = new Decimal(0.35)
+                let softcapStart = new Decimal("1e15")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+
+                return base
+            },
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " Songs"},
+            description: "Distance boosts Songs.",
+            cost: new Decimal("1e54"),
+            currencyDisplayName: "Eighth Notes",
+            currencyInternalName: "eighth",
+            currencyLayer: "n",
+            unlocked() {return hasMilestone("s", 12)},
+        },
+        412: {
+            title: "man i hate softcaps",
+            description: "^1.02 Arrows after first softcap.",
+            cost: new Decimal("1e63"),
+            currencyDisplayName: "Eighth Notes",
+            currencyInternalName: "eighth",
+            currencyLayer: "n",
+            unlocked() {return hasMilestone("s", 12)},
+        },
+        413: {
+            title: "MUSIC = EUPHORIA",
+            description: "^1.25 ME after third softcap.",
+            cost: new Decimal("1e70"),
+            currencyDisplayName: "Eighth Notes",
+            currencyInternalName: "eighth",
+            currencyLayer: "n",
+            unlocked() {return hasMilestone("s", 12)},
+        },
+        414: {
+            title: "Simple (not) Rhythms",
+            effect() {
+                let base = player.n.eighth.add(1)
+                base = base.pow(5)
+
+                let softcap = new Decimal(0.2)
+                let softcapStart = new Decimal("1e500")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+
+                return base
+            },
+            effectDisplay() {return "x" + format(upgradeEffect(this.layer, this.id)) + " QN"},
+            description: "Eighth Notes boost Quarter Notes.",
+            cost: new Decimal("1e80"),
+            currencyDisplayName: "Eighth Notes",
+            currencyInternalName: "eighth",
+            currencyLayer: "n",
+            unlocked() {return hasMilestone("s", 12)},
+        },
     },
 
     buyables: {
@@ -932,6 +1006,7 @@ addLayer("n", {
             if (hasUpgrade("n", 303)) mult = mult.mul(10)
             if (hasChallenge("ddr", 22)) mult = mult.mul(5)
             if (hasMilestone("ddr", 4)) mult = mult.mul(15)
+            if (hasUpgrade("n", 414)) mult = mult.mul(upgradeEffect("n", 414))
   
             if (hasMilestone("ddr", 2)) mult = mult.pow(1.25)
 
@@ -945,11 +1020,21 @@ addLayer("n", {
 
         if ((hasUpgrade("n", 54))){
             let mult = player.n.quarter.add(1).log(10).add(1).div(100).add(1)
+            if (hasMilestone("s", 14)) mult = player.n.quarter.add(1).pow(0.025).add(1)
             
             mult = mult.mul(buyableEffect("bs", 52))
+            
+            if (hasUpgrade("d", 31)) mult = mult.mul(10000)
+            if (hasUpgrade("d", 32)) mult = mult.mul(20000)
+            if (hasUpgrade("d", 33)) mult = mult.mul(40000)
+            if (hasUpgrade("d", 34)) mult = mult.mul(80000)
+                
+            if (hasMilestone("s", 13)) mult = mult.mul("1e6")
+                
+            if (hasUpgrade("bs", 43)) mult = mult.mul("1e10")
 
             let softcap = new Decimal(0.25)
-            let softcapStart = new Decimal("1e100")
+            let softcapStart = new Decimal("1e500")
             if (mult.gte(softcapStart)) mult = mult.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
             player.n.eighthGain = mult
