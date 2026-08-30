@@ -12,11 +12,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "3.2",
-	name: "Beat Saber layer continued",
+	num: "3.2.1",
+	name: "DDR layer fix",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v3.2.1</h2><br>
+        - Fixed a bug with the DDR buyables instantly giving 1e2750 ME at the start of the game. <br><br>
 	<h2>v3.2</h2><br>
 		- Some new content! <br>
         - More achievements. <br>

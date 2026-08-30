@@ -1412,9 +1412,11 @@ addLayer("ddr", {
             player.ddr.gpeDist = mult
         }
         
-        for (const id of [12, 13, 21, 22, 23, 31, 32, 33]) {
-            if (getBuyableAmount("ddr", id).gte(tmp["ddr"].buyables[id].purchaseLimit && hasUpgrade("bs", 13))) {
-                setBuyableAmount("ddr", id, tmp["ddr"].buyables[id].purchaseLimit)
+        if (hasUpgrade("bs", 13)){
+            for (const id of [12, 13, 21, 22, 23, 31, 32, 33]) {
+                if (getBuyableAmount("ddr", id).gte(tmp["ddr"].buyables[id].purchaseLimit)) {
+                    setBuyableAmount("ddr", id, tmp["ddr"].buyables[id].purchaseLimit)
+                }
             }
         }
     },
