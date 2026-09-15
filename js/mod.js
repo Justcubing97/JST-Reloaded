@@ -1,8 +1,8 @@
 let modInfo = {
-	name: "The Rhythm Game Tree",
+	name: "JST: Reloaded",
 	author: "Justcubing97",
-	pointsName: "Musical Essence",
-	modFiles: ["a.js", "notes.js", "songs.js", "ddr.js", "ddrfc.js", "bs.js", "d.js", "tree.js", "ddrm.js", "bsm.js"],
+	pointsName: "Points",
+	modFiles: ["achievements.js", "logarithmicscale.js", "conway.js", "fundamental.js", "primitive.js", "arithmetic.js", "addition.js", "subtraction.js", "multiplication.js", "dimension.js", "polygon.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,61 +12,45 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "3.2.1",
-	name: "DDR layer fix",
+	num: "1.0",
+	name: "JST:R release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h2>v3.2.1</h2><br>
-        - Fixed a bug with the DDR buyables instantly giving 1e2750 ME at the start of the game. <br><br>
-	<h2>v3.2</h2><br>
-		- Some new content! <br>
-        - More achievements. <br>
-        - More campaign things! <br><br>
-	<h2>v3.1</h2><br>
-		- A LOT of new content! <br>
-        - Beat Saber Campaign implemented. <br>
-        - More achievements. <br>
-        - Distance layer! <br>
-        - Beat Saber Minigame! <br><br>
-	<h2>v3.0</h2><br>
-		- Finished off the DDR layer! <br>
-        - BEAT SABER LAYER INTRO! <br><br>
-	<h2>v2.3</h2><br>
-		- Properly credited Camellia. My bad! <br>
-        - TONS of new content! <br><br>
-	<h2>v2.2</h2><br>
-		- Implemented a combo feature in the DDR minigame. <br>
-        - More DDR content! <br>
-        - Music! 22 hand-picked tracks made by Camellia and I - fits the rhythm game theme. <br>
-        - More achievements. <br><br>
-	<h2>v2.1</h2><br>
-		- Added effects from the DDR minigame. <br>
-        - Fixed Note layer progression - no more timewall at 1e10 Notes! <br>
-        - More Arrow upgrades. <br><br>
-	<h2>v2.0</h2><br>
-		- Fixed CSS for upgrades. <br>
-        - New DDR minigame! <br>
-        - Implemented one Arrow upgrade. <br><br>
-	<h3>v1.1</h3><br>
-		- Fixed CSS for elements. <br><br>
 	<h2>v1.0</h2><br>
-		- Three layers: Notes, Songs, and DDR! <br>
-		- 7 Achievements.`
+		- Everything up to Polygon layer! <br>
+		- New side layers: Logarithmic Scale and Conway's Game of Life <br>
+        - Reworked achievements to be more spread out, like TRGT and the later half of JST:C. <br><br>
+    <h3>Changes from classic JST</h3><br>
+		- Improved softcap logic <br>
+		- Added shorthands for currencies (like in TRGT) <br>
+		- Slightly reworked upgrades in Fundamental layer <br>
+		- Removed Unlock layer (therefore, no lore, but maybe later!) <br>
+		- Reworked Primitive milestones <br>
+		- Primitive main gimmick is now currency multipliers <br>
+		- Reworked Arithmetic upgrades <br>
+		- Shifted Addition, Subtraction, and Multiplication unlocks <br>
+		- Arithmetic main gimmicks are Variables and Functions <br>
+		- Reworked Arithmetic Challenges <br>
+		- Just barely changed Addition gimmick (core idea is still there) <br>
+		- COMPLETELY overhauled Subtraction mechanic (Division's mechanic will be changed to account for this) <br>
+		- Reworked The Multiplication Tree's upgrade layout <br>
+		- Dimensions now use Points instead of Numbers <br>
+		- Slightly changed node appearances of row 3 layers (+, -, ×, ÷) <br>
+		- Reworked achievements<br>
+		- Achievements are now color-coded<br>
+		- Version number no longer counts in 0.1 increments<br>
+		- UI now reflects that of TRGT<br>
+    `
 
-let winText = `Congratulations! You have reached the end and beaten this game as of ${VERSION.num}! If the version number is below 7, there's still more content!`
+let winText = `Congratulations! You have reached the end and beaten this game as of ${VERSION.num}! There's still more content if you haven't reached Dark Matter!`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
 var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",
-    "arrowClicking_DDRM",
-    "findMults_DDRM",
-    
-    "findColors_BSM",
-    "findDirections_BSM",
-    "findClicks_BSM",
-    "findMults_BSM",
-    "findMults_DIST"
+    "findEqPointsMult_ARH",
+    "findIneqMult_ARH",
+    "convertTo_ADD",
 ]
 
 function getStartPoints(){
@@ -78,6 +62,16 @@ function canGenPoints(){
 	return true
 }
 
+// You can add non-layer related variables that should to into "player" and be saved here, along with default values
+function addedPlayerData() { return {
+    softcap1: new Decimal(0.25),
+    softcap1Start: new Decimal("1e10000"),
+    softcap2: new Decimal(0.25),
+    softcap2Start: new Decimal("1e250000"),
+    softcap3: new Decimal(0.25),
+    softcap3Start: new Decimal("e1e7"),
+}}
+
 // Calculate points/sec!
 function getPointGen() {
 	if(!canGenPoints())
@@ -86,148 +80,106 @@ function getPointGen() {
     let layer;
 	let mult = new Decimal(1)
     //add
-    layer = "n"
-    if (hasUpgrade(layer, 23)) mult = mult.add(6)
-    if (hasUpgrade(layer, 101)) mult = mult.add(3)
-    if (hasUpgrade(layer, 103)) mult = mult.add(10)
-    //mul
-    if (hasAchievement("a", 26)) mult = mult.mul("1e100")
-
-    layer = "n"
-    if (hasUpgrade(layer, 11)) mult = mult.mul(3)
-    if (hasUpgrade(layer, 12)) mult = mult.mul(upgradeEffect(layer, 12))
-    if (hasUpgrade(layer, 14)) mult = mult.mul(4)
-    if (hasUpgrade(layer, 21)) mult = mult.mul(6)
-    if (hasUpgrade(layer, 34)) mult = mult.mul(4)
-    if (hasUpgrade(layer, 102)) mult = mult.mul(upgradeEffect(layer, 102))
-    if (hasUpgrade(layer, 202)) mult = mult.mul(500)
-    if (hasUpgrade(layer, 42)) mult = mult.mul(1000)
-    if (hasUpgrade(layer, 43)) mult = mult.mul(upgradeEffect(layer, 43))
-    if (hasUpgrade(layer, 44)) mult = mult.mul(2500)
-    if (hasUpgrade(layer, 112)) mult = mult.mul("2e4")
-    if (hasUpgrade(layer, 302)) mult = mult.mul(upgradeEffect(layer, 302))
-
-    layer = "s"
-    if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
-    if (hasUpgrade(layer, 13)) mult = mult.mul(upgradeEffect(layer, 13))
-    if (hasUpgrade(layer, 23)) mult = mult.mul(125)
-    if (hasUpgrade(layer, 33)) mult = mult.mul("1e21")
-    if (hasChallenge(layer, 12)) mult = mult.mul("1e15")
-
-    layer = "ddr"
-    if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
-    if (hasUpgrade(layer, 13)) mult = mult.mul("1e6")
-    if (hasChallenge(layer, 11)) mult = mult.mul("1e10")
-    if (hasUpgrade(layer, 23)) mult = mult.mul("1e15")
-    if (player.ddr.groovePower) mult = mult.mul(player.ddr.gpe)
-    if (hasUpgrade(layer, 43)) mult = mult.mul("1e20")
+    layer = "f"
+    if (!getClickableState("sub", 1001) || (getClickableState("sub", 1001) && !getClickableState("sub", 24))){
+        if (hasUpgrade(layer, 13)) mult = mult.add(1)
+        if (hasUpgrade(layer, 16)) mult = mult.add(5)
+        if (hasUpgrade(layer, 27)) mult = mult.add(25)
+    }
         
-    mult = mult.mul(player.ddrm.mEffect)
-    mult = mult.mul(buyableEffect(layer, 21))
+    layer = "p"
+    if (hasMilestone(layer, 2)) mult = mult.add(10)
 
-    if (player.ddrfc.points.gte(1)) mult = mult.mul("1e25")
-    if (player.ddrfc.points.gte(2)) mult = mult.mul("1e25")
-    if (player.ddrfc.points.gte(3)) mult = mult.mul("1e25")
-    if (player.ddrfc.points.gte(4)) mult = mult.mul("1e250")
+    layer = "add"
 
-    layer = "bs"
-    if (hasUpgrade(layer, 11)) mult = mult.mul("1e1000")
+    mult = mult.add(player.add.additionTypePoint.pow(5))
+    //mul
+    layer = "f"
+    if (!getClickableState("sub", 1001) || (getClickableState("sub", 1001) && !getClickableState("sub", 24))){
+        if (hasUpgrade(layer, 11)) mult = mult.mul(2)
+        if (hasUpgrade(layer, 12)) mult = mult.mul(3)
+        if (hasUpgrade(layer, 15)) mult = mult.mul(2)
+        if (hasUpgrade(layer, 14)) mult = mult.mul(5)
+        if (hasUpgrade(layer, 17)) mult = mult.mul(upgradeEffect(layer, 17))
+        if (hasUpgrade(layer, 24)) mult = mult.mul(150)
+        if (hasUpgrade(layer, 25)) mult = mult.div(10)
+        if (hasUpgrade(layer, 26)) mult = mult.mul(75)
+        if (hasUpgrade(layer, 33)) mult = mult.mul(upgradeEffect(layer, 33))
+        if (hasUpgrade(layer, 34)) mult = mult.mul("1e10")
+        if (hasUpgrade(layer, 36)) mult = mult.mul("2e5")
+        if (hasUpgrade(layer, 37)) mult = mult.mul("21e6")
+    }
 
-    mult = mult.mul(buyableEffect(layer, 22))
+    if (hasUpgrade(layer, 41)) mult = mult.mul(377377377)
 
-    mult = mult.mul(player.bsm.badEffect)
+    layer = "p"
+    if (hasMilestone(layer, 2)) mult = mult.mul(10)
+    if (hasMilestone(layer, 7)) mult = mult.mul(250)
+    if (hasMilestone(layer, 10)) mult = mult.mul("1e6")
+
+    mult = mult.mul(buyableEffect(layer, 12))
+    if (hasAchievement("a", 17)) mult = mult.mul(buyableEffect(layer, 13))
+    if (hasAchievement("a", 26)) mult = mult.mul(buyableEffect(layer, 11).pow(0.1))
+
+    layer = "ar"
+    if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
+    if (hasUpgrade(layer, 14)) mult = mult.mul("1e6")
+    if (hasMilestone(layer, 11)) mult = mult.mul(milestoneEffect(layer, 11))
+        
+    if (hasMilestone(layer, 1)) mult = mult.mul(player.ar.functionE1)
+        
+    layer = "sub"
+    if (hasUpgrade(layer, 14)) mult = mult.mul("1e40")
+        
+    layer = "mul"
+    if (hasUpgrade(layer, 21)) mult = mult.mul(upgradeEffect(layer, 21))
+
+    layer = "d"
+    if (hasMilestone(layer, 2)) mult = mult.mul("1e100")
     //exp
-    layer = "n"
-    if (hasUpgrade(layer, 201)) mult = mult.pow(1.05)
-    if (hasUpgrade(layer, 304)) mult = mult.pow(1.15)
+    layer = "f"
+    layer = "p"
+    if (hasMilestone(layer, 6)) mult = mult.pow(1.11)
+    if (hasMilestone(layer, 13)) mult = mult.pow(1.05)
 
-    layer = "ddr"
-    if (hasMilestone(layer, 2)) mult = mult.pow(1.1)
-
-    layer = "bs"
-    if (hasUpgrade(layer, 22)) mult = mult.pow(1.15)
+    layer = "ar"
+    if (hasChallenge(layer, 11)) mult = mult.pow(1.1)
     //hyper
-    layer = "n"
     //time dilations/chals
-    layer = "n"
-    layer = "s"
+    layer = "sub"
+    if (getClickableState(layer, 1001)){
+        if (getClickableState(layer, 11)) mult = mult.pow(0.75)
+        if (getClickableState(layer, 12)) mult = mult.pow(0.5)
+        if (getClickableState(layer, 13)) mult = mult.pow(0.25)
+        if (getClickableState(layer, 14)) mult = mult.pow(0.1)
+    }
+
+    layer = "ar"
     if (inChallenge(layer, 11)) mult = mult.pow(0.5)
-    if (inChallenge(layer, 12)) mult = mult.pow(0.01)
-
-    layer = "ddr"
-    if (inChallenge(layer, 11)) mult = mult.pow(0.75)
-    if (inChallenge(layer, 22)) mult = mult.pow(0.1)
-    mult = mult.pow(player.ddr.voltage)
-
-    layer = "bs"
-    if (inChallenge(layer, 11)) mult = mult.pow(0.001)
+    if (inChallenge(layer, 12)) mult = mult.pow(0.5)
     //=====
     //softcap stuff
-    let softcap1 = new Decimal(0.25)
-    softcap1 = softcap1.add(buyableEffect("bs", 81))
-    softcap1 = softcap1.div(player.ddr.air)
-
-    let softcap1Start = new Decimal("1e2000")
-    if (mult.gte(softcap1Start)) mult = mult.pow(softcap1).mul(new Decimal(softcap1Start).pow(decimalOne.sub(softcap1)))
-
-    let softcap2 = new Decimal(0.2)
-    softcap2 = softcap2.add(buyableEffect("bs", 81))
-    softcap2 = softcap2.div(player.ddr.air)
-    
-    let softcap2Start = new Decimal("1e500000")
-    if (mult.gte(softcap2Start)) mult = mult.pow(softcap2).mul(new Decimal(softcap2Start).pow(decimalOne.sub(softcap2)))
-
-    let softcap3 = new Decimal(0.15)
-    softcap3 = softcap3.add(buyableEffect("bs", 81))
-    softcap3 = softcap3.div(player.ddr.air)
-
-    let softcap3Start = new Decimal("e1e6")
-    if (mult.gte(softcap3Start)) mult = mult.pow(softcap3).mul(new Decimal(softcap3Start).pow(decimalOne.sub(softcap3)))
-        
-    if (player.ddrfc.points.gte(7)) mult = mult.mul("1e10000")
-    if (player.ddrfc.points.gte(8)) mult = mult.mul("1e250000")
-        
-    if (hasUpgrade("d", 61)) mult = mult.mul(upgradeEffect("d", 61))
-    if (hasUpgrade("d", 62)) mult = mult.mul(upgradeEffect("d", 62))
-    if (hasUpgrade("d", 63)) mult = mult.mul(upgradeEffect("d", 63))
-    if (hasUpgrade("d", 64)) mult = mult.mul(upgradeEffect("d", 64))
-        
-    if (hasUpgrade("n", 413)) mult = mult.pow(1.25)
-
-    //NOT ME GAIN RELATED STUFF AHEAD!
-    //mecombonerf for ddr challenges
-    if (inChallenge("ddr", 11)) player.MEComboNerf = player.points.add(2).log(10).div(350)
-    if (inChallenge("ddr", 12)) player.MEComboNerf = player.points.add(2).log(25).div(500)
-    if (inChallenge("ddr", 21)) player.MEComboNerf = new Decimal(0.98).pow(player.ddrm.combo)
-    if (inChallenge("ddr", 22)) player.MEComboNerf = player.points.add(2).log(100).div(1000)
+    if (mult.gte(player.softcap1Start)) mult = mult.pow(player.softcap1).mul(new Decimal(player.softcap1Start).pow(decimalOne.sub(player.softcap1)))
+    if (mult.gte(player.softcap2Start)) mult = mult.pow(player.softcap2).mul(new Decimal(player.softcap2Start).pow(decimalOne.sub(player.softcap2)))
+    if (mult.gte(player.softcap3Start)) mult = mult.pow(player.softcap3).mul(new Decimal(player.softcap3Start).pow(decimalOne.sub(player.softcap3)))
 
 	return mult
 }
 
-// You can add non-layer related variables that should to into "player" and be saved here, along with default values
-function addedPlayerData() { return {
-    MEComboNerf: new Decimal(1),
-}}
-
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 5/5 the EASY Beat Saber difficulty.",
-    "The Rhythm Game Tree made by Justcubing97",
-    function() {
-		if (inChallenge("ddr", 11) ||
-        inChallenge("ddr", 12) ||
-        inChallenge("ddr", 22)) return `<br><b>Musical Essence is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
-		if (inChallenge("ddr", 21)) return `<br><b>Combo is multiplying combo gain by x${format(player.MEComboNerf, 4)}!</b>`
-		else return ""
-	},
-    function() {if (player.points.gte("1e2000")) return "<b>FIRST SOFTCAP: 1e2000</b>"},
-    function() {if (player.points.gte("1e500000")) return "<b>SECOND SOFTCAP: 1e500000</b>"},
-    function() {if (player.points.gte("e1e6")) return "<b>THIRD SOFTCAP: e1000000</b>"},
+    "Current endgame: 1 Shape.",
+    "Justcubing97's Something Tree: Reloaded - mod author: Justcubing97",
+    "<br>",
+    function() {if (player.points.gte(player.softcap1Start)) return `<b>FIRST SOFTCAP: ${format(player.softcap1Start)} - ${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap2Start)) return `<b>SECOND SOFTCAP: ${format(player.softcap2Start)} - ${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap3Start)) return `<b>THIRD SOFTCAP: ${format(player.softcap3Start)} - ${format(player.softcap1)}</b>`},
+    "<br><br><br>",
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return challengeCompletions("bs", 11) >= 5
+	return player.poly.points.gte(1)
 }
 
 

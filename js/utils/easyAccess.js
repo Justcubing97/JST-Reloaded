@@ -62,6 +62,10 @@ function upgradeEffect(layer, id) {
 	return (tmp[layer].upgrades[id].effect)
 }
 
+function milestoneEffect(layer, id) {
+	return (tmp[layer].milestones[id].effect)
+}
+
 function challengeEffect(layer, id) {
 	return (tmp[layer].challenges[id].rewardEffect)
 }
@@ -78,10 +82,9 @@ function achievementEffect(layer, id) {
 	return (tmp[layer].achievements[id].effect)
 }
 
-function grantAchievement(layer, id, music){
+function grantAchievement(layer, id){
     player[layer].achievements.push(id.toString())
-	if (music) doPopup("achievement", tmp[layer].achievements[id].name, "Now playing:", 3, tmp[layer].color)
-    else doPopup("achievement", tmp[layer].achievements[id].name, "Achievement Unlocked!", 3, tmp[layer].color)
+    doPopup("achievement", tmp[layer].achievements[id].name, "Achievement Unlocked!", 3, tmp[layer].color)
 }
 
 function gridEffect(layer, id) {
