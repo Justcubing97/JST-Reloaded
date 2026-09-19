@@ -262,7 +262,6 @@ addLayer("p", {
                 if (hasMilestone("ar", 2)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -349,7 +348,6 @@ addLayer("p", {
                 if (hasMilestone("ar", 3)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -438,7 +436,6 @@ addLayer("p", {
                 if (hasMilestone("ar", 5)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())

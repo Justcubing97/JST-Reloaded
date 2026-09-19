@@ -40,7 +40,7 @@ addLayer("poly", {
     },
     row: 4, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [ //use shift for currencies, regulars for minigames
-        {key: "p", description: "P: Reset for Shapes", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "o", description: "O: Reset for Shapes", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){
         if (hasUpgrade("mul", 41)) player.poly.unlocked = true

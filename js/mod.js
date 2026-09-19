@@ -12,15 +12,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
-	name: "JST:R release",
+	num: "1.1",
+	name: "v1.0 bugfix 1",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v1.1</h2><br>
+		- Fixed Primitive/Polygon hotkey bug <br>
+		- Fixed \"t0\" being an invalid value <br>
 	<h2>v1.0</h2><br>
 		- Everything up to Polygon layer! <br>
 		- New side layers: Logarithmic Scale and Conway's Game of Life <br>
-        - Reworked achievements to be more spread out, like TRGT and the later half of JST:C. <br><br>
+        - Reworked achievements to be more spread out, like TRGT and the later half of JST:C <br><br>
     <h3>Changes from classic JST</h3><br>
 		- Improved softcap logic <br>
 		- Added shorthands for currencies (like in TRGT) <br>

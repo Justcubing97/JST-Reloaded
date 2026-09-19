@@ -424,13 +424,13 @@ addLayer("ar", {
         },
         2: {
             requirementDescription: "2: 1e10 Functions",
-            effectDescription: "Automate and bulk buy \"Fundamental Acceleration\". Delay the effect softcap of \"Rapid Generation\" to 1e30.",
+            effectDescription: "Automate and bulk buy \"Fundamental Acceleration\" without spending. Delay the effect softcap of \"Rapid Generation\" to 1e30.",
             done() { return player.ar.arFunction.gte("1e10") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
         3: {
             requirementDescription: "3: 1e14 Functions",
-            effectDescription: "Automate and bulk buy \"Rapid Generation\". Delay the effect softcap of \"Fundamental Acceleration\" to 1e30.",
+            effectDescription: "Automate and bulk buy \"Rapid Generation\" without spending. Delay the effect softcap of \"Fundamental Acceleration\" to 1e30.",
             done() { return player.ar.arFunction.gte("1e14") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
@@ -442,7 +442,7 @@ addLayer("ar", {
         },
         5: {
             requirementDescription: "5: 1e20 Functions",
-            effectDescription: "Automate and bulk buy \"Duplication Machine\". Delay its effect softcap to 1e15.",
+            effectDescription: "Automate and bulk buy \"Duplication Machine\" without spending. Delay its effect softcap to 1e15.",
             done() { return player.ar.arFunction.gte("1e20") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
