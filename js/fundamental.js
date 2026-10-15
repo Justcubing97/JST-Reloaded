@@ -91,6 +91,7 @@ addLayer("f", {
     passiveGeneration() {
         if (hasMilestone("p", 2)) return 1
         if (hasUpgrade("ar", 24)) return 1
+        if (hasMilestone("poly", 1)) return 1
         return 0
     },
     doReset(resettingLayer) {
@@ -376,11 +377,13 @@ addLayer("f", {
 
         if (hasMilestone("p", 5)) automationBoolean = true
         if (hasUpgrade("ar", 15)) automationBoolean = true
+        if (hasUpgrade("poly", 13)) automationBoolean = true
 
         if (automationBoolean){
             let list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27]
-            if (hasMilestone("p", 10) || hasUpgrade("ar", 15)) list.push(31, 32, 33)
-            if (hasUpgrade("ar", 15)) list.push(34, 35, 36, 37)
+            if (hasMilestone("p", 10)) list.push(31, 32, 33)
+            if (hasUpgrade("ar", 15)) list.push(31, 32, 33, 34, 35, 36, 37)
+            if (hasUpgrade("poly", 13)) list.push(31, 32, 33, 34, 35, 36, 37, 41, 42, 43)
             for (const id of list){
                 if (!hasUpgrade("f", id) && canAffordUpgrade("f", id) && tmp.f.upgrades[id].unlocked) buyUpgrade("f", id)
             }

@@ -12,14 +12,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.1",
-	name: "v1.0 bugfix 1",
+	num: "1.2",
+	name: "v1.2",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v1.2</h2><br>
+		- Tweaked wording for Inequality effects unlocked from \"Affect the Inequality\" <br>
+		- Changed names for row 3 TMT upgrades <br>
+		- Subtraction notifies when the NNL is completed, and the button is slightly tweaked <br><br>
 	<h2>v1.1</h2><br>
 		- Fixed Primitive/Polygon hotkey bug <br>
-		- Fixed \"t0\" being an invalid value <br>
+		- Fixed \"t0\" being an invalid value <br><br>
 	<h2>v1.0</h2><br>
 		- Everything up to Polygon layer! <br>
 		- New side layers: Logarithmic Scale and Conway's Game of Life <br>
@@ -42,7 +46,6 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Slightly changed node appearances of row 3 layers (+, -, ×, ÷) <br>
 		- Reworked achievements<br>
 		- Achievements are now color-coded<br>
-		- Version number no longer counts in 0.1 increments<br>
 		- UI now reflects that of TRGT<br>
     `
 
@@ -53,6 +56,7 @@ let winText = `Congratulations! You have reached the end and beaten this game as
 var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",
     "findEqPointsMult_ARH",
     "findIneqMult_ARH",
+    "clickIneqButton_ARH",
     "convertTo_ADD",
 ]
 
@@ -94,9 +98,10 @@ function getPointGen() {
     if (hasMilestone(layer, 2)) mult = mult.add(10)
 
     layer = "add"
-
     mult = mult.add(player.add.additionTypePoint.pow(5))
     //mul
+    if (hasAchievement("a", 35)) mult = mult.mul(player.mul.points.pow(2).add(1))
+
     layer = "f"
     if (!getClickableState("sub", 1001) || (getClickableState("sub", 1001) && !getClickableState("sub", 24))){
         if (hasUpgrade(layer, 11)) mult = mult.mul(2)
@@ -139,6 +144,10 @@ function getPointGen() {
 
     layer = "d"
     if (hasMilestone(layer, 2)) mult = mult.mul("1e100")
+
+    layer = "poly"
+    mult = mult.mul(buyableEffect(layer, 12))
+    if (hasUpgrade(layer, 12)) mult = mult.mul("1e100")
     //exp
     layer = "f"
     layer = "p"

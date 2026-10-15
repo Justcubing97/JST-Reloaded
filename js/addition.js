@@ -388,10 +388,9 @@ addLayer("add", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (false){
+                if (hasMilestone("poly", 1)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -420,12 +419,12 @@ addLayer("add", {
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
-                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
-                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
 
                 //insert cost effects here
 
@@ -451,6 +450,21 @@ addLayer("add", {
         if (player.d.points.gte(3)) mult = mult.mul(5)
 
         player.add.additionTypeLimit = mult
+
+        //automation
+        let automationBoolean = false
+
+        if (hasMilestone("poly", 1)) automationBoolean = true
+
+        if (automationBoolean){
+            let layer = "add"
+            let list = [11]
+            for (const id of list){
+                if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                    tmp[layer].buyables[id].buy()
+                }
+            }
+        }
     },
 
     tooltip() {return format(player.add.points) + " Addition (+" + format(getResetGain("add")) + " Addition/s)"},

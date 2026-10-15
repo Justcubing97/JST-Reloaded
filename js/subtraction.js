@@ -39,6 +39,9 @@ addLayer("sub", {
 
         layer = "d"
         if (player.d.points.gte(3)) mult = mult.mul(25)
+
+        layer = "poly"
+        if (hasUpgrade(layer, 15)) mult = mult.mul(5000)
         //exp 
         //other hypers
         //time dilations/chals
@@ -231,6 +234,32 @@ addLayer("sub", {
             currencyLayer: "sub",
             unlocked() {return true},
         },
+        17: {
+            title: "A Negative Variable",
+            effect() {
+                let base = player.sub.negativity.add(1)
+                let logbase = new Decimal(1.05)
+                let expbase = new Decimal(10)
+
+                base = base.pow(expbase).add(1).log(logbase).add(1).pow(2.5)
+
+                let softcap = new Decimal(0.25)
+                let softcapStart = new Decimal("1e100")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+            },
+            effectDisplay() {
+                let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " to FV/PV"
+                return text
+            },
+            description: "Negativity boosts FV and PV.",
+            cost: new Decimal("1600"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return true},
+        },
     },
 
     buyables: {
@@ -257,10 +286,9 @@ addLayer("sub", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (false){
+                if (hasMilestone("poly", 1)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -289,12 +317,12 @@ addLayer("sub", {
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
-                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
-                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
 
                 //insert cost effects here
 
@@ -546,7 +574,7 @@ addLayer("sub", {
             display() {
                 let extra = ""
                 if (getClickableState(this.layer, this.id) && player.points.gte("1e800")) extra = `<br><br>You have at least 1e800 Points, therefore you will gain Negativity upon exiting the NNL.`
-                return `<span style="font-size: 16px"><i>\"Nothing is negative down here. I don't hope that you won't have a negative time.\"</i><br><br>Restrictions apply inside the Negative Number Line if they are lit up.<br><br>You will gain +${format(player.sub.negativityGain)} (${format(player.sub.currentGain)}) Negativity upon completing this NNL.${extra}</span>`
+                return `<span style="font-size: 16px"><i>\"Nothing is negative down here. I don't hope that you won't have a negative time.\"</i><br><br>Restrictions apply inside the Negative Number Line if they are lit up.<br><br>You will gain +${format(player.sub.negativityGain)} (total: ${format(player.sub.currentGain)}) Negativity upon completing this NNL.${extra}</span>`
             },
             canClick() {return true},
             onClick() {
@@ -604,6 +632,25 @@ addLayer("sub", {
         mult = mult.sub(player.sub.negativity)
 
         if (!getClickableState(this.layer, 1001)) player.sub.negativityGain = Decimal.max(mult, 0)
+
+        //automation
+        let automationBoolean = false
+
+        if (hasMilestone("poly", 1)) automationBoolean = true
+
+        if (automationBoolean){
+            let layer = "sub"
+            let list = [11]
+            for (const id of list){
+                if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                    tmp[layer].buyables[id].buy()
+                }
+            }
+        }
+    },
+
+    shouldNotify() {
+        return getClickableState(this.layer, 1001) && player.points.gte("1e800")
     },
 
     tooltip() {return format(player.sub.points) + " Subtraction (+" + format(getResetGain("sub")) + " Subtraction/s)"},

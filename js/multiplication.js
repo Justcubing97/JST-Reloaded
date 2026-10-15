@@ -32,6 +32,9 @@ addLayer("mul", {
         //mul
         layer = "sub"
         if (hasUpgrade(layer, 15)) mult = mult.mul(1.25)
+            
+        layer = "poly"
+        if (hasUpgrade(layer, 22)) mult = mult.mul(upgradeEffect(layer, 22))
         //exp 
         //other hypers
         //time dilations/chals
@@ -209,7 +212,7 @@ addLayer("mul", {
         },
         
         31: {
-            title: "Equality",
+            title: "Affect the Equality",
             description: "Improve the 1st and 3rd effects of FV and PV.",
             currencyDisplayName: "Products",
             currencyInternalName: "products",
@@ -228,7 +231,7 @@ addLayer("mul", {
             },
         },
         32: {
-            title: "Inequality",
+            title: "Affect the Inequality",
             description: "Unlock effects of the individual inequalities.",
             currencyDisplayName: "Products",
             currencyInternalName: "products",
@@ -249,7 +252,7 @@ addLayer("mul", {
         
         41: {
             title: "A = bh/2",
-            description: "Unlock the next layer.",
+            description: "Unlock the next layer. <i>Will not consume Products.</i>",
             currencyDisplayName: "Products",
             currencyInternalName: "products",
             currencyLayer: "mul",
@@ -293,10 +296,9 @@ addLayer("mul", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (false){
+                if (hasMilestone("poly", 1)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
-                    player[this.layer].points = player[this.layer].points.sub(cost)
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
                     player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -325,12 +327,12 @@ addLayer("mul", {
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
-                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                timesBought = timesBought.div(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
                 timesBought = timesBought.add(1).log(tmp[this.layer].buyables[this.id].exponentialBase)
                 timesBought = timesBought.floor()
 
                 let totalCost = tmp[this.layer].buyables[this.id].base
-                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id).pow(1.1)))
+                totalCost = totalCost.mul(tmp[this.layer].buyables[this.id].exponentialBase.pow(getBuyableAmount(this.layer, this.id)))
 
                 //insert cost effects here
 
@@ -362,6 +364,21 @@ addLayer("mul", {
         if (hasUpgrade(this.layer, 32)) difference = difference.add(25)
 
         player.mul.products = player.mul.productsTotal.sub(difference)
+
+        //automation
+        let automationBoolean = false
+
+        if (hasMilestone("poly", 1)) automationBoolean = true
+
+        if (automationBoolean){
+            let layer = "mul"
+            let list = [11]
+            for (const id of list){
+                if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                    tmp[layer].buyables[id].buy()
+                }
+            }
+        }
     },
 
     tooltip() {

@@ -88,6 +88,7 @@ addLayer("p", {
     },
     passiveGeneration() {
         if (hasUpgrade("ar", 24)) return 1
+        if (hasMilestone("poly", 1)) return 1
         return 0
     }, //use autoPrestige() if static!
     doReset(resettingLayer) {
@@ -271,6 +272,7 @@ addLayer("p", {
             effectBase() {
                 let base = new Decimal(2.5)
                 if (hasMilestone(this.layer, 4)) base = base.add(0.25)
+                if (hasUpgrade("poly", 104)) base = base.add(0.25)
                 return base
             },
             effect(x) {
@@ -359,6 +361,7 @@ addLayer("p", {
                 if (hasMilestone(this.layer, 4)) base = base.add(0.25)
                 if (hasMilestone(this.layer, 7)) base = base.add(0.5)
                 if (hasMilestone("ar", 6)) base = base.add(1.75)
+                if (hasUpgrade("poly", 104)) base = base.add(0.25)
                 return base
             },
             effect(x) {
@@ -446,7 +449,7 @@ addLayer("p", {
                 let base = new Decimal(1.5)
                 if (hasMilestone(this.layer, 11)) base = base.add(0.15)
                 if (hasUpgrade("ar", 14)) base = base.add(0.15)
-                if (hasChallenge(layer, 11)) base = base.add(0.05)
+                if (hasUpgrade("poly", 104)) base = base.add(0.4)
 
                 return base
             },

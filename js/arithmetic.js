@@ -39,6 +39,9 @@ addLayer("ar", {
 
         softcap1: new Decimal(0.25),
         softcap1Start: new Decimal("1e1000"), //defaults for normal layers
+        
+        softcapFunc1: new Decimal(0.25),
+        softcapFunc1Start: new Decimal("1e250"), //defaults for normal layers
     }},
     color: "rgb(255,0,102)",
     requires: new Decimal("1e40"), // Can be a function that takes requirement increases into account
@@ -57,6 +60,9 @@ addLayer("ar", {
             
         layer = "add"
         mult = mult.mul(buyableEffect(layer, 11))
+        
+        layer = "poly"
+        if (hasUpgrade(layer, 15)) mult = mult.mul(5000)
         //exp 
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.pow(1.05)
@@ -85,7 +91,11 @@ addLayer("ar", {
         if (hasMilestone("p", 12)) player.ar.unlocked = true
         return player.ar.unlocked
     },
-    passiveGeneration() {return false}, //use autoPrestige() if static!
+    milestonePopups() {return getClickableState("ar", 1001)},
+    passiveGeneration() { 
+        if (hasMilestone("poly", 1)) return 1
+        return 0
+    }, //use autoPrestige() if static!
     findEqPointsMult_ARH(){
         let layer;
         let mult = new Decimal(1)
@@ -106,6 +116,9 @@ addLayer("ar", {
 
         layer = "d"
         if (player.d.points.gte(2)) mult = mult.mul(125)
+            
+        layer = "poly"
+        if (hasUpgrade(layer, 17)) mult = mult.mul("1e10")
         //exp 
         //other hypers
         //time dilations/chals
@@ -148,11 +161,65 @@ addLayer("ar", {
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.mul(25)
         if (player.d.points.gte(3)) mult = mult.mul(8)
+
+        layer = "poly"
+        if (hasUpgrade(layer, 14)) mult = mult.mul("1e6")
         //exp 
         //other hypers
         //time dilations/chals
         //softcaps + after softcap boosts
         return mult
+    },
+    clickIneqButton_ARH(){
+        let flick = Math.floor(Math.random() * 4 + 1)
+        switch(flick){
+            case 1:
+                player.ar.LT = player.ar.LT.add(tmp.ar.findIneqMult_ARH(1))
+                break;
+            case 2:
+                player.ar.LTE = player.ar.LTE.add(tmp.ar.findIneqMult_ARH(2))
+                break;
+            case 3:
+                player.ar.GTE = player.ar.GTE.add(tmp.ar.findIneqMult_ARH(3))
+                break;
+            case 4:
+                player.ar.GT = player.ar.GT.add(tmp.ar.findIneqMult_ARH(4))
+                break;
+        }
+        if (Math.random() < 0.5){
+            flick = Math.floor(Math.random() * 4 + 1)
+            switch(flick){
+                case 1:
+                    if (player.ar.LT.gt(0) && tmp.ar.findIneqMult_ARH(1).lt(player.ar.LT)) player.ar.LT = player.ar.LT.sub(tmp.ar.findIneqMult_ARH(1))
+                    break;
+                case 2:
+                    if (player.ar.LTE.gt(0) && tmp.ar.findIneqMult_ARH(2).lt(player.ar.LTE)) player.ar.LTE = player.ar.LTE.sub(tmp.ar.findIneqMult_ARH(2))
+                    break;
+                case 3:
+                    if (player.ar.GTE.gt(0) && tmp.ar.findIneqMult_ARH(3).lt(player.ar.GTE)) player.ar.GTE = player.ar.GTE.sub(tmp.ar.findIneqMult_ARH(3))
+                    break;
+                case 4:
+                    if (player.ar.GT.gt(0) && tmp.ar.findIneqMult_ARH(4).lt(player.ar.GT)) player.ar.GT = player.ar.GT.sub(tmp.ar.findIneqMult_ARH(4))
+                    break;
+            }
+        }
+        if (hasMilestone("ar", 4) && Math.random() < 0.25){
+            flick = Math.floor(Math.random() * 4 + 1)
+            switch(flick){
+                case 1:
+                    if (player.ar.LT.gt(0)) player.ar.LT = player.ar.LT.add(tmp.ar.findIneqMult_ARH(1).mul(2))
+                    break;
+                case 2:
+                    if (player.ar.LTE.gt(0)) player.ar.LTE = player.ar.LTE.add(tmp.ar.findIneqMult_ARH(2).mul(2))
+                    break;
+                case 3:
+                    if (player.ar.GTE.gt(0)) player.ar.GTE = player.ar.GTE.add(tmp.ar.findIneqMult_ARH(3).mul(2))
+                    break;
+                case 4:
+                    if (player.ar.GT.gt(0)) player.ar.GT = player.ar.GT.add(tmp.ar.findIneqMult_ARH(4).mul(2))
+                    break;
+            }
+        }
     },
     onPrestige(){
         player.ar.eqPoints = player.ar.eqPoints.add(tmp.ar.findEqPointsMult_ARH())
@@ -164,9 +231,11 @@ addLayer("ar", {
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
         if (resettingLayer == "d") keptUpgrades.push(11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27)
+        if (hasUpgrade("poly", 14)) keptUpgrades.push(17)
 
         let keptBuyables = []
 
+        let keptAR1001State = getClickableState("ar", 1001)
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
 
@@ -175,6 +244,7 @@ addLayer("ar", {
 
         // Stage 5, add back in the specific subfeatures you saved earlier
         player[this.layer].upgrades.push(...keptUpgrades)
+        setClickableState("ar", 1001, keptAR1001State)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
 
     tabFormat: {
@@ -195,7 +265,9 @@ addLayer("ar", {
                 ["blank", "4px"],
                 ["display-text", function(){return `<span style="color: rgb(255,204,0);">Fundamental Variables multiply Funda gain by x${format(player.ar.effectFV1)}</span>`}],
                 ["blank", "4px"],
-                ["display-text", function(){return `<span style="color: rgb(255,204,0);">They also divide Primitive Variables gain by ÷${format(player.ar.effectFV2)}</span>`}],
+                ["display-text", function(){
+                    if (hasUpgrade("poly", 17)) return `<span style="color: rgb(255,204,0);">They also multiply Primitive Variables gain by x${format(player.ar.effectFV2)}</span>`
+                    return `<span style="color: rgb(255,204,0);">They also divide Primitive Variables gain by ÷${format(player.ar.effectFV2)}</span>`}],
                 ["blank", "4px"],
                 ["display-text", function(){if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(255,204,0);">They also multiply Addition and Subtraction gain by x${format(player.ar.effectFV3)}</span>`}],
                 "blank",
@@ -203,7 +275,9 @@ addLayer("ar", {
                 ["blank", "4px"],
                 ["display-text", function(){return `<span style="color: rgb(0,204,255);">Primitive Variables multiply Nums gain by x${format(player.ar.effectPV1)}</span>`}],
                 ["blank", "4px"],
-                ["display-text", function(){return `<span style="color: rgb(0,204,255);">They also divide Fundamental Variables gain by ÷${format(player.ar.effectPV2)}</span>`}],
+                ["display-text", function(){
+                    if (hasUpgrade("poly", 17)) return `<span style="color: rgb(0,204,255);">They also multiply Fundamental Variables gain by x${format(player.ar.effectPV2)}</span>`
+                    return `<span style="color: rgb(0,204,255);">They also divide Fundamental Variables gain by ÷${format(player.ar.effectPV2)}</span>`}],
                 ["blank", "4px"],
                 ["display-text", function(){if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(0,204,255);">They also multiply Function gain by x${format(player.ar.effectPV3)}</span>`}],
                 "blank",
@@ -224,11 +298,11 @@ addLayer("ar", {
                 ["display-text", function(){return `You have <h2 style="color: rgb(255,153,255); text-shadow: 0px 0px 10px rgb(255,153,255)">${format(player.ar.LT)}</h2> Less-Than Inequalities (LT)`}],
                 ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,153,255);">LT multiplies LTE by x${format(player.ar.effectLT)}</span>`}],
                 ["display-text", function(){return `You have <h2 style="color: rgb(255,170,220); text-shadow: 0px 0px 10px rgb(255,170,220)">${format(player.ar.LTE)}</h2> Less-Equal-Than Inequalities (LTE)`}],
-                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,170,220);">LT multiplies LT by x${format(player.ar.effectLTE)}</span>`}],
+                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,170,220);">LTE multiplies LT by x${format(player.ar.effectLTE)}</span>`}],
                 ["display-text", function(){return `You have <h2 style="color: rgb(255,187,187); text-shadow: 0px 0px 10px rgb(255,187,187)">${format(player.ar.GTE)}</h2> Greater-Equal-Than Inequalities (GTE)`}],
-                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,187,187);">LT multiplies GT by x${format(player.ar.effectGTE)}</span>`}],
+                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,187,187);">GTE multiplies GT by x${format(player.ar.effectGTE)}</span>`}],
                 ["display-text", function(){return `You have <h2 style="color: rgb(255,204,153); text-shadow: 0px 0px 10px rgb(255,204,153)">${format(player.ar.GT)}</h2> Greater-Than Inequalities (GT)`}],
-                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,204,153);">LT multiplies GTE by x${format(player.ar.effectGT)}</span>`}],
+                ["display-text", function(){if (hasUpgrade("mul", 32)) return `<span style="color: rgb(255,204,153);">GT multiplies GTE by x${format(player.ar.effectGT)}</span>`}],
                 "blank",
                 ["display-text", function(){return `You have <h2 style="color: rgb(204,0,80); text-shadow: 0px 0px 10px rgb(204,0,80)">${format(player.ar.arFunction)}</h2> Functions (FN)`}],
                 ["display-text", function(){return `You are gaining ${format(player.ar.arFunctionGain)} Functions per second.`}],
@@ -242,6 +316,8 @@ addLayer("ar", {
                 ["display-text", function(){if (hasMilestone("ar", 10)) return `Functions multiply Negativity and Functions by x${format(player.ar.functionE7)}`}],
                 "blank",
                 "h-line",
+                "blank",
+                ["clickable", [1001]],
                 "blank",
                 "milestones",
             ],
@@ -617,60 +693,27 @@ addLayer("ar", {
             title: "Gain an Inequality",
             canClick() {return true},
             onClick() {
-                let flick = Math.floor(Math.random() * 4 + 1)
-                switch(flick){
-                    case 1:
-                        player.ar.LT = player.ar.LT.add(tmp.ar.findIneqMult_ARH(1))
-                        break;
-                    case 2:
-                        player.ar.LTE = player.ar.LTE.add(tmp.ar.findIneqMult_ARH(2))
-                        break;
-                    case 3:
-                        player.ar.GTE = player.ar.GTE.add(tmp.ar.findIneqMult_ARH(3))
-                        break;
-                    case 4:
-                        player.ar.GT = player.ar.GT.add(tmp.ar.findIneqMult_ARH(4))
-                        break;
-                }
-                if (Math.random() < 0.5){
-                    flick = Math.floor(Math.random() * 4 + 1)
-                    switch(flick){
-                        case 1:
-                            if (player.ar.LT.gt(0) && tmp.ar.findIneqMult_ARH(1).lt(player.ar.LT)) player.ar.LT = player.ar.LT.sub(tmp.ar.findIneqMult_ARH(1))
-                            break;
-                        case 2:
-                            if (player.ar.LTE.gt(0) && tmp.ar.findIneqMult_ARH(2).lt(player.ar.LTE)) player.ar.LTE = player.ar.LTE.sub(tmp.ar.findIneqMult_ARH(2))
-                            break;
-                        case 3:
-                            if (player.ar.GTE.gt(0) && tmp.ar.findIneqMult_ARH(3).lt(player.ar.GTE)) player.ar.GTE = player.ar.GTE.sub(tmp.ar.findIneqMult_ARH(3))
-                            break;
-                        case 4:
-                            if (player.ar.GT.gt(0) && tmp.ar.findIneqMult_ARH(4).lt(player.ar.GT)) player.ar.GT = player.ar.GT.sub(tmp.ar.findIneqMult_ARH(4))
-                            break;
-                    }
-                }
-                if (hasMilestone("ar", 4) && Math.random() < 0.25){
-                    flick = Math.floor(Math.random() * 4 + 1)
-                    switch(flick){
-                        case 1:
-                            if (player.ar.LT.gt(0)) player.ar.LT = player.ar.LT.add(tmp.ar.findIneqMult_ARH(1).mul(2))
-                            break;
-                        case 2:
-                            if (player.ar.LTE.gt(0)) player.ar.LTE = player.ar.LTE.add(tmp.ar.findIneqMult_ARH(2).mul(2))
-                            break;
-                        case 3:
-                            if (player.ar.GTE.gt(0)) player.ar.GTE = player.ar.GTE.add(tmp.ar.findIneqMult_ARH(3).mul(2))
-                            break;
-                        case 4:
-                            if (player.ar.GT.gt(0)) player.ar.GT = player.ar.GT.add(tmp.ar.findIneqMult_ARH(4).mul(2))
-                            break;
-                    }
-                }
+                player.ar.clickIneqButton_ARH()
             },
             style() {
                 return {
                     "font-size": "18px",
                     "width": "200px",
+                    "height": "80px",
+                }
+            }
+        },
+
+        1001: {
+            title() {return `Toggle milestone popups (${getClickableState(this.layer, this.id)})`},
+            canClick() {return true},
+            onClick() {
+                if (getClickableState(this.layer, this.id) != false && getClickableState(this.layer, this.id) != true) setClickableState(this.layer, this.id, false)
+                setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
+            },
+            style() {
+                return {
+                    "width": "160px",
                     "height": "80px",
                 }
             }
@@ -682,7 +725,7 @@ addLayer("ar", {
             name: "Challenge Intro",
             challengeDescription: "<i>\"Oh ho ho, you're here now. Trust me, you'll like it here.\"</i><br><br>^0.5 Points, Funda, and Numbers.",
             goalDescription: "Have 1e80 Points.",
-            rewardDescription: "+0.05 to the base of \"Duplication Machine\". ^1.1 Points. Each Ineq. is raised to ^1.5 before being multiplied in the Functions formula.",
+            rewardDescription: "^1.1 Points. Each Ineq. is raised to ^1.5 before being multiplied in the Functions formula.",
             canComplete: function() {return player.points.gte("1e80")},
             unlocked() {return hasUpgrade("ar", 27)},
             onEnter() {},
@@ -746,9 +789,16 @@ addLayer("ar", {
             if (hasUpgrade("sub", 12)) mult = mult.mul(50000)
                 
             if (hasUpgrade("mul", 11)) mult = mult.mul(100000)
+                
+            if (hasUpgrade("sub", 17)) mult = mult.mul(upgradeEffect("sub", 17))
 
-            if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectPV2)
-            if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectFV2)
+            if (hasUpgrade("poly", 17)){
+                if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) mult = mult.mul(player.ar.effectPV2)
+                if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) mult = mult.mul(player.ar.effectFV2)
+            } else {
+                if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectPV2)
+                if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectFV2)
+            }
         }
         player.ar.varGain = mult
         
@@ -822,6 +872,10 @@ addLayer("ar", {
         if (hasMilestone("ar", 9)) mult = mult.mul(player.ar.effectPV3)
         if (hasMilestone("ar", 10)) mult = mult.mul(player.ar.functionE7)
         if (hasUpgrade("mul", 22)) mult = mult.mul(upgradeEffect("mul", 22))
+        if (hasUpgrade("poly", 14)) mult = mult.mul("1e10")
+
+        let layer = "ar"
+        if (mult.gte(player[layer].softcapFunc1Start)) mult = mult.pow(player[layer].softcapFunc1).mul(new Decimal(player[layer].softcapFunc1Start).pow(decimalOne.sub(player[layer].softcapFunc1)))
 
         //applying functions
         if (hasUpgrade("ar", 17) && (player.ar.LT.gt(0) || player.ar.LTE.gt(0) || player.ar.GTE.gt(0) || player.ar.GT.gt(0))){
@@ -883,6 +937,20 @@ addLayer("ar", {
             player.ar.effectLTE = new Decimal(1)
             player.ar.effectGTE = new Decimal(1)
             player.ar.effectGT = new Decimal(1)
+        }
+
+        if (hasUpgrade("poly", 14)) tmp.ar.clickIneqButton_ARH()
+
+        //automation
+        let automationBoolean = false
+
+        if (hasMilestone("poly", 1)) automationBoolean = true
+
+        if (automationBoolean){
+            let list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27]
+            for (const id of list){
+                if (!hasUpgrade("ar", id) && canAffordUpgrade("ar", id) && tmp.ar.upgrades[id].unlocked) buyUpgrade("ar", id)
+            }
         }
     },
 

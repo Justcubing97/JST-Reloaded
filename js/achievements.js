@@ -146,5 +146,20 @@ addLayer("a", {
                 "border-color": "cyan"
             }},
         },
+        34: {
+            name: "Megagons",
+            done() {return player.poly.points.gte("1e6")},
+            unlocked() {return true},
+            tooltip() {return "Have 1,000,000 Shapes. This is inflating quickly."},
+        },
+        35: {
+            name: "Broken Exponents",
+            done() {return player.ar.points.eq("0") && getResetGain("ar").gte("1e150")},
+            unlocked() {return true},
+            tooltip() {return "Gain 1e150 Operation Power with 0 current Operation Power. EFFECT: Multiplication boosts Points."},
+            style() {return {
+                "border-color": "red"
+            }},
+        },
     },
 })
