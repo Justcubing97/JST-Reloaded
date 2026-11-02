@@ -32,17 +32,28 @@ addLayer("sub", {
         //add
         //mul
         layer = "ar"
-        if (hasMilestone(layer, 9)) mult = mult.mul(player.ar.effectFV3)
+        if (hasMilestone(layer, 9)){
+            if (getClickableState("sub", 1001) && getClickableState("sub", 42)) mult = mult.div(player.ar.effectFV3)
+            else mult = mult.mul(player.ar.effectFV3)
+        }
+            
+        layer = "sub"
+        if (hasUpgrade(layer, 22)) mult = mult.mul("1e4")
+        if (hasUpgrade(layer, 24)) mult = mult.mul("1e10")
             
         layer = "mul"
         mult = mult.mul(buyableEffect(layer, 11))
 
         layer = "d"
         if (player.d.points.gte(3)) mult = mult.mul(25)
+        if (player.d.points.gte(4)) mult = mult.mul("1e10")
 
         layer = "poly"
         if (hasUpgrade(layer, 15)) mult = mult.mul(5000)
         //exp 
+        layer = "poly"
+        if (player.poly.area.gte(2544)) mult = mult.pow(player.poly.areaEffect4)
+        mult = mult.pow(player.poly.pentagonsEffect1)
         //other hypers
         //time dilations/chals
         //final
@@ -73,6 +84,10 @@ addLayer("sub", {
 
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
+        if (hasUpgrade("poly", 23)) keptUpgrades.push(11, 12, 13, 14, 15, 16, 17)
+        if (hasUpgrade("sub", 23)) keptUpgrades.push(21, 22, 23)
+        if (hasUpgrade("sub", 26)) keptUpgrades.push(24, 25, 26)
+        if (hasUpgrade("sub", 27)) keptUpgrades.push(27)
 
         let keptBuyables = []
 
@@ -94,17 +109,29 @@ addLayer("sub", {
             getClickableState("sub", 32),
             getClickableState("sub", 33),
             getClickableState("sub", 34),
+            getClickableState("sub", 41),
+            getClickableState("sub", 42),
+            getClickableState("sub", 43),
+            getClickableState("sub", 44),
         ]
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = ["buyables", "upgrades"];
 
-        if (resettingLayer == "poly"){
+        if (resettingLayer == "poly" && !isNNL){
             keep = []
             keptNegGain = new Decimal(0)
             keptCurGain = new Decimal(0)
-            keptNeg = new Decimal(0)
+            if (!hasUpgrade("poly", 23)) keptNeg = new Decimal(0)
             isNNL = false
+        }
+
+        if (resettingLayer == "pf"){
+            keep = []
+            keptUpgrades = []
+            keptNeg = new Decimal(0)
+            keptNegGain = new Decimal(0)
+            keptCurGain = new Decimal(0)
         }
 
         // Stage 4, do the actual data reset
@@ -128,11 +155,18 @@ addLayer("sub", {
         setClickableState("sub", 33, keptRestricts[10])
         setClickableState("sub", 34, keptRestricts[11])
 
+        setClickableState("sub", 41, keptRestricts[12])
+        setClickableState("sub", 42, keptRestricts[13])
+        setClickableState("sub", 43, keptRestricts[14])
+        setClickableState("sub", 44, keptRestricts[15])
+
         setClickableState("sub", 1001, isNNL)
 
         player.sub.negativityGain = keptNegGain
         player.sub.negativity = keptNeg
         player.sub.currentGain = keptCurGain
+
+        player.sub.upgrades.push(...keptUpgrades)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
     onPrestige() {player.sub.initiated = true},
     tabFormat: {
@@ -152,7 +186,15 @@ addLayer("sub", {
                 ["display-text", "1A: Each additional restriction will multiply Negativity gain by x2."],
                 ["display-text", "1B: You will only gain the difference between your current Negativity and your new highest Negativity."],
                 ["display-text", "2: Click the big pink/purple button to enter the Negative Number Line, or NNL."],
-                ["display-text", "3: Have 1e800 Points to gain Negativity upon exiting the NNL."],
+                function() {
+                    if (
+                        getClickableState("sub", 41) ||
+                        getClickableState("sub", 42) ||
+                        getClickableState("sub", 43) ||
+                        getClickableState("sub", 44)
+                    ) return ["display-text", "3: Have 1e1000 Points to gain Negativity upon exiting the NNL, because Arithmetic Restrictions are active."]
+                    return ["display-text", "3: Have 1e800 Points to gain Negativity upon exiting the NNL."]
+                },
                 "blank",
                 "h-line",
                 "blank",
@@ -161,6 +203,21 @@ addLayer("sub", {
                 ["row", [["display-text", `Point<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 11], ["clickable", 12], ["clickable", 13], ["clickable", 14]]],
                 ["row", [["display-text", `Fundamental<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 21], ["clickable", 22], ["clickable", 23], ["clickable", 24]]],
                 ["row", [["display-text", `Primitive<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 31], ["clickable", 32], ["clickable", 33], ["clickable", 34]]],
+                function() {if (hasUpgrade("div", 16)) return ["row", [["display-text", `Arithmetic<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 41], ["clickable", 42], ["clickable", 43], ["clickable", 44]]]},
+                function() {
+                    if (
+                        getClickableState("sub", 41) ||
+                        getClickableState("sub", 42) ||
+                        getClickableState("sub", 43) ||
+                        getClickableState("sub", 44)
+                    ) return "blank"},
+                function() {
+                    if (
+                        getClickableState("sub", 41) ||
+                        getClickableState("sub", 42) ||
+                        getClickableState("sub", 43) ||
+                        getClickableState("sub", 44)
+                    ) return ["display-text", "Because Arithmetic restrictions are active, entering and exiting the NNL will cause a Polygon reset!"]},
                 "blank",
                 ["clickable", 1001],
                 "blank",
@@ -241,7 +298,12 @@ addLayer("sub", {
                 let logbase = new Decimal(1.05)
                 let expbase = new Decimal(10)
 
+                if (hasUpgrade("poly", 203)) logbase = new Decimal("1e-12").add(1)
+                if (hasUpgrade("poly", 203)) expbase = new Decimal(100)
+
                 base = base.pow(expbase).add(1).log(logbase).add(1).pow(2.5)
+                
+                if (hasUpgrade("poly", 203)) base = base.pow(2.5)
 
                 let softcap = new Decimal(0.25)
                 let softcapStart = new Decimal("1e100")
@@ -259,6 +321,70 @@ addLayer("sub", {
             currencyInternalName: "negativity",
             currencyLayer: "sub",
             unlocked() {return true},
+        },
+
+        21: {
+            title: "n(n - 1) = n",
+            description: "The equations just get more complicated. x1,000,000 Number Cores.",
+            cost: new Decimal("45000"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        22: {
+            title: "Anti-Anti-Negativity",
+            description: "x10,000 Subtraction and NC.",
+            cost: new Decimal("55000"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        23: {
+            title: "Core Promotion",
+            description: "x1e10 NC, and keep the first three upgrades in this row.",
+            cost: new Decimal("1e5"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        24: {
+            title: "n<sup>n-1</sup> = n",
+            description: "OH DEAR. x1e10 Subtraction, Edges, and Vertex cap.",
+            cost: new Decimal("4e5"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        25: {
+            title: "(n - 1)! = n",
+            description: "Factorials now?? Multiply OP by x12!",
+            cost: new Decimal("1.3e6"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        26: {
+            title: "Save Your Fingers (And Negativity)",
+            description: "Keep the 4th-6th upgrades in this row.",
+            cost: new Decimal("2222222"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
+        },
+        27: {
+            title: "Where Are The Boosters At?",
+            description: "Unlock Core Boosters. <i>This upgrade will be kept.</i>",
+            cost: new Decimal("3e6"),
+            currencyDisplayName: "Negativity",
+            currencyInternalName: "negativity",
+            currencyLayer: "sub",
+            unlocked() {return hasMilestone("div", 3)},
         },
     },
 
@@ -282,7 +408,7 @@ addLayer("sub", {
             },
             title: "Inversion",
             display() {
-                return "Multiplies Addition and Addition Types cap gain by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "Multiplies Addition and Addition Types cap gain by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
@@ -297,6 +423,7 @@ addLayer("sub", {
             },
             effectBase() {
                 let base = new Decimal(1.25)
+                if (hasUpgrade("cb", 12)) base = base.add(0.75)
                 return base
             },
             effect(x) {
@@ -305,6 +432,8 @@ addLayer("sub", {
                 
                 let softcap = new Decimal(0.5)
                 let softcapStart = new Decimal(100)
+
+                if (hasUpgrade("div", 21)) softcapStart = softcapStart.pow(16)
 
                 if (effect.gte(softcapStart)) effect = effect.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
@@ -569,24 +698,147 @@ addLayer("sub", {
             }
         },
         
+        41: {
+            title: "^0.1 Operation Power",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
+            },
+            style() {
+                if (getClickableState(this.layer, this.id)) return {
+                    "background-color": "rgb(255, 0, 102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+                return {
+                    "background-color": "rgb(102,102,102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+            unlocked() {return hasUpgrade("div", 16)},
+        },
+        42: {
+            title: "FV and PV divide instead of multiply (stronger)",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
+            },
+            style() {
+                if (getClickableState(this.layer, this.id)) return {
+                    "background-color": "rgb(255, 0, 102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+                return {
+                    "background-color": "rgb(102,102,102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+            unlocked() {return hasUpgrade("div", 16)},
+        },
+        43: {
+            title: "Disable Functions + ^0.8 Points",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
+            },
+            style() {
+                if (getClickableState(this.layer, this.id)) return {
+                    "background-color": "rgb(255, 0, 102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+                return {
+                    "background-color": "rgb(102,102,102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+            unlocked() {return hasUpgrade("div", 16)},
+        },
+        44: {
+            title: "Disable Addition types + ^0.1 Nums",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
+            },
+            style() {
+                if (getClickableState(this.layer, this.id)) return {
+                    "background-color": "rgb(255, 0, 102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+                return {
+                    "background-color": "rgb(102,102,102)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+            unlocked() {return hasUpgrade("div", 16)},
+        },
+        
         1001: {
             title: "<h2>Enter the Negative Number Line</h2>",
             display() {
                 let extra = ""
-                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")) extra = `<br><br>You have at least 1e800 Points, therefore you will gain Negativity upon exiting the NNL.`
+                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")){
+                    if (
+                        getClickableState("sub", 41) ||
+                        getClickableState("sub", 42) ||
+                        getClickableState("sub", 43) ||
+                        getClickableState("sub", 44)
+                    ){
+                        if (player.points.gte("1e1000")) extra = `<br><br>You have at least 1e1000 Points, therefore you will gain Negativity upon exiting the NNL.`
+                    }
+                    else extra = `<br><br>You have at least 1e800 Points, therefore you will gain Negativity upon exiting the NNL.`
+                }
                 return `<span style="font-size: 16px"><i>\"Nothing is negative down here. I don't hope that you won't have a negative time.\"</i><br><br>Restrictions apply inside the Negative Number Line if they are lit up.<br><br>You will gain +${format(player.sub.negativityGain)} (total: ${format(player.sub.currentGain)}) Negativity upon completing this NNL.${extra}</span>`
             },
-            canClick() {return true},
+            canClick() {
+                if (inChallenge("ar", 13)) return false
+                if (inChallenge("poly", 11)) return false
+                return true
+            },
             onClick() {
-                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")) player.sub.negativity = player.sub.negativity.add(player.sub.negativityGain)
+                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")){
+                    if (
+                        getClickableState("sub", 41) ||
+                        getClickableState("sub", 42) ||
+                        getClickableState("sub", 43) ||
+                        getClickableState("sub", 44)
+                    ){
+                        if (player.points.gte("1e1000")) player.sub.negativity = player.sub.negativity.add(player.sub.negativityGain)
+                    }
+                    else player.sub.negativity = player.sub.negativity.add(player.sub.negativityGain)
+                }
                 setClickableState(this.layer, this.id, !getClickableState(this.layer, this.id))
                 doReset("ar", true)
+                if (
+                    getClickableState("sub", 41) ||
+                    getClickableState("sub", 42) ||
+                    getClickableState("sub", 43) ||
+                    getClickableState("sub", 44)
+                ) doReset("poly", true)
             },
             style() {
-                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")) return {
-                    "background-color": "rgb(153,102,255)",
-                    "width": "525px",
-                    "height": "275px",
+                if (getClickableState(this.layer, this.id) && player.points.gte("1e800")){
+                    if (getClickableState("sub", 41) ||
+                    getClickableState("sub", 42) ||
+                    getClickableState("sub", 43) ||
+                    getClickableState("sub", 44)){
+                        if (player.points.lt("1e1000")) return {
+                            "background-color": "rgb(102,51,204)",
+                            "width": "500px",
+                            "height": "250px",
+                        }
+                    }
+                    return {
+                        "background-color": "rgb(153,102,255)",
+                        "width": "525px",
+                        "height": "275px",
+                    }
                 }
                 if (getClickableState(this.layer, this.id)) return {
                     "background-color": "rgb(102,51,204)",
@@ -620,14 +872,26 @@ addLayer("sub", {
         if (getClickableState("sub", 33)) restrictions = restrictions.add(1)
         if (getClickableState("sub", 34)) restrictions = restrictions.add(1)
 
+        if (getClickableState("sub", 41)) restrictions = restrictions.add(1)
+        if (getClickableState("sub", 42)) restrictions = restrictions.add(1)
+        if (getClickableState("sub", 43)) restrictions = restrictions.add(1)
+        if (getClickableState("sub", 44)) restrictions = restrictions.add(1)
+
         let mult = new Decimal(0)
         if (player.sub.points.gte(1)) mult = mult.add(player.sub.points.log(100))
         if (restrictions.gte(1)) mult = mult.mul(new Decimal(2).pow(restrictions))
         else mult = new Decimal(0)
         //add negativity boosts here
 
-        if (hasMilestone("ar", 10)) mult = mult.mul(player.ar.functionE7)
+        if (hasUpgrade("mul", 52)) mult = mult.add(upgradeEffect("mul", 52))
 
+        if (hasMilestone("ar", 10)) mult = mult.mul(player.ar.functionE7)
+        if (hasUpgrade("poly", 203)) mult = mult.mul(1.5)
+        if (player.poly.area.gte(782)) mult = mult.mul(player.poly.areaEffect3)
+
+        if (hasMilestone("poly", 2)) mult = mult.pow(1.01)
+
+        //end
         if (!getClickableState(this.layer, 1001)) player.sub.currentGain = mult
         mult = mult.sub(player.sub.negativity)
 
@@ -649,8 +913,33 @@ addLayer("sub", {
         }
     },
 
+    glowColor() {
+        if (getClickableState(this.layer, 1001) && player.points.gte("1e800")) return "rgb(255,153,255)"
+        let layer = "sub"
+        for (id in tmp[layer].upgrades){
+            if (isPlainObject(layers[layer].upgrades[id])){
+                if (canAffordUpgrade(layer, id) && !hasUpgrade(layer, id) && tmp[layer].upgrades[id].unlocked){
+                    return "red"
+                }
+            }
+        }
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return "cyan"
+            }
+        }
+
+        return ""
+    },
     shouldNotify() {
-        return getClickableState(this.layer, 1001) && player.points.gte("1e800")
+        if (getClickableState(this.layer, 1001) && player.points.gte("1e800")) return true
+        let layer = "sub"
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return true
+            }
+        }
+        return false
     },
 
     tooltip() {return format(player.sub.points) + " Subtraction (+" + format(getResetGain("sub")) + " Subtraction/s)"},

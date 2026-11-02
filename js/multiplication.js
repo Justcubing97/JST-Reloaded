@@ -36,6 +36,8 @@ addLayer("mul", {
         layer = "poly"
         if (hasUpgrade(layer, 22)) mult = mult.mul(upgradeEffect(layer, 22))
         //exp 
+        layer = "poly"
+        mult = mult.pow(player.poly.pentagonsEffect1)
         //other hypers
         //time dilations/chals
         //final
@@ -64,7 +66,7 @@ addLayer("mul", {
         
         let isInit = player.mul.initiated
 
-        if (resettingLayer == "poly"){
+        if (resettingLayer == "poly" || resettingLayer == "pf"){
             keep = []
         }
 
@@ -88,10 +90,11 @@ addLayer("mul", {
                 "blank",
                 "h-line",
                 "blank",
-                ["display-text", function(){return `You have ${format(player.mul.products)}/${format(player.mul.productsTotal)} Products (Prod).`}],
+                ["display-text", function(){return `You have ${format(player.mul.products)}/${format(player.mul.productsTotal)} Products (no short form).`}],
                 ["display-text", function(){return `You will gain more Multiplication at ${format(getNextAt(this.layer))} Operation Power.`}],
                 "blank",
                 ["display-text", "Products are based on your Multiplication. Each upgrade requires the ones above it."],
+                ["display-text", "For an easy respec, Arithmetic reset."],
                 "blank",
                 "h-line",
                 "blank",
@@ -101,6 +104,10 @@ addLayer("mul", {
                         [21, 22],
                         [31, 32],
                         [41],
+                        [51, 52, 53],
+                        [61, 62],
+                        [71],
+                        [81, 82],
                     ],
                 ],
             ],
@@ -119,7 +126,7 @@ addLayer("mul", {
 
     upgrades: {
         11: {
-            title: "TMT Introduction",
+            title: "The Multiplication Tree (TMT)",
             description: "x100,000 Variables, EP, and all Ineqs. gain.",
             currencyDisplayName: "Products",
             currencyInternalName: "products",
@@ -267,6 +274,214 @@ addLayer("mul", {
             branches() {
                 let color = 3
                 if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[51, color], [52, color], [53, color]]
+            },
+        },
+        
+        51: {
+            title: "Addition Amplifier",
+            effect() {
+                let base = player.add.points.add(1)
+
+                base = base.pow(0.05)
+
+                if (hasUpgrade("poly", 113)) base = base.pow(3)
+                if (hasUpgrade("mul", 62)) base = base.pow(1.5)
+
+                let softcap = new Decimal(0.25)
+                let softcapStart = new Decimal("1e50")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+            },
+            effectDisplay() {
+                let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " to Addition type cap"
+                return text
+            },
+            description: "Addition multiplies its type cap.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("1700"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 41)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 5)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [61, color]
+            },
+        },
+        52: {
+            title: "Subtraction Summation",
+            effect() {
+                let base = player.sub.points.add(1)
+
+                base = base.pow(0.15)
+
+                let softcap = new Decimal(0.5)
+                let softcapStart = new Decimal("1000")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                
+                if (hasUpgrade("mul", 62)) base = base.pow(1.05)
+
+                return base
+            },
+            effectDisplay() {
+                let text =  "+" + format(upgradeEffect(this.layer, this.id)) + " to Negativity base"
+                return text
+            },
+            description: "Subtraction adds to Negativity base.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("1700"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 41)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 5)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[61, color], [62, color]]
+            },
+        },
+        53: {
+            title: "Multiplication Manipulation",
+            effect() {
+                let base = player.mul.points.add(1)
+
+                base = base.pow(0.1)
+                
+                if (hasUpgrade("mul", 62)) base = base.pow(1.101)
+
+                let softcap = new Decimal(0.1)
+                let softcapStart = new Decimal("100")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+            },
+            effectDisplay() {
+                let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " to Product cap"
+                return text
+            },
+            description: "Multiplication boosts the Product cap.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("1700"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 41)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 5)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[62, color]]
+            },
+        },
+        
+        61: {
+            title: "Spherical Geometry",
+            description: "Length and Width are raised to ^1.1 before being multiplied.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("145000"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 51)) return false
+                if (!hasUpgrade(this.layer, 52)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 11)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[71, color]]
+            },
+        },
+        62: {
+            title: "Distributive Distributive Property",
+            description: "Improve the effects of the above three upgrades.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("145000"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 53)) return false
+                if (!hasUpgrade(this.layer, 52)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 11)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[71, color]]
+            },
+        },
+
+        71: {
+            title: "Complex Variables",
+            description: "x1e15 EP, FV, PV, and all Ineqs. ^1.05 Points and Functions after softcap. x10,000 Edges and x1e100 Vertex cap.",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("100000"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 61)) return false
+                if (!hasUpgrade(this.layer, 62)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasMilestone("poly", 12)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
+                return [[81, color]]
+            },
+        },
+
+        81: {
+            title: "Unstable Change of Base",
+            effect() {
+                let base = player.mul.products.add(1)
+
+                base = base.log(100).div(20)
+
+                let softcap = new Decimal(0.33)
+                let softcapStart = new Decimal("100")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+            },
+            effectDisplay() {
+                let text =  "+" + format(upgradeEffect(this.layer, this.id)) + " to Vertex buyable base"
+                return text
+            },
+            description: "Products add to the base of \"n-gon Expander\".",
+            currencyDisplayName: "Products",
+            currencyInternalName: "products",
+            currencyLayer: "mul",
+            cost: new Decimal("600000"),
+            pay() {return new Decimal(0)},
+            canAfford() {
+                if (!hasUpgrade(this.layer, 71)) return false
+                return player.mul.products.gte(this.cost)
+            },
+            unlocked() {return hasUpgrade("cb", 13)},
+            branches() {
+                let color = 3
+                if (hasUpgrade(this.layer, this.id)) color = 1
                 return
             },
         },
@@ -292,21 +507,26 @@ addLayer("mul", {
             },
             title: "Distributive Property",
             display() {
-                return "Multiplies Addition and Subtraction by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "Multiplies Addition and Subtraction by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
-            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            canAfford() {
+                if (hasMilestone("div", 10)) return player[this.layer].products.gte(this.cost())
+                return player[this.layer].points.gte(this.cost())
+            },
             buy() {
                 if (hasMilestone("poly", 1)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
                 } else {
-                    player[this.layer].points = player[this.layer].points.sub(this.cost())
+                    if (hasMilestone("div", 10)) player[this.layer].products = player[this.layer].products.sub(this.cost())
+                    else player[this.layer].points = player[this.layer].points.sub(this.cost())
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
                 }
             },
             effectBase() {
                 let base = new Decimal(5)
+                if (hasUpgrade("cb", 12)) base = base.add(245)
                 return base
             },
             effect(x) {
@@ -323,6 +543,7 @@ addLayer("mul", {
             unlocked() {return true},
             buyMax() {
                 let timesBought = player[this.layer].points
+                if (hasMilestone("div", 10)) timesBought = player[this.layer].products
                 //insert cost effects here
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
@@ -348,8 +569,14 @@ addLayer("mul", {
     update(diff){
         let mult = new Decimal(0)
         if (player.mul.points.gte(1)) mult = player.mul.points.pow(2)
+        //products boost
 
         if (hasUpgrade("sub", 16)) mult = mult.mul(1.5)
+        if (hasUpgrade("mul", 53)) mult = mult.mul(upgradeEffect("mul", 53))
+        if (player.poly.area.gte(782)) mult = mult.mul(player.poly.areaEffect3)
+        if (hasMilestone("poly", 12)) mult = mult.mul(1.1)
+
+        if (hasMilestone("poly", 2)) mult = mult.pow(1.01)
 
         player.mul.productsTotal = mult
 
@@ -362,15 +589,22 @@ addLayer("mul", {
 
         if (hasUpgrade(this.layer, 31)) difference = difference.add(25)
         if (hasUpgrade(this.layer, 32)) difference = difference.add(25)
+            
+        if (hasUpgrade(this.layer, 51)) difference = difference.add(1700)
+        if (hasUpgrade(this.layer, 52)) difference = difference.add(1700)
+        if (hasUpgrade(this.layer, 53)) difference = difference.add(1700)
+
+        if (hasUpgrade(this.layer, 61)) difference = difference.add(145000)
+        if (hasUpgrade(this.layer, 62)) difference = difference.add(145000)
 
         player.mul.products = player.mul.productsTotal.sub(difference)
 
         //automation
-        let automationBoolean = false
+        let automationBooleanBuyable = false
 
-        if (hasMilestone("poly", 1)) automationBoolean = true
+        if (hasMilestone("poly", 1)) automationBooleanBuyable = true
 
-        if (automationBoolean){
+        if (automationBooleanBuyable){
             let layer = "mul"
             let list = [11]
             for (const id of list){
@@ -379,10 +613,52 @@ addLayer("mul", {
                 }
             }
         }
+
+        //automation
+        let automationBooleanUpgrade = false
+
+        if (hasMilestone("poly", 4)) automationBooleanUpgrade = true
+
+        if (automationBooleanUpgrade){
+            let list = [11, 21, 22, 31, 32, 41]
+            if (hasMilestone("poly", 6)) list.push(51, 52, 53)
+            if (hasMilestone("poly", 13)) list.push(61, 62, 71)
+            if (hasUpgrade("div", 22)) list.push(81)
+            for (const id of list){
+                if (!hasUpgrade("mul", id) && canAffordUpgrade("mul", id) && tmp.mul.upgrades[id].unlocked) buyUpgrade("mul", id)
+            }
+        }
+    },
+
+    glowColor() {
+        let layer = "mul"
+        for (id in tmp[layer].upgrades){
+            if (isPlainObject(layers[layer].upgrades[id])){
+                if (canAffordUpgrade(layer, id) && !hasUpgrade(layer, id) && tmp[layer].upgrades[id].unlocked){
+                    return "red"
+                }
+            }
+        }
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return "cyan"
+            }
+        }
+
+        return ""
+    },
+    shouldNotify() {
+        let layer = "mul"
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return true
+            }
+        }
+        return false
     },
 
     tooltip() {
-        if (!canReset("mul")) return format(player.mul.points) + " Multiplication (Unable to reset)"
-        return format(player.mul.points) + " Multiplication (+" + format(getResetGain("mul")) + " Multiplication on reset)"
+        if (!canReset("mul")) return format(player.mul.points) + " Multiplication (next at " + format(getNextAt("mul")) + " Operation Power)"
+        return format(player.mul.points) + " Multiplication (+" + format(getResetGain("mul")) + " Multiplication)"
     },
 })

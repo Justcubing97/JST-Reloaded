@@ -36,12 +36,22 @@ addLayer("ar", {
         functionE5: new Decimal(1),
         functionE6: new Decimal(1),
         functionE7: new Decimal(1),
+        functionE8: new Decimal(1),
+        functionE9: new Decimal(1),
+        functionE10: new Decimal(1),
+
+        metaE1: new Decimal(1),
+        metaE2: new Decimal(1),
+        metaE3: new Decimal(1),
+        metaE4: new Decimal(1),
 
         softcap1: new Decimal(0.25),
         softcap1Start: new Decimal("1e1000"), //defaults for normal layers
         
         softcapFunc1: new Decimal(0.25),
         softcapFunc1Start: new Decimal("1e250"), //defaults for normal layers
+        softcapFunc2: new Decimal(0.2),
+        softcapFunc2Start: new Decimal("1e3000"), //defaults for normal layers
     }},
     color: "rgb(255,0,102)",
     requires: new Decimal("1e40"), // Can be a function that takes requirement increases into account
@@ -54,18 +64,38 @@ addLayer("ar", {
         let layer;
         let mult = new Decimal(1)
         //add
+        layer = "add"
+        let typearithaddexp = new Decimal(0.1)
+        mult = mult.add(player.add.additionTypeArith.pow(typearithaddexp))
         //mul
         layer = "f"
         if (hasUpgrade(layer, 42)) mult = mult.mul(4.04)
             
         layer = "add"
         mult = mult.mul(buyableEffect(layer, 11))
+
+        layer = "sub"
+        if (hasUpgrade(layer, 25)) mult = mult.mul(479001600)
         
         layer = "poly"
         if (hasUpgrade(layer, 15)) mult = mult.mul(5000)
+        if (hasMilestone(layer, 6)) mult = mult.mul("1e6")
+        if (hasUpgrade(layer, 216)) mult = mult.mul(upgradeEffect("f", 22))
+
+        layer = "d"
+        if (player.d.points.gte(4)) mult = mult.mul("1e10")
         //exp 
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.pow(1.05)
+
+        layer = "poly"
+        if (hasMilestone(layer, 2)) mult = mult.pow(1.01)
+        if (player.poly.area.gte(2544)) mult = mult.pow(player.poly.areaEffect4)
+        mult = mult.pow(player.poly.hexagonsEffect1)
+        mult = mult.pow(tmp.poly.challenges[11].rewardEffect[1])
+            
+        layer = "cb"
+        if (hasUpgrade(layer, 11)) mult = mult.pow(1.05)
         //other hypers
         //time dilations/chals
         //final
@@ -79,6 +109,10 @@ addLayer("ar", {
 
         if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
         //put after first softcap things after this line
+
+        if (getClickableState("sub", 1001)){
+            if (getClickableState("sub", 41)) gain = gain.pow(0.01)
+        }
             
 		gain = gain.times(tmp[layer].directMult)
 		return gain.floor().max(0);
@@ -110,16 +144,24 @@ addLayer("ar", {
         if (hasUpgrade(layer, 12)) mult = mult.mul(1.5)
         if (hasUpgrade(layer, 21)) mult = mult.mul(upgradeEffect(layer, 21))
         if (hasUpgrade(layer, 24)) mult = mult.mul(5)
+        if (hasUpgrade(layer, 36)) mult = mult.mul(upgradeEffect(layer, 36))
             
         layer = "mul"
         if (hasUpgrade(layer, 11)) mult = mult.mul(100000)
+        if (hasUpgrade(layer, 71)) mult = mult.mul("1e15")
 
         layer = "d"
         if (player.d.points.gte(2)) mult = mult.mul(125)
             
         layer = "poly"
         if (hasUpgrade(layer, 17)) mult = mult.mul("1e10")
+        mult = mult.mul(player.poly.squaresEffect1)
+
+        layer = "div"
+        if (hasMilestone(layer, 2)) mult = mult.mul("1e6")
         //exp 
+        layer = "d"
+        if (player.d.points.gte(4)) mult = mult.pow(1.05)
         //other hypers
         //time dilations/chals
         //softcaps + after softcap boosts
@@ -140,7 +182,7 @@ addLayer("ar", {
         if (hasUpgrade(layer, 25)) mult = mult.mul(10)
         if (hasUpgrade(layer, 26)) mult = mult.mul(15)
 
-        if (hasMilestone(layer, 7)) mult = mult.mul(player.ar.functionE5)
+        if (hasMilestone(layer, 7)) mult = mult.mul(player.ar.functionE5.add(1))
 
         layer = "add"
         mult = mult.mul(buyableEffect(layer, 11))
@@ -150,20 +192,29 @@ addLayer("ar", {
             
         layer = "mul"
         if (hasUpgrade(layer, 11)) mult = mult.mul(100000)
+        if (hasUpgrade(layer, 71)) mult = mult.mul("1e15")
 
         if (hasUpgrade(layer, 32)){
-            if (type == 2) mult = mult.mul(player.ar.effectLT)
-            if (type == 1) mult = mult.mul(player.ar.effectLTE)
-            if (type == 4) mult = mult.mul(player.ar.effectGTE)
-            if (type == 3) mult = mult.mul(player.ar.effectGT)
+            if (type == 2) mult = mult.mul(player.ar.effectLT.add(1))
+            if (type == 1) mult = mult.mul(player.ar.effectLTE.add(1))
+            if (type == 4) mult = mult.mul(player.ar.effectGTE.add(1))
+            if (type == 3) mult = mult.mul(player.ar.effectGT.add(1))
         }
         
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.mul(25)
         if (player.d.points.gte(3)) mult = mult.mul(8)
+        if (player.d.points.gte(4)) mult = mult.mul(500)
 
         layer = "poly"
         if (hasUpgrade(layer, 14)) mult = mult.mul("1e6")
+        if (hasMilestone(layer, 9)) mult = mult.mul("1e10")
+        mult = mult.mul(player.poly.squaresEffect1.add(1))
+        if (hasMilestone("poly", 14)) mult = mult.mul(milestoneEffect("poly", 14).add(1))
+        if (hasMilestone("poly", 15)) mult = mult.mul(125)
+
+        layer = "div"
+        if (hasMilestone(layer, 2)) mult = mult.mul("1e6")
         //exp 
         //other hypers
         //time dilations/chals
@@ -230,12 +281,36 @@ addLayer("ar", {
 
         // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
         let keptUpgrades = []
-        if (resettingLayer == "d") keptUpgrades.push(11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27)
+        if (resettingLayer == "d"){
+            for (const id of [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37]) {
+                if (hasUpgrade("ar", id)) {
+                    keptUpgrades.push(id)
+                }
+            }
+        }
         if (hasUpgrade("poly", 14)) keptUpgrades.push(17)
+
+        if (challengeCompletions("poly", 11) >= 4){
+            for (const id of [31, 32, 33, 34, 35, 36, 37]) {
+                if (hasUpgrade("ar", id)) {
+                    keptUpgrades.push(id)
+                }
+            }
+        }
 
         let keptBuyables = []
 
         let keptAR1001State = getClickableState("ar", 1001)
+
+        let keptChallenges = []
+        if (hasUpgrade("poly", 23)) keptChallenges.push(11, 12, 13)
+        if (hasUpgrade("poly", 205)) keptChallenges.push(21)
+        if (hasChallenge("ar", 22)) keptChallenges.push(22)
+        if (resettingLayer == "pf") keptChallenges = []
+
+        let keptMilestones = []
+        if (hasMilestone("ar", 16)) keptMilestones.push("16")
+        if (resettingLayer == "pf") keptMilestones = []
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = [];
 
@@ -244,7 +319,9 @@ addLayer("ar", {
 
         // Stage 5, add back in the specific subfeatures you saved earlier
         player[this.layer].upgrades.push(...keptUpgrades)
+        player[this.layer].milestones.push(...keptMilestones)
         setClickableState("ar", 1001, keptAR1001State)
+        keptChallenges.forEach(element => player[this.layer].challenges[element] = 1)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
 
     tabFormat: {
@@ -263,23 +340,39 @@ addLayer("ar", {
                 "blank",
                 ["display-text", function(){return `You have <h2 style="color: rgb(255,204,0); text-shadow: 0px 0px 10px rgb(255,204,0)">${format(player.ar.fundaVariables)}</h2> Fundamental Variables (FV)`}],
                 ["blank", "4px"],
-                ["display-text", function(){return `<span style="color: rgb(255,204,0);">Fundamental Variables multiply Funda gain by x${format(player.ar.effectFV1)}</span>`}],
+                ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(255,204,0);">Fundamental Variables divide Funda gain by ÷${format(player.ar.effectFV1)}</span>`
+                    return `<span style="color: rgb(255,204,0);">Fundamental Variables multiply Funda gain by x${format(player.ar.effectFV1)}</span>`
+                }],
                 ["blank", "4px"],
                 ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(255,204,0);">They also divide Primitive Variables gain by ÷${format(player.ar.effectFV2)}</span>`
                     if (hasUpgrade("poly", 17)) return `<span style="color: rgb(255,204,0);">They also multiply Primitive Variables gain by x${format(player.ar.effectFV2)}</span>`
-                    return `<span style="color: rgb(255,204,0);">They also divide Primitive Variables gain by ÷${format(player.ar.effectFV2)}</span>`}],
+                    return `<span style="color: rgb(255,204,0);">They also divide Primitive Variables gain by ÷${format(player.ar.effectFV2)}</span>`
+                }],
                 ["blank", "4px"],
-                ["display-text", function(){if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(255,204,0);">They also multiply Addition and Subtraction gain by x${format(player.ar.effectFV3)}</span>`}],
+                ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(255,204,0);">They also divide Addition and Subtraction gain by ÷${format(player.ar.effectFV3)}</span>`
+                    if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(255,204,0);">They also multiply Addition and Subtraction gain by x${format(player.ar.effectFV3)}</span>`
+                }],
                 "blank",
                 ["display-text", function(){return `You have <h2 style="color: rgb(0,204,255); text-shadow: 0px 0px 10px rgb(0,204,255)">${format(player.ar.primVariables)}</h2> Primitive Variables (PV)`}],
                 ["blank", "4px"],
-                ["display-text", function(){return `<span style="color: rgb(0,204,255);">Primitive Variables multiply Nums gain by x${format(player.ar.effectPV1)}</span>`}],
+                ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(0,204,255);">Primitive Variables divide Nums gain by ÷${format(player.ar.effectPV1)}</span>`
+                    return `<span style="color: rgb(0,204,255);">Primitive Variables multiply Nums gain by x${format(player.ar.effectPV1)}</span>`
+                }],
                 ["blank", "4px"],
                 ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(0,204,255);">They also divide Fundamental Variables gain by ÷${format(player.ar.effectPV2)}</span>`
                     if (hasUpgrade("poly", 17)) return `<span style="color: rgb(0,204,255);">They also multiply Fundamental Variables gain by x${format(player.ar.effectPV2)}</span>`
-                    return `<span style="color: rgb(0,204,255);">They also divide Fundamental Variables gain by ÷${format(player.ar.effectPV2)}</span>`}],
+                    return `<span style="color: rgb(0,204,255);">They also divide Fundamental Variables gain by ÷${format(player.ar.effectPV2)}</span>`
+                }],
                 ["blank", "4px"],
-                ["display-text", function(){if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(0,204,255);">They also multiply Function gain by x${format(player.ar.effectPV3)}</span>`}],
+                ["display-text", function(){
+                    if (getClickableState("sub", 1001) && getClickableState("sub", 42)) return `<span style="color: rgb(0,204,255);">They also divide Function gain by ÷${format(player.ar.effectPV3)}</span>`
+                    if (hasMilestone(this.layer, 9)) return `<span style="color: rgb(0,204,255);">They also multiply Function gain by x${format(player.ar.effectPV3)}</span>`
+                }],
                 "blank",
                 "h-line",
                 "blank",
@@ -312,8 +405,19 @@ addLayer("ar", {
                 ["display-text", function(){if (hasMilestone("ar", 4)) return `Functions multiply Numbers by x${format(player.ar.functionE3)}`}],
                 ["display-text", function(){if (hasMilestone("ar", 6)) return `Functions divide Primitive buyables 1-3 cost by ÷${format(player.ar.functionE4)}`}],
                 ["display-text", function(){if (hasMilestone("ar", 7)) return `Functions multiply all Ineqs. by x${format(player.ar.functionE5)}`}],
-                ["display-text", function(){if (hasMilestone("ar", 8)) return `Functions multiply Addition and Addition Type cap by x${format(player.ar.functionE6)}`}],
+                ["display-text", function(){if (hasMilestone("ar", 8)) return `Functions multiply Addition and Addition type cap by x${format(player.ar.functionE6)}`}],
                 ["display-text", function(){if (hasMilestone("ar", 10)) return `Functions multiply Negativity and Functions by x${format(player.ar.functionE7)}`}],
+                ["display-text", function(){if (hasChallenge("ar", 21)) return `Functions multiply the Vertex cap and Edge gain by x${format(player.ar.functionE8)}`}],
+                ["display-text", function(){if (hasChallenge("ar", 21)) return `Functions divide Number Core buyables 1-2 cost by ÷${format(player.ar.functionE9)}`}],
+                ["display-text", function(){if (hasMilestone("ar", 15)) return `Functions divide Core Booster cost by ÷${format(player.ar.functionE10)}`}],
+                "blank",
+                ["display-text", function(){if (hasMilestone("ar", 16)) return `<b>Meta-effect 1: Functions raise the above 10 effects and Points by ^${format(player.ar.metaE1, 6)}</b>`}],
+                ["display-text", function(){if (hasMilestone("ar", 17)) return `<b>Meta-effect 2: Functions raise the above 11 effects and Number Cores by ^${format(player.ar.metaE2, 6)}</b>`}],
+                ["display-text", function(){if (hasUpgrade("cb", 15)) return `<b>Meta-effect 3: Functions raise the above 12 effects and Addition by ^${format(player.ar.metaE3, 6)}</b>`}],
+                ["display-text", function(){if (hasMilestone("div", 14)) return `<b>Meta-effect 4: Functions raise the above 13 effects and Constructor Shapes by ^${format(player.ar.metaE4, 6)}</b>`}],
+                "blank",
+                ["display-text", function(){if (player.ar.arFunction.gte(player.ar.softcapFunc1Start)) return `<span style="color: rgb(255,0,0);">Function softcap 1: ${format(player.ar.softcapFunc1Start)} - ^${format(player.ar.softcapFunc1)}</span>`}],
+                ["display-text", function(){if (player.ar.arFunction.gte(player.ar.softcapFunc2Start)) return `<span style="color: rgb(255,0,0);">Function softcap 2: ${format(player.ar.softcapFunc2Start)} - ^${format(player.ar.softcapFunc2)}</span>`}],
                 "blank",
                 "h-line",
                 "blank",
@@ -490,6 +594,64 @@ addLayer("ar", {
             cost: new Decimal("1e30"),
             unlocked() {return hasUpgrade(this.layer, 17)}
         },
+        
+        31: {
+            title: "Procrastinate",
+            description: "Delay the softcap of Number Cores to 1e1000.",
+            cost: new Decimal("1e1050"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
+        32: {
+            title: "Straighter Edge",
+            description: "The base multiplier to CS from Constructor Sacrifice is ^2. Hexagon's second effect is better.",
+            cost: new Decimal("1e1070"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
+        33: {
+            title: "Division, In Fact, Does Something.",
+            description: "\"Does Division Do Something?\" now boosts Points.",
+            cost: new Decimal("1e1140"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
+        34: {
+            title: "2560x1440",
+            description: "Automatically bulk-buy Length and Width. Length is multiplied by x1.2 before being used in the Area formula.",
+            cost: new Decimal("1e1175"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
+        35: {
+            title: "Cost Weakening",
+            description: "Reduce the exponent in the Core Booster cost formula by -0.5. Improve the first Core Booster effect.",
+            cost: new Decimal("1e1265"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
+        36: {
+            effect() {
+                let base = player.ar.fundaVariables.mul(player.ar.primVariables).add(1)
+                
+                base = base.pow(0.1)
+
+                let softcap = new Decimal(0.25)
+                let softcapStart = new Decimal("1e150")
+
+                if (base.gte(softcapStart)) base = base.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
+                return base
+            },
+            effectDisplay() {
+                let text = "x" + format(upgradeEffect(this.layer, this.id)) + " to EP"
+                return text
+            },
+            title: "Equal Equality",
+            description: "FV and PV boost EP.",
+            cost: new Decimal("1e1350"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4}
+        },
+        37: {
+            title: "Irrational Side Length",
+            description: "The end is here. x3 to Area.",
+            cost: new Decimal("1e1460"),
+            unlocked() {return challengeCompletions("poly", 11) >= 4},
+        },
     },
 
     milestones: {
@@ -559,6 +721,8 @@ addLayer("ar", {
 
                 base = base.pow(0.1).add(1)
 
+                if (hasMilestone("ar", 15)) base = base.pow(3.5)
+
                 let softcap = new Decimal(0.5)
                 let softcapStart = new Decimal("1e1000")
 
@@ -573,6 +737,42 @@ addLayer("ar", {
             requirementDescription: "12: 1e150 Functions",
             effectDescription: "Unlock Addition Type-POINT.",
             done() { return player.ar.arFunction.gte("1e150") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        13: {
+            requirementDescription: "13: 1e300 Functions",
+            effectDescription: "THIS IS LITERALLY THE SQUARE OF THE PREVIOUS MILESTONE!!! The individual Ineq. effects boost Points and Numbers (after softcap).",
+            done() { return player.ar.arFunction.gte("1e300") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        14: {
+            requirementDescription: "14: 1e330 Functions",
+            effectDescription: "The softcap's doing some heavy lifting. Unlock 4 more Fundamental upgrades.",
+            done() { return player.ar.arFunction.gte("1e330") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        15: {
+            requirementDescription: "15: 1e404 Functions",
+            effectDescription: "This milestone cannot be found. Heavily improve the 11th Function milestone, and unlock an effect of Functions.",
+            done() { return player.ar.arFunction.gte("1e404") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        16: {
+            requirementDescription: "16: 1e530 Functions",
+            effectDescription: "A lengthy timewall... but worth it! Unlock a <b>meta-effect</b> of Functions. Unlock Type-NCR Addition. <i>This milestone is kept until the next reset layer.</i>",
+            done() { return player.ar.arFunction.gte("1e530") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        17: {
+            requirementDescription: "17: 7.270e727 Functions",
+            effectDescription: "WHEN YOU SEE IT!!! Unlock a meta-effect of Functions and -0.0008 to Division time scaling.",
+            done() { return player.ar.arFunction.gte("7.270e727") },
+            unlocked() { return hasMilestone(this.layer, this.id - 1)},
+        },
+        18: {
+            requirementDescription: "18: 1e2500 Functions",
+            effectDescription: "When is this layer going to end??? ^1.05 CS and Multiplication boosts Hexagons.",
+            done() { return player.ar.arFunction.gte("1e2500") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
     },
@@ -693,7 +893,7 @@ addLayer("ar", {
             title: "Gain an Inequality",
             canClick() {return true},
             onClick() {
-                player.ar.clickIneqButton_ARH()
+                tmp.ar.clickIneqButton_ARH()
             },
             style() {
                 return {
@@ -770,6 +970,52 @@ addLayer("ar", {
             },
             onExit() {setClickableState("sub", 1001, false)},
         },
+        21: {
+            name: "Anti-Addition Movement",
+            challengeDescription: "<i>\"Addition? What's that? You mean THAT hideous thing??\"</i><br><br>Addition types do not work. In fact, Addition type cap divides Point, Funda, and Nums gain. Resets and disables some Arithmetic currencies.",
+            goalDescription: "Have 1e1800 Points.",
+            rewardDescription: "x1e10 Functions after softcap. x5 Number Cores. Unlock two effects of Functions.",
+            canComplete: function() {return player.points.gte("1e1800")},
+            unlocked() {return hasMilestone("poly", 3)},
+            onEnter() {
+                player.add.additionTypeFunda = new Decimal(0)
+                player.add.additionTypePrim = new Decimal(0)
+                player.add.additionTypePoint = new Decimal(0)
+
+                player.ar.points = new Decimal(0)
+                player.ar.eqPoints = new Decimal(0)
+                player.ar.arFunction = new Decimal(0)
+                player.ar.fundaVariables = new Decimal(0)
+                player.ar.primVariables = new Decimal(0)
+            },
+            onExit() {
+                player.add.additionTypeFunda = new Decimal(0)
+                player.add.additionTypePrim = new Decimal(0)
+                player.add.additionTypePoint = new Decimal(0)
+
+                player.ar.points = new Decimal(0)
+                player.ar.eqPoints = new Decimal(0)
+                player.ar.arFunction = new Decimal(0)
+                player.ar.fundaVariables = new Decimal(0)
+                player.ar.primVariables = new Decimal(0)
+            },
+        },
+        22: {
+            name: "Fraction of a Fraction",
+            challengeDescription: "<i>\"The Points have been reduced to a fraction of a fraction of their original value!\"</i><br><br>You are trapped in Long Division. Additionally, ^0.1 Points, and Operation Power is reset.",
+            goalDescription: "Have 5600 Multiplication.",
+            rewardDescription: "Time passes x4 faster in Long Division.",
+            canComplete: function() {return player.mul.points.gte("5600")},
+            unlocked() {return hasUpgrade("div", 27)},
+            onEnter() {
+                setClickableState("div", 1001, true)
+                player.ar.points = new Decimal(0)
+            },
+            onExit() {
+                setClickableState("div", 1001, false)
+                player.ar.points = new Decimal(0)
+            },
+        },
     },
 
     update(diff){
@@ -785,22 +1031,26 @@ addLayer("ar", {
             if (hasUpgrade(this.layer, 13)) mult = mult.mul(upgradeEffect(this.layer, 13))
             if (hasUpgrade(this.layer, 16)) mult = mult.mul(upgradeEffect(this.layer, 16))
             if (hasUpgrade(this.layer, 23)) mult = mult.mul(player.ar.functionE2)
-                
             if (hasUpgrade("sub", 12)) mult = mult.mul(50000)
-                
             if (hasUpgrade("mul", 11)) mult = mult.mul(100000)
-                
             if (hasUpgrade("sub", 17)) mult = mult.mul(upgradeEffect("sub", 17))
+            if (hasUpgrade("poly", 24)) mult = mult.mul("1e10")
+            if (hasMilestone("div", 2)) mult = mult.mul("1e10")
+            if (hasUpgrade("mul", 71)) mult = mult.mul("1e15")
+            mult = mult.mul(player.poly.squaresEffect1)
 
-            if (hasUpgrade("poly", 17)){
+            if (hasUpgrade("poly", 17) && !(getClickableState("sub", 1001) && getClickableState("sub", 42))){
                 if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) mult = mult.mul(player.ar.effectPV2)
                 if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) mult = mult.mul(player.ar.effectFV2)
             } else {
                 if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectPV2)
                 if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) mult = mult.div(player.ar.effectFV2)
             }
+
+            if (player.d.points.gte(4)) mult = mult.pow(1.05)
         }
-        player.ar.varGain = mult
+        if (!inChallenge("ar", 21)) player.ar.varGain = mult
+        else player.ar.varGain = new Decimal(0)
         
         //funda + prim variables and their effects
         if (player.ar.arithBar1Value.lte(0.4) || hasChallenge("ar", 12)) player.ar.fundaVariables = player.ar.fundaVariables.add(player.ar.varGain.mul(diff))
@@ -808,30 +1058,42 @@ addLayer("ar", {
         let FV1logbase = new Decimal(10)
         if (hasUpgrade("ar", 15)) FV1logbase = FV1logbase.sub(8)
         if (hasUpgrade("mul", 31)) FV1logbase = FV1logbase.sub(0.995)
-        player.ar.effectFV1 = player.ar.fundaVariables.add(1).pow(5).log(FV1logbase).add(1)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectFV1 = player.ar.fundaVariables.add(1).pow(10)
+        else player.ar.effectFV1 = player.ar.fundaVariables.add(1).pow(5).log(FV1logbase).add(1)
 
         let FV2expbase = new Decimal(1.5)
         if (hasUpgrade("ar", 15)) FV2expbase = FV2expbase.sub(0.5)
-        player.ar.effectFV2 = player.ar.fundaVariables.add(1).pow(FV2expbase).log(100).add(1)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectFV2 = player.ar.fundaVariables.add(1).log(1.01).add(1)
+        else player.ar.effectFV2 = player.ar.fundaVariables.add(1).pow(FV2expbase).log(100).add(1)
 
         let FV3logbase = new Decimal(10)
         if (hasUpgrade("mul", 31)) FV3logbase = FV3logbase.sub(8.5)
-        player.ar.effectFV3 = player.ar.fundaVariables.add(1).pow(4).log(FV3logbase).add(1)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectFV3 = player.ar.fundaVariables.add(1).pow(0.5)
+        else player.ar.effectFV3 = player.ar.fundaVariables.add(1).pow(4).log(FV3logbase).add(1)
         
         if (player.ar.arithBar1Value.gte(0.6) || hasChallenge("ar", 12)) player.ar.primVariables = player.ar.primVariables.add(player.ar.varGain.mul(diff))
 
         let PV1logbase = new Decimal(25)
         if (hasUpgrade("ar", 12)) PV1logbase = PV1logbase.sub(23)
         if (hasUpgrade("mul", 31)) PV1logbase = PV1logbase.sub(0.995)
-        player.ar.effectPV1 = player.ar.primVariables.add(1).pow(3).log(PV1logbase).add(1)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectPV1 = player.ar.primVariables.add(1).pow(10)
+        else player.ar.effectPV1 = player.ar.primVariables.add(1).pow(3).log(PV1logbase).add(1)
 
         let PV2expbase = new Decimal(1.5)
         if (hasUpgrade("ar", 12)) PV2expbase = PV2expbase.sub(0.5)
-        player.ar.effectPV2 = player.ar.primVariables.add(1).pow(PV2expbase).log(100).add(1)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectPV2 = player.ar.primVariables.add(1).log(1.01).add(1)
+        else player.ar.effectPV2 = player.ar.primVariables.add(1).pow(PV2expbase).log(100).add(1)
 
         let PV3expbase = new Decimal(3)
         if (hasUpgrade("mul", 31)) PV3expbase = PV3expbase.add(7)
-        player.ar.effectPV3 = player.ar.primVariables.add(1).pow(PV3expbase).log(5).add(1).pow(1.5)
+        //below is arithmetic restriction
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) player.ar.effectPV3 = player.ar.primVariables.add(1).pow(0.5)
+        else player.ar.effectPV3 = player.ar.primVariables.add(1).pow(PV3expbase).log(5).add(1).pow(1.5)
 
         //externally boosting variable effects
         if (hasUpgrade("mul", 31)) player.ar.effectFV1 = player.ar.effectFV1.pow(2)
@@ -840,7 +1102,7 @@ addLayer("ar", {
         if (hasUpgrade("mul", 31)) player.ar.effectPV3 = player.ar.effectPV3.pow(2.5)
 
         //arith upgrade 25
-        if (player.ar.arithBar1Value.gte(0.25) && player.ar.arithBar1Value.lte(0.75) && player.ar.arithBar1Value.neq(0.5)){
+        if (player.ar.arithBar1Value.gte(0.25) && player.ar.arithBar1Value.lte(0.75) && (player.ar.arithBar1Value.neq(0.5) || hasMilestone("poly", 3))){
             if (hasUpgrade("ar", 25)) player.ar.eqPoints = player.ar.eqPoints.add(tmp.ar.findEqPointsMult_ARH().mul(new Decimal(diff).pow(2)))
         }
 
@@ -869,43 +1131,166 @@ addLayer("ar", {
         if (hasUpgrade("f", 42)) mult = mult.mul(4.04)
         if (hasChallenge("ar", 12)) mult = mult.mul(125)
         if (player.d.points.gte(2)) mult = mult.mul(125)
-        if (hasMilestone("ar", 9)) mult = mult.mul(player.ar.effectPV3)
+        if (hasMilestone("ar", 9)){
+            if (getClickableState("sub", 1001) && getClickableState("sub", 42)) mult = mult.div(player.ar.effectPV3)
+            else mult = mult.mul(player.ar.effectPV3)
+        }
         if (hasMilestone("ar", 10)) mult = mult.mul(player.ar.functionE7)
         if (hasUpgrade("mul", 22)) mult = mult.mul(upgradeEffect("mul", 22))
         if (hasUpgrade("poly", 14)) mult = mult.mul("1e10")
 
         let layer = "ar"
         if (mult.gte(player[layer].softcapFunc1Start)) mult = mult.pow(player[layer].softcapFunc1).mul(new Decimal(player[layer].softcapFunc1Start).pow(decimalOne.sub(player[layer].softcapFunc1)))
+        if (mult.gte(player[layer].softcapFunc2Start)) mult = mult.pow(player[layer].softcapFunc2).mul(new Decimal(player[layer].softcapFunc2Start).pow(decimalOne.sub(player[layer].softcapFunc2)))
+
+        if (hasUpgrade("poly", 24)) mult = mult.mul("1e10")
+        if (hasChallenge("ar", 21)) mult = mult.mul("1e10")
+        if (hasUpgrade("div", 17)) mult = mult.mul(upgradeEffect("div", 17))
+        mult = mult.mul(player.poly.squaresEffect1)
+        if (player.d.points.gte(4)) mult = mult.mul("1e10")
+
+        if (hasMilestone("poly", 2)) mult = mult.pow(1.01)
+        if (hasMilestone("div", 2)) mult = mult.pow(1.05)
+        if (hasUpgrade("mul", 71)) mult = mult.pow(1.05)
+
 
         //applying functions
         if (hasUpgrade("ar", 17) && (player.ar.LT.gt(0) || player.ar.LTE.gt(0) || player.ar.GTE.gt(0) || player.ar.GT.gt(0))){
             player.ar.arFunctionGain = mult
-            player.ar.arFunction = player.ar.arFunction.add(player.ar.arFunctionGain.mul(diff))
+            if (getClickableState("sub", 1001) && getClickableState("sub", 43)) player.ar.arFunctionGain = new Decimal(0)
+            if (!inChallenge(layer, 21)) player.ar.arFunction = player.ar.arFunction.add(player.ar.arFunctionGain.mul(diff))
         }
 
         //function effects
-        if (hasMilestone("ar", 1)) player.ar.functionE1 = player.ar.arFunction.pow(0.5)
-        else player.ar.functionE1 = new Decimal(1)
+        let inLD = getClickableState("div", 1001)
 
-        if (hasUpgrade("ar", 22)) player.ar.functionE1 = player.ar.functionE1.pow(2.5)
+        if (hasMilestone("ar", 1) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.5)
+        else mult = new Decimal(1)
+        if (hasUpgrade("ar", 22)) mult = mult.pow(2.5)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
 
-        if (hasUpgrade("ar", 23)) player.ar.functionE2 = player.ar.arFunction.add(1).pow(0.1)
-        else player.ar.functionE2 = new Decimal(1)
+        player.ar.functionE1 = mult
+
+        if (hasUpgrade("ar", 23) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.1)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE2 = mult
             
-        if (hasMilestone("ar", 4)) player.ar.functionE3 = player.ar.arFunction.add(1).pow(0.15)
-        else player.ar.functionE3 = new Decimal(1)
+        if (hasMilestone("ar", 4) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.15)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE3 = mult
             
-        if (hasMilestone("ar", 6)) player.ar.functionE4 = player.ar.arFunction.add(1).pow(0.3)
-        else player.ar.functionE4 = new Decimal(1)
+        if (hasMilestone("ar", 6) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.3)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE4 = mult
             
-        if (hasMilestone("ar", 7)) player.ar.functionE5 = player.ar.arFunction.add(1).pow(0.075)
-        else player.ar.functionE5 = new Decimal(1)
+        if (hasMilestone("ar", 7) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.075)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE5 = mult
             
-        if (hasMilestone("ar", 8)) player.ar.functionE6 = player.ar.arFunction.add(1).pow(0.01)
-        else player.ar.functionE6 = new Decimal(1)
+        if (hasMilestone("ar", 8) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.01)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE6 = mult
     
-        if (hasMilestone("ar", 10)) player.ar.functionE7 = player.ar.arFunction.add(1).pow(0.005).log(100).add(1)
-        else player.ar.functionE7 = new Decimal(1)
+        if (hasMilestone("ar", 10) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.005).log(100).add(1)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE7 = mult
+    
+        if (hasChallenge("ar", 21) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.005)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+
+        player.ar.functionE8 = mult
+    
+        if (hasChallenge("ar", 21) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.001)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+
+        player.ar.functionE9 = mult
+    
+        if (hasMilestone("ar", 15) && !inLD && !inChallenge("poly", 11)) mult = player.ar.arFunction.add(1).pow(0.05)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 16)) mult = mult.pow(player.ar.metaE1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+
+        player.ar.functionE10 = mult
+    
+        //meta!
+        if (hasMilestone("ar", 16) && !inLD) mult = player.ar.arFunction.add(1).log("1e1000").div(12.5).add(1)
+        else mult = new Decimal(1)
+        if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+
+        player.ar.metaE1 = mult
+        
+        if (hasMilestone("ar", 17) && !inLD) mult = player.ar.arFunction.add(1).log("1e1000").div(10).add(1)
+        else mult = new Decimal(1)
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+
+        player.ar.metaE2 = mult
+        
+        if (hasUpgrade("cb", 15) && !inLD) mult = player.ar.arFunction.add(1).log("1e2000").div(8).add(1)
+        else mult = new Decimal(1)
+        if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+
+        player.ar.metaE3 = mult
+        
+        if (hasMilestone("div", 14) && !inLD) mult = player.ar.arFunction.add(1).log("1e2500").div(25).add(1)
+        else mult = new Decimal(1)
+
+        player.ar.metaE4 = mult
 
         //effect softcaps
         let softcapFE5 = new Decimal(0.25)
@@ -954,6 +1339,10 @@ addLayer("ar", {
         }
     },
 
-    branches: [["add", 3], ["sub", 3], ["mul", 3], ["d", 3], ["poly", 1]],
-    tooltip() {return format(player.ar.points) + " Operation Power (+" + format(getResetGain("ar")) + " Operation Power on reset)"},
+    branches: [["add", 3], ["sub", 3], ["mul", 3], ["div", 3], ["d", 3], ["poly", 1]],
+    tooltip() {
+        let text = format(player.ar.points) + " Operation Power (+" + format(getResetGain("ar")) + " Operation Power on reset)"
+        if (player.ar.points.gte(player.ar.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.ar.softcap1Start} - ^${player.ar.softcap1}]`
+        return text
+    },
 })

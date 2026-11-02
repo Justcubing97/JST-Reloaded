@@ -29,7 +29,7 @@ addLayer("p", {
         }
 
         layer = "add"
-        mult = mult.add(player.add.additionTypeFunda.pow(5))
+        mult = mult.add(player.add.additionTypePrim.pow(5))
         //mul
         layer = "f"
         if (!getClickableState("sub", 1001) || (getClickableState("sub", 1001) && !getClickableState("sub", 24))){
@@ -48,12 +48,23 @@ addLayer("p", {
         mult = mult.mul(buyableEffect(layer, 13))
 
         layer = "ar"
-        mult = mult.mul(player[layer].effectPV1)
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) mult = mult.div(player[layer].effectPV1)
+        else mult = mult.mul(player[layer].effectPV1)
 
         if (hasMilestone(layer, 4)) mult = mult.mul(player.ar.functionE3)
+
+        layer = "poly"
+        if (hasUpgrade(layer, 24)) mult = mult.mul("1e10")
+        if (hasUpgrade(layer, 115)) mult = mult.mul("1e100")
         //exp 
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.pow(1.05)
+    
+        layer = "poly"
+        if (hasUpgrade(layer, 23)) mult = mult.pow(1.1)
+        if (hasMilestone(layer, 2)) mult = mult.pow(1.01)
+        mult = mult.pow(player.poly.hexagonsEffect1)
+        mult = mult.pow(tmp.poly.challenges[11].rewardEffect[1])
         //other hypers
         //time dilations/chals
         layer = "sub"
@@ -63,7 +74,8 @@ addLayer("p", {
         }
 
         layer = "ar"
-        if (inChallenge("ar", 11)) mult = mult.pow(0.5)
+        if (inChallenge(layer, 11)) mult = mult.pow(0.5)
+        if (inChallenge(layer, 21)) mult = mult.div(player.add.additionTypeLimit.pow(10).add(1))
         //final
         return mult
     }, //primary multi
@@ -74,6 +86,14 @@ addLayer("p", {
 
         if (gain.gte(player[layer].softcap1Start)) gain = gain.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
         //put after first softcap things after this line
+
+        if (hasMilestone("ar", 13)) gain = gain.mul(player.ar.effectLT)
+        if (hasMilestone("ar", 13)) gain = gain.mul(player.ar.effectLTE)
+        if (hasMilestone("ar", 13)) gain = gain.mul(player.ar.effectGTE)
+        if (hasMilestone("ar", 13)) gain = gain.mul(player.ar.effectGT)
+
+        if (getClickableState("sub", 1001) && getClickableState("sub", 44)) gain = gain.pow(0.1)
+        if (hasUpgrade("cb", 11)) gain = gain.pow(1.05)
             
 		gain = gain.times(tmp[layer].directMult)
 		return gain.floor().max(0);
@@ -238,6 +258,7 @@ addLayer("p", {
                 if (hasUpgrade("f", 32)) init = init.sub(0.1)
                 
                 if (inChallenge("ar", 12)) init = init.pow(10)
+                if (inChallenge("poly", 11)) init = init.pow(8)
                     
                 if (getClickableState("sub", 1001) && getClickableState("sub", 34)) init = init.pow(25)
                 return init
@@ -249,6 +270,7 @@ addLayer("p", {
 
                 let final = base.mul(multi)
                 if (hasMilestone("ar", 6)) final = final.div(player.ar.functionE4)
+                final = final.div(player.poly.trianglesEffect1)
 
                 return final //if you add anything to the cost formula, make sure to update the buymax()!
                 //do this by using the reciprocoal function, and right after let timesBought
@@ -256,7 +278,9 @@ addLayer("p", {
             },
             title: "Fundamental Acceleration",
             display() {
-                return "Multiplies Funda by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                let added = ""
+                if (hasUpgrade("poly", 207)) added = "+" + formatWhole(getBuyableAmount("nc", 11).mul(5))
+                return "Multiplies Funda by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + added + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
@@ -276,8 +300,13 @@ addLayer("p", {
                 return base
             },
             effect(x) {
+                if (getClickableState("div", 1001)) return new Decimal(1)
+                let amt = x
                 let base = tmp[this.layer].buyables[this.id].effectBase
-                let effect = base.pow(x)
+
+                if (hasUpgrade("poly", 207)) amt = amt.add(getBuyableAmount("nc", 11).mul(5))
+
+                let effect = base.pow(amt)
                 
                 let softcap = new Decimal(0.5)
 
@@ -285,6 +314,10 @@ addLayer("p", {
                     
                 let softcapStart = new Decimal("1e10")
                 if (hasMilestone("ar", 3)) softcapStart = softcapStart.mul("1e20")
+
+                if (inChallenge("poly", 11)) softcap = new Decimal(0.05)
+                if (inChallenge("poly", 11)) softcapStart = new Decimal(1)
+
                 if (effect.gte(softcapStart)) effect = effect.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
                 
                 let softcap2 = new Decimal(0.4)
@@ -298,6 +331,7 @@ addLayer("p", {
                 let timesBought = player[this.layer].points
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) timesBought = timesBought.mul(player.ar.functionE4)
+                timesBought = timesBought.mul(player.poly.trianglesEffect1)
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
@@ -310,6 +344,7 @@ addLayer("p", {
 
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) totalCost = totalCost.div(player.ar.functionE4)
+                totalCost = totalCost.div(player.poly.trianglesEffect1)
 
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
@@ -325,6 +360,7 @@ addLayer("p", {
                 if (hasUpgrade("f", 32)) init = init.sub(0.1)
 
                 if (inChallenge("ar", 12)) init = init.pow(10)
+                if (inChallenge("poly", 11)) init = init.pow(8)
                     
                 if (getClickableState("sub", 1001) && getClickableState("sub", 34)) init = init.pow(25)
                 return init
@@ -336,6 +372,7 @@ addLayer("p", {
 
                 let final = base.mul(multi)
                 if (hasMilestone("ar", 6)) final = final.div(player.ar.functionE4)
+                final = final.div(player.poly.trianglesEffect1)
 
                 return final //if you add anything to the cost formula, make sure to update the buymax()!
                 //do this by using the reciprocoal function, and right after let timesBought
@@ -343,7 +380,9 @@ addLayer("p", {
             },
             title: "Rapid Generation",
             display() {
-                return "Multiplies Points by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                let added = ""
+                if (hasUpgrade("poly", 207)) added = "+" + formatWhole(getBuyableAmount("nc", 12).mul(5))
+                return "Multiplies Points by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + added + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
@@ -365,8 +404,13 @@ addLayer("p", {
                 return base
             },
             effect(x) {
+                if (getClickableState("div", 1001)) return new Decimal(1)
+                let amt = x
                 let base = tmp[this.layer].buyables[this.id].effectBase
-                let effect = base.pow(x)
+
+                if (hasUpgrade("poly", 207)) amt = amt.add(getBuyableAmount("nc", 12).mul(5))
+
+                let effect = base.pow(amt)
                 
                 let softcap = new Decimal(0.5)
 
@@ -374,6 +418,10 @@ addLayer("p", {
 
                 let softcapStart = new Decimal("1e10")
                 if (hasMilestone("ar", 2)) softcapStart = softcapStart.mul("1e20")
+
+                if (inChallenge("poly", 11)) softcap = new Decimal(0.05)
+                if (inChallenge("poly", 11)) softcapStart = new Decimal(1)
+
                 if (effect.gte(softcapStart)) effect = effect.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
                 let softcap2 = new Decimal(0.4)
@@ -387,6 +435,7 @@ addLayer("p", {
                 let timesBought = player[this.layer].points
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) timesBought = timesBought.mul(player.ar.functionE4)
+                timesBought = timesBought.mul(player.poly.trianglesEffect1)
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
@@ -399,6 +448,7 @@ addLayer("p", {
 
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) totalCost = totalCost.div(player.ar.functionE4)
+                totalCost = totalCost.div(player.poly.trianglesEffect1)
 
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
@@ -414,6 +464,7 @@ addLayer("p", {
                 if (hasUpgrade("f", 32)) init = init.sub(0.1)
 
                 if (inChallenge("ar", 12)) init = init.pow(10)
+                if (inChallenge("poly", 11)) init = init.pow(8)
 
                 if (getClickableState("sub", 1001) && getClickableState("sub", 34)) init = init.pow(25)
                 return init
@@ -425,6 +476,7 @@ addLayer("p", {
 
                 let final = base.mul(multi)
                 if (hasMilestone("ar", 6)) final = final.div(player.ar.functionE4)
+                final = final.div(player.poly.trianglesEffect1)
 
                 return final //if you add anything to the cost formula, make sure to update the buymax()!
                 //do this by using the reciprocoal function, and right after let timesBought
@@ -432,7 +484,9 @@ addLayer("p", {
             },
             title: "Duplication Machine",
             display() {
-                return "Multiplies Numbers by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                let added = ""
+                if (hasUpgrade("poly", 207)) added = "+" + formatWhole(getBuyableAmount("nc", 13).mul(5))
+                return "Multiplies Numbers by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + added + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
@@ -454,8 +508,13 @@ addLayer("p", {
                 return base
             },
             effect(x) {
+                if (getClickableState("div", 1001)) return new Decimal(1)
+                let amt = x
                 let base = tmp[this.layer].buyables[this.id].effectBase
-                let effect = base.pow(x)
+
+                if (hasUpgrade("poly", 207)) amt = amt.add(getBuyableAmount("nc", 13).mul(5))
+
+                let effect = base.pow(amt)
                 
                 let softcap = new Decimal(0.5)
 
@@ -463,6 +522,10 @@ addLayer("p", {
 
                 let softcapStart = new Decimal("1e7")
                 if (hasMilestone("ar", 5)) softcapStart = softcapStart.mul("1e8")
+
+                if (inChallenge("poly", 11)) softcap = new Decimal(0.05)
+                if (inChallenge("poly", 11)) softcapStart = new Decimal(1)
+
                 if (effect.gte(softcapStart)) effect = effect.pow(softcap).mul(new Decimal(softcapStart).pow(decimalOne.sub(softcap))) //softcap
 
                 let softcap2 = new Decimal(0.4)
@@ -476,6 +539,7 @@ addLayer("p", {
                 let timesBought = player[this.layer].points
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) timesBought = timesBought.mul(player.ar.functionE4)
+                timesBought = timesBought.mul(player.poly.trianglesEffect1)
 
                 timesBought = timesBought.mul(tmp[this.layer].buyables[this.id].exponentialBase.sub(1))
                 timesBought = timesBought.div(tmp[this.layer].buyables[this.id].base)
@@ -488,6 +552,7 @@ addLayer("p", {
 
                 //insert cost effects here
                 if (hasMilestone("ar", 6)) totalCost = totalCost.div(player.ar.functionE4)
+                totalCost = totalCost.div(player.poly.trianglesEffect1)
 
                 let polynomial = new Decimal(tmp[this.layer].buyables[this.id].exponentialBase)
                 polynomial = polynomial.pow(timesBought).sub(1)
@@ -535,6 +600,30 @@ addLayer("p", {
         }
     },
 
-    branches: [["ar", 1]],
-    tooltip() {return format(player.p.points) + " Numbers (+" + format(getResetGain("p")) + " Numbers on reset)"},
+    glowColor() {
+        let layer = "p"
+        for (const id of [11, 12, 13]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return "cyan"
+            }
+        }
+
+        return ""
+    },
+    shouldNotify() {
+        let layer = "p"
+        for (const id of [11, 12, 13]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return true
+            }
+        }
+        return false
+    },
+
+    branches: [["ar", 1], ["nc", 3]],
+    tooltip() {
+        let text = format(player.p.points) + " Numbers (+" + format(getResetGain("p")) + " Numbers on reset)"
+        if (player.p.points.gte(player.p.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.p.softcap1Start} - ^${player.p.softcap1}]`
+        return text
+    },
 })

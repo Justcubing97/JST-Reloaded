@@ -83,6 +83,17 @@ addLayer("d", {
             done() { return player.d.points.gte(3) },
             unlocked() { return hasMilestone(this.layer, this.id - 1) },
         },
+        4: {
+            requirementDescription: "The 4th Dimension",
+            effectDescription: "Welcome to the transcendence of reality. x1e10 Addition, Addition type cap, Subtraction, OP, and Functions after softcap. -0.001 to Division time scaling, and ^1.05 Division. x500 CS and Ineqs. ^1.05 EP, FV, PV, and ^1.01 to the effects of NC buyables. x1e10 to Vertex cap and Edges. Divide the Core Booster cost by ÷1e200.",
+            done() { return player.d.points.gte(4) },
+            unlocked() { return hasMilestone(this.layer, this.id - 1) },
+            style() {
+                return {
+                    "height": "120px"
+                }
+            },
+        },
     },
 
     infoboxes: {
@@ -100,7 +111,7 @@ addLayer("d", {
     },
 
     tooltip() {
-        if (!canReset("d")) return format(player.d.points) + " Dimensions (Unable to reset)"
+        if (!canReset("d")) return format(player.d.points) + " Dimensions (next at " + format(getNextAt("d")) + " Points)"
         return format(player.d.points) + " Dimensions (+" + format(getResetGain("d")) + " Dimensions on reset)"
     },
 })

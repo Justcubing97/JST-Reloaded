@@ -51,13 +51,21 @@ addLayer("f", {
         mult = mult.mul(buyableEffect(layer, 11))
         
         layer = "ar"
-        mult = mult.mul(player[layer].effectFV1)
+        if (getClickableState("sub", 1001) && getClickableState("sub", 42)) mult = mult.div(player[layer].effectFV1)
+        else mult = mult.mul(player[layer].effectFV1)
+
+        layer = "poly"
+        if (hasUpgrade(layer, 115)) mult = mult.mul("1e100")
         //exp 
         layer = "f"
         if (hasUpgrade(layer, 43)) mult = mult.pow(1.044)
 
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.pow(1.05)
+
+        layer = "poly"
+        mult = mult.pow(player.poly.hexagonsEffect1)
+        mult = mult.pow(tmp.poly.challenges[11].rewardEffect[1])
         //other hypers
         //time dilations/chals
         layer = "sub"
@@ -66,7 +74,8 @@ addLayer("f", {
             if (getClickableState(layer, 22)) mult = mult.pow(0.25)
         }
         layer = "ar"
-        if (inChallenge("ar", 11)) mult = mult.pow(0.5)
+        if (inChallenge(layer, 11)) mult = mult.pow(0.5)
+        if (inChallenge(layer, 21)) mult = mult.div(player.add.additionTypeLimit.pow(30).add(1))
         //softcaps
         //final
         return mult
@@ -78,11 +87,15 @@ addLayer("f", {
 
         if (mult.gte(player[layer].softcap1Start)) mult = mult.pow(player[layer].softcap1).mul(new Decimal(player[layer].softcap1Start).pow(decimalOne.sub(player[layer].softcap1)))
 
+        if (hasUpgrade("poly", 24)) mult = mult.mul("1e10")
+
+        if (hasMilestone("poly", 2)) mult = mult.pow(1.01)
+
 		return mult.floor().max(0);
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "f", description: "F: Reset for Fundamental", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "f", description: "F: Reset for Fundamentality", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){
         player.f.unlocked = true
@@ -182,7 +195,7 @@ addLayer("f", {
                 base = base.pow(expbase).add(1).log(logbase).add(1)
                 
                 if (hasUpgrade("ar", 26)) base = base.pow(4)
-
+                if (hasUpgrade("poly", 216)) base = base.pow(100)
                 let softcap = new Decimal(0.25)
                 let softcapStart = new Decimal("1e100")
 
@@ -218,6 +231,8 @@ addLayer("f", {
                 if (hasMilestone("p", 3)) expbase = expbase.add(1.5)
 
                 base = base.pow(expbase).add(1).log(logbase).add(1)
+                
+                if (hasAchievement("a", 13)) base = base.pow(50)
 
                 let softcap = new Decimal(0.25)
                 let softcapStart = new Decimal("1e100")
@@ -292,6 +307,7 @@ addLayer("f", {
                 let expbase = new Decimal(3)
 
                 base = base.pow(expbase).add(1).log(logbase).add(1)
+                if (hasMilestone("div", 7)) base = base.pow(100)
 
                 let softcap = new Decimal(0.1)
                 let softcapStart = new Decimal("1e1000")
@@ -330,7 +346,7 @@ addLayer("f", {
                 let text =  "x" + format(upgradeEffect(this.layer, this.id)) + " to Numbers"
                 return text
             },
-            description: "The number of bought Funda upgrades multplies Numbers.",
+            description: "The number of bought Funda upgrades multiplies Numbers.",
             cost: new Decimal("1e64"),
             unlocked() {return hasMilestone("p", 11)},
         },
@@ -365,6 +381,31 @@ addLayer("f", {
             cost: new Decimal("1e440"),
             unlocked() {return hasMilestone("p", 14)},
         },
+        
+        44: {
+            title: "Back to Basics",
+            description: "x1e500 Points. One of the more powerful pure multipliers!",
+            cost: new Decimal("1e2580"),
+            unlocked() {return hasMilestone("ar", 14)},
+        },
+        45: {
+            title: "Cost Scaling",
+            description: "If you don't like it, play classic JST. x1e750 Points this time!",
+            cost: new Decimal("1e3600"),
+            unlocked() {return hasMilestone("ar", 14)},
+        },
+        46: {
+            title: "Point Boost II",
+            description: "x1e1000 Points.",
+            cost: new Decimal("1e4900"),
+            unlocked() {return hasMilestone("ar", 14)},
+        },
+        47: {
+            title: "Balancing Isn't This Hard, JC97",
+            description: "x1e1500 Points. It is that hard, upgrade 28.",
+            cost: new Decimal("e1e4"),
+            unlocked() {return hasMilestone("ar", 14)},
+        },
     },
 
     buyables: {
@@ -384,10 +425,20 @@ addLayer("f", {
             if (hasMilestone("p", 10)) list.push(31, 32, 33)
             if (hasUpgrade("ar", 15)) list.push(31, 32, 33, 34, 35, 36, 37)
             if (hasUpgrade("poly", 13)) list.push(31, 32, 33, 34, 35, 36, 37, 41, 42, 43)
+            if (hasMilestone("poly", 16)) list.push(44, 45, 46, 47)
             for (const id of list){
                 if (!hasUpgrade("f", id) && canAffordUpgrade("f", id) && tmp.f.upgrades[id].unlocked) buyUpgrade("f", id)
             }
         }
+
+        //softcap
+        let mult = new Decimal("1e1000")
+        if (hasMilestone("poly", 7)) mult = mult.mul("1e250")
+        player.f.softcap1Start = mult
+    
+        mult = new Decimal("0.25")
+        if (hasMilestone("poly", 7)) mult = mult.mul("2")
+        player.f.softcap1 = mult
     },
 
     glowColor() {

@@ -2,7 +2,7 @@ let modInfo = {
 	name: "JST: Reloaded",
 	author: "Justcubing97",
 	pointsName: "Points",
-	modFiles: ["achievements.js", "logarithmicscale.js", "conway.js", "fundamental.js", "primitive.js", "arithmetic.js", "addition.js", "subtraction.js", "multiplication.js", "dimension.js", "polygon.js", "tree.js"],
+	modFiles: ["achievements.js", "logarithmicscale.js", "conway.js", "fundamental.js", "primitive.js", "arithmetic.js", "addition.js", "subtraction.js", "multiplication.js", "division.js", "dimension.js", "polygon.js", "numbercore.js", "corebooster.js", "planetary.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,27 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.2",
-	name: "v1.2",
+	num: "2.0",
+	name: "Polygon layer",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.0</h2><br>
+		- THE ENTIRE POLYGON LAYER. <br>
+		- Changed the 4th Achievement <br>
+		- Added an optional requirement to the 19th Achievement <br>
+		- Changed "Addition Type(s)" to "Addition type(s)" <br>
+		- Changed how tooltips for static layers work <br>
+		- Removed the short form of Products <br>
+		- Added a respec sentence in TMT <br>
+		- Renamed "TMT Introduction" <br>
+		- Added buyable highlights <br><br>
+		- Changed achievement name "Millionare" to "Millionaire" <br>
+		- More achievements <br>
+		- Changed \"CRB\" node symbol to \"CBT\" <br>
+		- Reformatted the Logarithmic Scale YET AGAIN <br>
+		- Fixed Number gain fetching the wrong Addition type <br>
+		- Added buyable highlights <br><br>
 	<h2>v1.2</h2><br>
 		- Tweaked wording for Inequality effects unlocked from \"Affect the Inequality\" <br>
 		- Changed names for row 3 TMT upgrades <br>
@@ -58,6 +74,7 @@ var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",
     "findIneqMult_ARH",
     "clickIneqButton_ARH",
     "convertTo_ADD",
+    "findConstructorShapesMult_POLY",
 ]
 
 function getStartPoints(){
@@ -72,7 +89,7 @@ function canGenPoints(){
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
     softcap1: new Decimal(0.25),
-    softcap1Start: new Decimal("1e10000"),
+    softcap1Start: new Decimal("1e50000"),
     softcap2: new Decimal(0.25),
     softcap2Start: new Decimal("1e250000"),
     softcap3: new Decimal(0.25),
@@ -100,7 +117,7 @@ function getPointGen() {
     layer = "add"
     mult = mult.add(player.add.additionTypePoint.pow(5))
     //mul
-    if (hasAchievement("a", 35)) mult = mult.mul(player.mul.points.pow(2).add(1))
+    if (hasAchievement("a", 35)) mult = mult.mul(player.mul.points.pow(5).add(1))
 
     layer = "f"
     if (!getClickableState("sub", 1001) || (getClickableState("sub", 1001) && !getClickableState("sub", 24))){
@@ -119,6 +136,10 @@ function getPointGen() {
     }
 
     if (hasUpgrade(layer, 41)) mult = mult.mul(377377377)
+    if (hasUpgrade(layer, 44)) mult = mult.mul("1e500")
+    if (hasUpgrade(layer, 45)) mult = mult.mul("1e750")
+    if (hasUpgrade(layer, 46)) mult = mult.mul("1e1000")
+    if (hasUpgrade(layer, 47)) mult = mult.mul("1e1500")
 
     layer = "p"
     if (hasMilestone(layer, 2)) mult = mult.mul(10)
@@ -132,9 +153,15 @@ function getPointGen() {
     layer = "ar"
     if (hasUpgrade(layer, 11)) mult = mult.mul(upgradeEffect(layer, 11))
     if (hasUpgrade(layer, 14)) mult = mult.mul("1e6")
+    if (hasUpgrade(layer, 33)) mult = mult.mul(upgradeEffect("div", 12).pow(50))
     if (hasMilestone(layer, 11)) mult = mult.mul(milestoneEffect(layer, 11))
         
     if (hasMilestone(layer, 1)) mult = mult.mul(player.ar.functionE1)
+        
+    if (hasMilestone(layer, 13)) mult = mult.mul(player.ar.effectLT)
+    if (hasMilestone(layer, 13)) mult = mult.mul(player.ar.effectLTE)
+    if (hasMilestone(layer, 13)) mult = mult.mul(player.ar.effectGTE)
+    if (hasMilestone(layer, 13)) mult = mult.mul(player.ar.effectGT)
         
     layer = "sub"
     if (hasUpgrade(layer, 14)) mult = mult.mul("1e40")
@@ -148,14 +175,33 @@ function getPointGen() {
     layer = "poly"
     mult = mult.mul(buyableEffect(layer, 12))
     if (hasUpgrade(layer, 12)) mult = mult.mul("1e100")
+    if (hasUpgrade(layer, 115)) mult = mult.mul("1e100")
+    mult = mult.mul(tmp.poly.challenges[11].rewardEffect[0])
+
+    layer = "nc"
+    mult = mult.mul(buyableEffect(layer, 12))
+
+    layer = "pf"
+    if (hasUpgrade(layer, 11)) mult = mult.mul("1e1000")
     //exp
-    layer = "f"
     layer = "p"
     if (hasMilestone(layer, 6)) mult = mult.pow(1.11)
     if (hasMilestone(layer, 13)) mult = mult.pow(1.05)
 
+    layer = "mul"
+    if (hasUpgrade(layer, 71)) mult = mult.pow(1.05)
+
     layer = "ar"
     if (hasChallenge(layer, 11)) mult = mult.pow(1.1)
+    if (hasMilestone(layer, 16)) mult = mult.pow(player.ar.metaE1)
+
+    layer = "div"
+    if (hasMilestone(layer, 11)) mult = mult.pow(1.01)
+
+    layer = "poly"
+    if (hasMilestone(layer, 2)) mult = mult.pow(1.01)
+    mult = mult.pow(player.poly.hexagonsEffect1)
+    if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
     //hyper
     //time dilations/chals
     layer = "sub"
@@ -163,12 +209,15 @@ function getPointGen() {
         if (getClickableState(layer, 11)) mult = mult.pow(0.75)
         if (getClickableState(layer, 12)) mult = mult.pow(0.5)
         if (getClickableState(layer, 13)) mult = mult.pow(0.25)
+        if (getClickableState(layer, 43)) mult = mult.pow(0.8)
         if (getClickableState(layer, 14)) mult = mult.pow(0.1)
     }
 
     layer = "ar"
     if (inChallenge(layer, 11)) mult = mult.pow(0.5)
     if (inChallenge(layer, 12)) mult = mult.pow(0.5)
+    if (inChallenge(layer, 21)) mult = mult.div(player.add.additionTypeLimit.pow(10).add(1))
+    if (inChallenge(layer, 22)) mult = mult.pow(0.01)
     //=====
     //softcap stuff
     if (mult.gte(player.softcap1Start)) mult = mult.pow(player.softcap1).mul(new Decimal(player.softcap1Start).pow(decimalOne.sub(player.softcap1)))
@@ -180,18 +229,18 @@ function getPointGen() {
 
 // Display extra things at the top of the page
 var displayThings = [
-    "Current endgame: 1 Shape.",
+    "Current endgame: 1 Planetary Fragment.",
     "Justcubing97's Something Tree: Reloaded - mod author: Justcubing97",
     "<br>",
-    function() {if (player.points.gte(player.softcap1Start)) return `<b>FIRST SOFTCAP: ${format(player.softcap1Start)} - ${format(player.softcap1)}</b>`},
-    function() {if (player.points.gte(player.softcap2Start)) return `<b>SECOND SOFTCAP: ${format(player.softcap2Start)} - ${format(player.softcap1)}</b>`},
-    function() {if (player.points.gte(player.softcap3Start)) return `<b>THIRD SOFTCAP: ${format(player.softcap3Start)} - ${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap1Start)) return `<b>FIRST SOFTCAP: ${format(player.softcap1Start)} - ^${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap2Start)) return `<b>SECOND SOFTCAP: ${format(player.softcap2Start)} - ^${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap3Start)) return `<b>THIRD SOFTCAP: ${format(player.softcap3Start)} - ^${format(player.softcap1)}</b>`},
     "<br><br><br>",
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.poly.points.gte(1)
+	return player.pf.points.gte(1)
 }
 
 

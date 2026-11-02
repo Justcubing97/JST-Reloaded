@@ -15,6 +15,7 @@ addLayer("add", {
         additionTypePoint: new Decimal(0),
         additionTypeFunda: new Decimal(0),
         additionTypePrim: new Decimal(0),
+        additionTypeNC: new Decimal(0),
         additionTypeArith: new Decimal(0),
         
         additionTypeLimit: new Decimal(0),
@@ -39,9 +40,14 @@ addLayer("add", {
         let mult = new Decimal(1)
         //add
         //mul
+        if (hasAchievement("a", 54)) mult = mult.mul(player.div.points.add(1))
+
         layer = "ar"
         if (hasMilestone(layer, 8)) mult = mult.mul(player.ar.functionE6)
-        if (hasMilestone(layer, 9)) mult = mult.mul(player.ar.effectFV3)
+        if (hasMilestone(layer, 9)){
+            if (getClickableState("sub", 1001) && getClickableState("sub", 42)) mult = mult.div(player.ar.effectFV3)
+            else mult = mult.mul(player.ar.effectFV3)
+        }
             
         layer = "sub"
         mult = mult.mul(buyableEffect(layer, 11))
@@ -51,7 +57,13 @@ addLayer("add", {
 
         layer = "d"
         if (player.d.points.gte(1)) mult = mult.mul(25)
+        if (player.d.points.gte(4)) mult = mult.mul("1e10")
         //exp 
+        layer = "poly"
+        mult = mult.pow(player.poly.pentagonsEffect1)
+
+        layer = "add"
+        if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
         //other hypers
         //time dilations/chals
         //final
@@ -89,15 +101,18 @@ addLayer("add", {
         let keptTypeFunda = player.add.additionTypeFunda
         let keptTypePrim = player.add.additionTypePrim
         let keptTypePoint = player.add.additionTypePoint
+        let keptTypeNC = player.add.additionTypeNC
+        let keptTypeArith = player.add.additionTypeArith
 
         // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
         let keep = ["best", "buyables"];
+        
 
-        if (resettingLayer == "poly"){
+        if (resettingLayer == "poly" || resettingLayer == "pf"){
             keep = []
             keptTypeFunda = new Decimal(0)
             keptTypePrim = new Decimal(0)
-            keptTypePoint =new Decimal(0)
+            keptTypePoint = new Decimal(0)
         }
 
         // Stage 4, do the actual data reset
@@ -105,9 +120,11 @@ addLayer("add", {
 
         // Stage 5, add back in the specific subfeatures you saved earlier
         player.add.initiated = isInit
-        player.add.additionTypeFunda = keptTypeFunda.div(10)
-        player.add.additionTypePrim = keptTypePrim.div(10)
-        player.add.additionTypePoint = keptTypePoint.div(10)
+        player.add.additionTypeFunda = Decimal.min(keptTypeFunda.div(10), player.add.additionTypeLimit)
+        player.add.additionTypePrim = Decimal.min(keptTypePrim.div(10), player.add.additionTypeLimit)
+        player.add.additionTypePoint = Decimal.min(keptTypePoint.div(10), player.add.additionTypeLimit)
+        player.add.additionTypeNC = Decimal.min(keptTypeNC.div(10), player.add.additionTypeLimit)
+        player.add.additionTypeArith = Decimal.min(keptTypeArith.div(10), player.add.additionTypeLimit)
     }, //THANK YOU ESCAPEE FROM THE TMT SERVER
     onPrestige() {player.add.initiated = true},
     tabFormat: {
@@ -122,13 +139,13 @@ addLayer("add", {
                 "blank",
                 ["display-text", function(){return `You are gaining +${format(getResetGain(this.layer))} Addition per second.`}],
                 ["display-text", function(){return `You will increase your gain at ${format(getNextAt(this.layer))} Operation Power.`}],
-                ["display-text", function(){return `Your highest Addition is ${format(player.add.best)}, which multiplies the cap of Addition Types by ${format(player.add.bestEffect)}.`}],
+                ["display-text", function(){return `Your highest Addition is ${format(player.add.best)}, which multiplies the cap of Addition types by x${format(player.add.bestEffect)}.`}],
                 ["blank", "8px"],
                 ["display-text", function(){return `1: Pick any conversion option.`}],
                 ["display-text", function(){return `2: Find your currency of interest.`}],
                 ["display-text", function(){return `3: Click \"Convert to [currency]\".`}],
                 ["blank", "8px"],
-                ["display-text", function(){return `On higher resets, your best Addition and 10% of each Addition Type are kept.`}],
+                ["display-text", function(){return `On higher resets, your best Addition and 10% of each Addition type are kept.`}],
                 ["display-text", function(){return `The bars here are measured logarithmically.`}],
                 "blank",
                 "h-line",
@@ -140,6 +157,10 @@ addLayer("add", {
                 ["row", [["bar", "addPrimBar"], ["blank", "8px", "8px"], ["clickable", 22]]],
                 "blank",
                 ["row", [["bar", "addPointBar"], ["blank", "8px", "8px"], ["clickable", 23]]],
+                "blank",
+                ["row", [["bar", "addNCBar"], ["blank", "8px", "8px"], ["clickable", 24]]],
+                "blank",
+                ["row", [["bar", "addArithBar"], ["blank", "8px", "8px"], ["clickable", 25]]],
             ],
         },
         "Buyable": {
@@ -155,6 +176,9 @@ addLayer("add", {
     },
 
     convertTo_ADD(type){
+        if (getClickableState("sub", 1001) && getClickableState("sub", 44)) return;
+        if (getClickableState("div", 1001)) return;
+        if (inChallenge("ar", 21)) return;
         let takenAmount;
         switch(player.add.splitSetting){
             case 1: takenAmount = player.add.points.div(10); break;
@@ -162,7 +186,7 @@ addLayer("add", {
             case 3: takenAmount = player.add.points; break;
         }
 
-        player.add.points = player.add.points.sub(takenAmount)
+        if (!hasMilestone("poly", 3)) player.add.points = player.add.points.sub(takenAmount)
 
         if (type == "f"){
             if (takenAmount.add(player.add.additionTypeFunda).gte(player.add.additionTypeLimit)) player.add.additionTypeFunda = player.add.additionTypeLimit
@@ -177,6 +201,16 @@ addLayer("add", {
         if (type == "poi"){
             if (takenAmount.add(player.add.additionTypePoint).gte(player.add.additionTypeLimit)) player.add.additionTypePoint = player.add.additionTypeLimit
             else player.add.additionTypePoint = player.add.additionTypePoint.add(takenAmount)
+        }
+        
+        if (type == "nc"){
+            if (takenAmount.add(player.add.additionTypeNC).gte(player.add.additionTypeLimit)) player.add.additionTypeNC = player.add.additionTypeLimit
+            else player.add.additionTypeNC = player.add.additionTypeNC.add(takenAmount)
+        }
+        
+        if (type == "ar"){
+            if (takenAmount.add(player.add.additionTypeArith).gte(player.add.additionTypeLimit)) player.add.additionTypeArith = player.add.additionTypeLimit
+            else player.add.additionTypeArith = player.add.additionTypeArith.add(takenAmount)
         }
     },
     
@@ -276,6 +310,38 @@ addLayer("add", {
             },
             unlocked() {return hasMilestone("ar", 12)},
         },
+        
+        24: {
+            title: "Convert to Type-NCR",
+            canClick() {return true},
+            onClick() {
+                tmp.add.convertTo_ADD("nc")
+            },
+            style() {
+                return {
+                    "background": "rgb(0, 255, 204)",
+                    "width": "120px",
+                    "height": "80px",
+                }
+            },
+            unlocked() {return hasMilestone("ar", 16)},
+        },
+        
+        25: {
+            title: "Convert to Type-ARH",
+            canClick() {return true},
+            onClick() {
+                tmp.add.convertTo_ADD("ar")
+            },
+            style() {
+                return {
+                    "background": "rgb(255,0,102)",
+                    "width": "120px",
+                    "height": "80px",
+                }
+            },
+            unlocked() {return hasUpgrade("poly", 215)},
+        },
     },
 
     bars: {
@@ -362,6 +428,62 @@ addLayer("add", {
             },
             unlocked() {return hasMilestone("ar", 12)},
         },
+        addNCBar: {
+            direction: RIGHT,
+            width: 500,
+            height: 75,
+            display() {
+                let text = `Type-NCR Addition: ${format(player.add.additionTypeNC)}/${format(player.add.additionTypeLimit)}.`
+                return text
+            },
+            progress() {
+                let prog = player.add.additionTypeNC.add(1).log(10).div(player.add.additionTypeLimit.add(1).log(10))
+                
+                return prog
+            },
+            fillStyle() {
+                if (player.add.additionTypeNC.gte(player.add.additionTypeLimit)) return {"background-color": "rgb(128, 255, 229)",}
+                return {"background-color": "rgb(0, 255, 204)",}
+            },
+            style() {
+                return {
+                    "color": "black",
+                    "text-shadow": "0px 0px 5px rgb(0,0,0)",
+                } 
+            },
+            baseStyle() {
+                return {"background-color": "rgb(102,51,204)",}
+            },
+            unlocked() {return hasMilestone("ar", 16)},
+        },
+        addArithBar: {
+            direction: RIGHT,
+            width: 500,
+            height: 75,
+            display() {
+                let text = `Type-ARH Addition: ${format(player.add.additionTypeArith)}/${format(player.add.additionTypeLimit)}.`
+                return text
+            },
+            progress() {
+                let prog = player.add.additionTypeArith.add(1).log(10).div(player.add.additionTypeLimit.add(1).log(10))
+                
+                return prog
+            },
+            fillStyle() {
+                if (player.add.additionTypeArith.gte(player.add.additionTypeLimit)) return {"background-color": "rgb(255, 128, 160)",}
+                return {"background-color": "rgb(255,0,102)",}
+            },
+            style() {
+                return {
+                    "color": "black",
+                    "text-shadow": "0px 0px 5px rgb(0,0,0)",
+                } 
+            },
+            baseStyle() {
+                return {"background-color": "rgb(102,51,204)",}
+            },
+            unlocked() {return hasUpgrade("poly", 215)},
+        },
     },
 
     buyables: {
@@ -384,7 +506,7 @@ addLayer("add", {
             },
             title: "Multi Boost",
             display() {
-                return "Multiplies OP and all Ineqs. gain by " + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
+                return "Multiplies OP and all Ineqs. gain by x" + format(tmp[this.layer].buyables[this.id].effectBase) + " per purchase." + "\n" + "Bought: " + getBuyableAmount(this.layer, this.id) + "\n" + "Cost: " + format(this.cost()) + "\n" + "Effect: x" + format(this.effect())
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
@@ -399,6 +521,7 @@ addLayer("add", {
             },
             effectBase() {
                 let base = new Decimal(1.1)
+                if (hasUpgrade("cb", 12)) base = base.add(0.4)
                 return base
             },
             effect(x) {
@@ -443,12 +566,22 @@ addLayer("add", {
 
         //addition type limit
         let mult = new Decimal("10000")
+        
+        if (hasUpgrade("poly", 205)) mult = mult.add(upgradeEffect("poly", 205))
 
         mult = mult.mul(player.add.bestEffect)
         if (hasMilestone("ar", 8)) mult = mult.mul(player.ar.functionE6)
         mult = mult.mul(buyableEffect("sub", 11))
         if (player.d.points.gte(3)) mult = mult.mul(5)
+        if (hasUpgrade("mul", 51)) mult = mult.mul(upgradeEffect("mul", 51))
+        if (player.poly.area.gte(782)) mult = mult.mul(player.poly.areaEffect3)
+        if (hasUpgrade("poly", 212)) mult = mult.mul("1e50")
+        if (player.d.points.gte(4)) mult = mult.mul("1e10")
 
+        if (hasMilestone("div", 1)) mult = mult.pow(milestoneEffect("div", 1))
+        if (hasMilestone("poly", 2)) mult = mult.pow(1.01)
+
+        if (inChallenge("poly", 11)) mult = new Decimal("1e50")
         player.add.additionTypeLimit = mult
 
         //automation
@@ -465,7 +598,38 @@ addLayer("add", {
                 }
             }
         }
+
+        //automation addition
+        if (hasMilestone("poly", 3)) tmp.add.convertTo_ADD("f")
+        if (hasMilestone("poly", 5)) tmp.add.convertTo_ADD("p")
+        if (hasMilestone("poly", 6)) tmp.add.convertTo_ADD("poi")
+        if (hasMilestone("poly", 16)) tmp.add.convertTo_ADD("nc")
+        if (hasMilestone("poly", 16)) tmp.add.convertTo_ADD("ar")
     },
 
-    tooltip() {return format(player.add.points) + " Addition (+" + format(getResetGain("add")) + " Addition/s)"},
+    glowColor() {
+        let layer = "add"
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return "cyan"
+            }
+        }
+
+        return ""
+    },
+    shouldNotify() {
+        let layer = "add"
+        for (const id of [11]) {
+            if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
+                return true
+            }
+        }
+        return false
+    },
+
+    tooltip() {
+        let text = format(player.add.points) + " Addition (+" + format(getResetGain("add")) + " Addition/s)"
+        if (player.add.points.gte(player.add.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.add.softcap1Start} - ^${player.add.softcap1}]`
+        return text
+    },
 })
