@@ -308,7 +308,7 @@ addLayer("mul", {
                 if (!hasUpgrade(this.layer, 41)) return false
                 return player.mul.products.gte(this.cost)
             },
-            unlocked() {return hasMilestone("poly", 5)},
+            unlocked() {return hasMilestone("poly", 4)},
             branches() {
                 let color = 3
                 if (hasUpgrade(this.layer, this.id)) color = 1
@@ -345,7 +345,7 @@ addLayer("mul", {
                 if (!hasUpgrade(this.layer, 41)) return false
                 return player.mul.products.gte(this.cost)
             },
-            unlocked() {return hasMilestone("poly", 5)},
+            unlocked() {return hasMilestone("poly", 4)},
             branches() {
                 let color = 3
                 if (hasUpgrade(this.layer, this.id)) color = 1
@@ -381,7 +381,7 @@ addLayer("mul", {
                 if (!hasUpgrade(this.layer, 41)) return false
                 return player.mul.products.gte(this.cost)
             },
-            unlocked() {return hasMilestone("poly", 5)},
+            unlocked() {return hasMilestone("poly", 4)},
             branches() {
                 let color = 3
                 if (hasUpgrade(this.layer, this.id)) color = 1
