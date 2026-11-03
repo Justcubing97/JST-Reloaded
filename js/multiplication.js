@@ -395,7 +395,7 @@ addLayer("mul", {
             currencyDisplayName: "Products",
             currencyInternalName: "products",
             currencyLayer: "mul",
-            cost: new Decimal("145000"),
+            cost: new Decimal("125000"),
             pay() {return new Decimal(0)},
             canAfford() {
                 if (!hasUpgrade(this.layer, 51)) return false
@@ -415,7 +415,7 @@ addLayer("mul", {
             currencyDisplayName: "Products",
             currencyInternalName: "products",
             currencyLayer: "mul",
-            cost: new Decimal("145000"),
+            cost: new Decimal("125000"),
             pay() {return new Decimal(0)},
             canAfford() {
                 if (!hasUpgrade(this.layer, 53)) return false
@@ -594,8 +594,12 @@ addLayer("mul", {
         if (hasUpgrade(this.layer, 52)) difference = difference.add(1700)
         if (hasUpgrade(this.layer, 53)) difference = difference.add(1700)
 
-        if (hasUpgrade(this.layer, 61)) difference = difference.add(145000)
-        if (hasUpgrade(this.layer, 62)) difference = difference.add(145000)
+        if (hasUpgrade(this.layer, 61)) difference = difference.add(125000)
+        if (hasUpgrade(this.layer, 62)) difference = difference.add(125000)
+            
+        if (hasUpgrade(this.layer, 71)) difference = difference.add(100000)
+            
+        if (hasUpgrade(this.layer, 81)) difference = difference.add(600000)
 
         player.mul.products = player.mul.productsTotal.sub(difference)
 
