@@ -448,6 +448,7 @@ addLayer("mul", {
                 if (hasUpgrade(this.layer, this.id)) color = 1
                 return [[81, color]]
             },
+            style() {return {"height": "180px"}}
         },
 
         81: {
