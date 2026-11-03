@@ -432,15 +432,14 @@ addLayer("mul", {
 
         71: {
             title: "Complex Variables",
-            description: "x1e15 EP, FV, PV, and all Ineqs. ^1.05 Points and Functions after softcap. x10,000 Edges and x1e100 Vertex cap.",
+            description: "x1e15 EP, FV, PV, and all Ineqs. ^1.05 Points and Functions after softcap. x10,000 Edges and x1e100 Vertex cap. <i>This upgrade only requires one of the above upgrades.</i>",
             currencyDisplayName: "Products",
             currencyInternalName: "products",
             currencyLayer: "mul",
             cost: new Decimal("100000"),
             pay() {return new Decimal(0)},
             canAfford() {
-                if (!hasUpgrade(this.layer, 61)) return false
-                if (!hasUpgrade(this.layer, 62)) return false
+                if (!hasUpgrade(this.layer, 61) && !hasUpgrade(this.layer, 62)) return false
                 return player.mul.products.gte(this.cost)
             },
             unlocked() {return hasMilestone("poly", 12)},
