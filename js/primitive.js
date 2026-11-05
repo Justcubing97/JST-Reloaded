@@ -109,6 +109,7 @@ addLayer("p", {
     passiveGeneration() {
         if (hasUpgrade("ar", 24)) return 1
         if (hasMilestone("poly", 1)) return 1
+        if (hasUpgrade("pf", 104)) return 1
         return 0
     }, //use autoPrestige() if static!
     doReset(resettingLayer) {
@@ -598,6 +599,13 @@ addLayer("p", {
                 }
             }
         }
+
+        let mult
+        mult = new Decimal(0.25)
+        player.p.softcap1 = mult
+        
+        mult = new Decimal("1e1000")
+        player.p.softcap1Start = mult
     },
 
     glowColor() {
@@ -623,7 +631,7 @@ addLayer("p", {
     branches: [["ar", 1], ["nc", 3]],
     tooltip() {
         let text = format(player.p.points) + " Numbers (+" + format(getResetGain("p")) + " Numbers on reset)"
-        if (player.p.points.gte(player.p.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.p.softcap1Start} - ^${player.p.softcap1}]`
+        if (player.p.points.gte(player.p.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${format(player.p.softcap1Start)} - ^${format(player.p.softcap1)}]`
         return text
     },
 })

@@ -175,7 +175,7 @@ addLayer("a", {
         },
         41: {
             name: "Overkill Gain",
-            done() {return player.poly.vertGain.gte(player.poly.vertices.mul("1e200"))},
+            done() {return player.poly.vertGain.gte(player.poly.vertices.add(100).mul("1e200"))},
             unlocked() {return true},
             tooltip() {return "Have your Vertex gain be x1e200 greater than your Vertex cap. EFFECT: Vertices cap boosts NC."},
         },
@@ -278,5 +278,26 @@ addLayer("a", {
                 "border-color": "cyan"
             }},
         },
+    },
+
+    update(diff){
+        let mult
+        mult = new Decimal(0.25)
+        player.softcap1 = mult
+        
+        mult = new Decimal("1e50000")
+        player.softcap1Start = mult
+        
+        mult = new Decimal(0.2)
+        player.softcap2 = mult
+        
+        mult = new Decimal("1e250000")
+        player.softcap2Start = mult
+        
+        mult = new Decimal(0.15)
+        player.softcap2 = mult
+        
+        mult = new Decimal("e1e7")
+        player.softcap2Start = mult
     },
 })

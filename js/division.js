@@ -342,7 +342,7 @@ addLayer("div", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 10)){
+                if (hasMilestone("div", 10) || hasUpgrade("pf", 122)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -394,6 +394,7 @@ addLayer("div", {
         },
     },
 
+    milestonePopups() {return getClickableState("div", 1001)},
     milestones: {
         1: {
             requirementDescription: "1: 250 Division",
@@ -548,6 +549,7 @@ addLayer("div", {
             if (hasAchievement("a", 51)) reduction = reduction.mul(player.ar.arFunction.add(1).log(100).add(1))
             if (hasUpgrade("div", 23)) reduction = reduction.mul(upgradeEffect("div", 23))
             if (hasUpgrade("div", 26)) reduction = reduction.mul(upgradeEffect("div", 26))
+            if (hasUpgrade("pf", 12)) reduction = reduction.mul(100)
 
             reduction = reduction.pow(player.poly.pentagonsEffect1)
             if (player.d.points.gte(4)) reduction = reduction.pow(1.05)
@@ -561,17 +563,30 @@ addLayer("div", {
             player.div.nextAt = new Decimal(player.div.timeToNextBase).mul(player.div.timeMultiplier.pow(player.div.gain.div(reduction)))
         }
 
-        let automationBoolean = false
+        let automationBooleanBuyable = false
 
-        if (hasMilestone("div", 10)) automationBoolean = true
+        if (hasMilestone("div", 10)) automationBooleanBuyable = true
+        if (hasUpgrade("pf", 122)) automationBooleanBuyable = true
 
-        if (automationBoolean){
+        if (automationBooleanBuyable){
             let layer = "div"
             let list = [11]
             for (const id of list){
                 if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
                     tmp[layer].buyables[id].buy()
                 }
+            }
+        }
+        
+        let automationBooleanUpgrade = false
+
+        if (hasUpgrade("pf", 122)) automationBooleanUpgrade = true
+
+        if (automationBooleanUpgrade){
+            let layer = "div"
+            let list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27]
+            for (const id of list){
+                if (!hasUpgrade(layer, id) && canAffordUpgrade(layer, id) && tmp[layer].upgrades[id].unlocked) buyUpgrade(layer, id)
             }
         }
     },

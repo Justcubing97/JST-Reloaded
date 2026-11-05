@@ -144,7 +144,7 @@ addLayer("nc", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 103)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -233,7 +233,7 @@ addLayer("nc", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 103)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -322,7 +322,7 @@ addLayer("nc", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 103)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -463,6 +463,7 @@ addLayer("nc", {
         let automationBoolean = false
 
         if (hasMilestone("div", 5)) automationBoolean = true
+        if (hasUpgrade("pf", 103)) automationBoolean = true
 
         if (automationBoolean){
             let layer = "nc"
@@ -508,7 +509,7 @@ addLayer("nc", {
     tooltip() {return format(player.nc.points) + " Number Cores (+" + format(getResetGain("nc")) + "/s)"},
     tooltip() {
         let text = format(player.nc.points) + " Number Cores (+" + format(getResetGain("nc")) + "/s)"
-        if (player.nc.points.gte(player.nc.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.nc.softcap1Start} - ^${player.nc.softcap1}]`
+        if (player.nc.points.gte(player.nc.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${format(player.nc.softcap1Start)} - ^${format(player.nc.softcap1)}]`
         return text
     },
 })

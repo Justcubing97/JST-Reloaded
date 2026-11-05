@@ -199,7 +199,9 @@ addLayer("sub", {
                 "h-line",
                 "blank",
                 ["display-text", function(){return `You have <h2 style="color: rgb(204,153,204); text-shadow: 0px 0px 10px rgb(204,153,204)">${format(player.sub.negativity)}</h2> Negativity (Neg)`}],
-                "blank",
+                ["blank", "4px"],
+                ["clickables", [50]],
+                ["blank", "4px"],
                 ["row", [["display-text", `Point<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 11], ["clickable", 12], ["clickable", 13], ["clickable", 14]]],
                 ["row", [["display-text", `Fundamental<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 21], ["clickable", 22], ["clickable", 23], ["clickable", 24]]],
                 ["row", [["display-text", `Primitive<br>restrictions:`], ["blank", "4px", "4px"], ["clickable", 31], ["clickable", 32], ["clickable", 33], ["clickable", 34]]],
@@ -778,6 +780,40 @@ addLayer("sub", {
             },
             unlocked() {return hasUpgrade("div", 16)},
         },
+        501: {
+            title: "Disable all",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                let list = [11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44]
+                list.forEach(function(id){
+                    if (tmp.sub.clickables[id].unlocked) setClickableState("sub", id, false)
+                })
+            },
+            style() {
+                return {
+                    "background-color": "rgb(255,153,255)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+        },
+        502: {
+            title: "Enable all",
+            canClick() {return !getClickableState(this.layer, 1001)},
+            onClick() {
+                let list = [11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44]
+                list.forEach(function(id){
+                    if (tmp.sub.clickables[id].unlocked) setClickableState("sub", id, true)
+                })
+            },
+            style() {
+                return {
+                    "background-color": "rgb(255,153,255)",
+                    "width": "120px",
+                    "height": "120px",
+                }
+            },
+        },
         
         1001: {
             title: "<h2>Enter the Negative Number Line</h2>",
@@ -911,6 +947,12 @@ addLayer("sub", {
                 }
             }
         }
+        
+        mult = new Decimal(0.25)
+        player.add.softcap1 = mult
+        
+        mult = new Decimal("1e1000")
+        player.add.softcap1Start = mult
     },
 
     glowColor() {

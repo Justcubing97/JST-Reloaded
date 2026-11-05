@@ -2,7 +2,7 @@ let modInfo = {
 	name: "JST: Reloaded",
 	author: "Justcubing97",
 	pointsName: "Points",
-	modFiles: ["achievements.js", "logarithmicscale.js", "conway.js", "fundamental.js", "primitive.js", "arithmetic.js", "addition.js", "subtraction.js", "multiplication.js", "division.js", "dimension.js", "polygon.js", "numbercore.js", "corebooster.js", "planetary.js", "tree.js"],
+	modFiles: ["achievements.js", "logarithmicscale.js", "conway.js", "story.js", "fundamental.js", "primitive.js", "arithmetic.js", "addition.js", "subtraction.js", "multiplication.js", "division.js", "dimension.js", "polygon.js", "numbercore.js", "corebooster.js", "planetary.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,17 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "2.0",
-	name: "Polygon layer",
+	num: "2.1",
+	name: "Polygon progress change + Expedition",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h2>v2.1</h2><br>
+		- Added Expedition <br>
+		- Added Chapter 1 of lore <br>
+		- Softcap starts and exponents will always be corrected to prevent an unintentional softlock <br>
+		- Changed Function's 16th milestone cost <br>
+		- Functions' 10th effect now works even if the Core Booster cost goes below the requirement cost (which for some reason, by default, does not allow cost to go lower than the require amount) <br><br>
 	<h2>v2.0</h2><br>
 		- THE ENTIRE POLYGON LAYER. <br>
 		- Changed the 4th Achievement <br>
@@ -75,6 +81,8 @@ var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",
     "clickIneqButton_ARH",
     "convertTo_ADD",
     "findConstructorShapesMult_POLY",
+    "giveResourcesFromExpedition_PFR",
+    "findMultsForResourcesExpedition_PFR",
 ]
 
 function getStartPoints(){
@@ -90,9 +98,9 @@ function canGenPoints(){
 function addedPlayerData() { return {
     softcap1: new Decimal(0.25),
     softcap1Start: new Decimal("1e50000"),
-    softcap2: new Decimal(0.25),
+    softcap2: new Decimal(0.2),
     softcap2Start: new Decimal("1e250000"),
-    softcap3: new Decimal(0.25),
+    softcap3: new Decimal(0.15),
     softcap3Start: new Decimal("e1e7"),
 }}
 
@@ -183,6 +191,7 @@ function getPointGen() {
 
     layer = "pf"
     if (hasUpgrade(layer, 11)) mult = mult.mul("1e1000")
+    mult = mult.mul(buyableEffect("pf", 11)[1])
     //exp
     layer = "p"
     if (hasMilestone(layer, 6)) mult = mult.pow(1.11)
@@ -220,6 +229,7 @@ function getPointGen() {
     if (inChallenge(layer, 22)) mult = mult.pow(0.01)
     //=====
     //softcap stuff
+    //fixing softcaps
     if (mult.gte(player.softcap1Start)) mult = mult.pow(player.softcap1).mul(new Decimal(player.softcap1Start).pow(decimalOne.sub(player.softcap1)))
     if (mult.gte(player.softcap2Start)) mult = mult.pow(player.softcap2).mul(new Decimal(player.softcap2Start).pow(decimalOne.sub(player.softcap2)))
     if (mult.gte(player.softcap3Start)) mult = mult.pow(player.softcap3).mul(new Decimal(player.softcap3Start).pow(decimalOne.sub(player.softcap3)))
@@ -233,14 +243,14 @@ var displayThings = [
     "Justcubing97's Something Tree: Reloaded - mod author: Justcubing97",
     "<br>",
     function() {if (player.points.gte(player.softcap1Start)) return `<b>FIRST SOFTCAP: ${format(player.softcap1Start)} - ^${format(player.softcap1)}</b>`},
-    function() {if (player.points.gte(player.softcap2Start)) return `<b>SECOND SOFTCAP: ${format(player.softcap2Start)} - ^${format(player.softcap1)}</b>`},
-    function() {if (player.points.gte(player.softcap3Start)) return `<b>THIRD SOFTCAP: ${format(player.softcap3Start)} - ^${format(player.softcap1)}</b>`},
+    function() {if (player.points.gte(player.softcap2Start)) return `<b>SECOND SOFTCAP: ${format(player.softcap2Start)} - ^${format(player.softcap2)}</b>`},
+    function() {if (player.points.gte(player.softcap3Start)) return `<b>THIRD SOFTCAP: ${format(player.softcap3Start)} - ^${format(player.softcap3)}</b>`},
     "<br><br><br>",
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.pf.points.gte(1)
+	return player.pf.points.gte("1")
 }
 
 

@@ -128,6 +128,11 @@ addLayer("ls", {
         ["display-text", function(){return `<span style="color: rgb(51,0,153)">Hexagons: x${format(player.poly.hexagons.add(1).pow(36))}</span>`}],
         ["display-text", function(){return `<span style="color: rgb(51,51,255)">Constructor Sacrifice Progress: x${format(new Decimal("1e2500").pow(player.poly.challenges[11]))}</span>`}],
         ["display-text", function(){return `<span style="color: rgb(204, 255, 204)">Dimensions: x${format(new Decimal("1e10").pow(new Decimal(10).pow(player.d.points)))}</span>`}],
+        "blank",
+        ["display-text", function(){return `Row 6 boosts:`}],
+        ["display-text", function(){return `<span style="color: rgb(153,255,255)">Planetary Fragments: x${format(player.pf.points.add(1).pow(12))}</span>`}],
+        ["display-text", function(){return `<span style="color: rgb(153,153,153)">Stone: x${format(player.pf.stone.add(1).pow(4))}</span>`}],
+        ["display-text", function(){return `<span style="color: rgb(255, 153, 102)">Copper: x${format(player.pf.copper.add(1).pow(4.5))}</span>`}],
     ],
 
     update(diff){
@@ -202,6 +207,10 @@ addLayer("ls", {
         if (hasChallenge("poly", 11)) player.ls.t0 = player.ls.t0.mul(new Decimal("1e2500").pow(player.poly.challenges[11]))
             
         if (player.d.points.gte(1)) player.ls.t0 = player.ls.t0.mul(new Decimal("1e10").pow(new Decimal(10).pow(player.d.points)))
+            
+        if (player.pf.points.gte(1)) player.ls.t0 = player.ls.t0.mul(player.pf.points.add(1).pow(12))
+        if (player.pf.stone.gte(1)) player.ls.t0 = player.ls.t0.mul(player.pf.stone.add(1).pow(4))
+        if (player.pf.copper.gte(1)) player.ls.t0 = player.ls.t0.mul(player.pf.copper.add(1).pow(4.5))
         
         //=====
         if (player.ls.t0.gt(0)) player.ls.t1 = player.ls.t0.add(1).log(10)

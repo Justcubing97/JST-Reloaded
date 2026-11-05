@@ -622,12 +622,14 @@ addLayer("mul", {
         let automationBooleanUpgrade = false
 
         if (hasMilestone("poly", 4)) automationBooleanUpgrade = true
+        if (hasUpgrade("pf", 112)) automationBooleanUpgrade = true
 
         if (automationBooleanUpgrade){
             let list = [11, 21, 22, 31, 32, 41]
             if (hasMilestone("poly", 6)) list.push(51, 52, 53)
             if (hasMilestone("poly", 13)) list.push(61, 62, 71)
             if (hasUpgrade("div", 22)) list.push(81)
+            if (hasUpgrade("pf", 112)) list.push(51, 52, 53, 61, 62, 71, 81)
             for (const id of list){
                 if (!hasUpgrade("mul", id) && canAffordUpgrade("mul", id) && tmp.mul.upgrades[id].unlocked) buyUpgrade("mul", id)
             }

@@ -105,6 +105,7 @@ addLayer("f", {
         if (hasMilestone("p", 2)) return 1
         if (hasUpgrade("ar", 24)) return 1
         if (hasMilestone("poly", 1)) return 1
+        if (hasUpgrade("pf", 104)) return 1
         return 0
     },
     doReset(resettingLayer) {
@@ -419,6 +420,7 @@ addLayer("f", {
         if (hasMilestone("p", 5)) automationBoolean = true
         if (hasUpgrade("ar", 15)) automationBoolean = true
         if (hasUpgrade("poly", 13)) automationBoolean = true
+        if (hasUpgrade("pf", 101)) automationBoolean = true
 
         if (automationBoolean){
             let list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27]
@@ -426,6 +428,7 @@ addLayer("f", {
             if (hasUpgrade("ar", 15)) list.push(31, 32, 33, 34, 35, 36, 37)
             if (hasUpgrade("poly", 13)) list.push(31, 32, 33, 34, 35, 36, 37, 41, 42, 43)
             if (hasMilestone("poly", 16)) list.push(44, 45, 46, 47)
+            if (hasUpgrade("pf", 102)) list.push(31, 32, 33, 34, 35, 36, 37, 41, 42, 43, 44, 45, 46, 47)
             for (const id of list){
                 if (!hasUpgrade("f", id) && canAffordUpgrade("f", id) && tmp.f.upgrades[id].unlocked) buyUpgrade("f", id)
             }
@@ -457,7 +460,7 @@ addLayer("f", {
     branches: [["p", 1]],
     tooltip() {
         let text = format(player.f.points) + " Fundamentality (+" + format(getResetGain("f")) + " Fundamentality on reset)"
-        if (player.f.points.gte(player.f.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.f.softcap1Start} - ^${player.f.softcap1}]`
+        if (player.f.points.gte(player.f.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${format(player.f.softcap1Start)} - ^${format(player.f.softcap1)}]`
         return text
     },
 })

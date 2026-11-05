@@ -600,11 +600,17 @@ addLayer("add", {
         }
 
         //automation addition
-        if (hasMilestone("poly", 3)) tmp.add.convertTo_ADD("f")
-        if (hasMilestone("poly", 5)) tmp.add.convertTo_ADD("p")
-        if (hasMilestone("poly", 6)) tmp.add.convertTo_ADD("poi")
-        if (hasMilestone("poly", 16)) tmp.add.convertTo_ADD("nc")
-        if (hasMilestone("poly", 16)) tmp.add.convertTo_ADD("ar")
+        if (hasMilestone("poly", 3) || hasUpgrade("pf", 111)) tmp.add.convertTo_ADD("f")
+        if (hasMilestone("poly", 5) || hasUpgrade("pf", 111)) tmp.add.convertTo_ADD("p")
+        if (hasMilestone("poly", 6) || hasUpgrade("pf", 111)) tmp.add.convertTo_ADD("poi")
+        if (hasMilestone("poly", 16) || hasUpgrade("pf", 111)) tmp.add.convertTo_ADD("nc")
+        if (hasMilestone("poly", 16) || hasUpgrade("pf", 111)) tmp.add.convertTo_ADD("ar")
+
+        mult = new Decimal(0.25)
+        player.add.softcap1 = mult
+        
+        mult = new Decimal("1e1000")
+        player.add.softcap1Start = mult
     },
 
     glowColor() {
@@ -629,7 +635,7 @@ addLayer("add", {
 
     tooltip() {
         let text = format(player.add.points) + " Addition (+" + format(getResetGain("add")) + " Addition/s)"
-        if (player.add.points.gte(player.add.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.add.softcap1Start} - ^${player.add.softcap1}]`
+        if (player.add.points.gte(player.add.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${format(player.add.softcap1Start)} - ^${format(player.add.softcap1)}]`
         return text
     },
 })

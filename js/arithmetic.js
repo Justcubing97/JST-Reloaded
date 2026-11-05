@@ -128,6 +128,7 @@ addLayer("ar", {
     milestonePopups() {return getClickableState("ar", 1001)},
     passiveGeneration() { 
         if (hasMilestone("poly", 1)) return 1
+        if (hasUpgrade("pf", 113)) return 1
         return 0
     }, //use autoPrestige() if static!
     findEqPointsMult_ARH(){
@@ -215,6 +216,9 @@ addLayer("ar", {
 
         layer = "div"
         if (hasMilestone(layer, 2)) mult = mult.mul("1e6")
+
+        layer = "pf"
+        mult = mult.mul(buyableEffect(layer, 13)[1])
         //exp 
         //other hypers
         //time dilations/chals
@@ -307,6 +311,7 @@ addLayer("ar", {
         if (hasUpgrade("poly", 205)) keptChallenges.push(21)
         if (hasChallenge("ar", 22)) keptChallenges.push(22)
         if (resettingLayer == "pf") keptChallenges = []
+        if (hasUpgrade("pf", 114)) keptChallenges.push(11, 12, 13)
 
         let keptMilestones = []
         if (hasMilestone("ar", 16)) keptMilestones.push("16")
@@ -758,9 +763,9 @@ addLayer("ar", {
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
         16: {
-            requirementDescription: "16: 1e530 Functions",
+            requirementDescription: "16: 1e430 Functions",
             effectDescription: "A lengthy timewall... but worth it! Unlock a <b>meta-effect</b> of Functions. Unlock Type-NCR Addition. <i>This milestone is kept until the next reset layer.</i>",
-            done() { return player.ar.arFunction.gte("1e530") },
+            done() { return player.ar.arFunction.gte("1e430") },
             unlocked() { return hasMilestone(this.layer, this.id - 1)},
         },
         17: {
@@ -1271,6 +1276,7 @@ addLayer("ar", {
         if (hasMilestone("ar", 17)) mult = mult.pow(player.ar.metaE2)
         if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
         if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         player.ar.metaE1 = mult
         
@@ -1278,17 +1284,20 @@ addLayer("ar", {
         else mult = new Decimal(1)
         if (hasUpgrade("cb", 15)) mult = mult.pow(player.ar.metaE3)
         if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         player.ar.metaE2 = mult
         
         if (hasUpgrade("cb", 15) && !inLD) mult = player.ar.arFunction.add(1).log("1e2000").div(8).add(1)
         else mult = new Decimal(1)
         if (hasMilestone("div", 14)) mult = mult.pow(player.ar.metaE4)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         player.ar.metaE3 = mult
         
         if (hasMilestone("div", 14) && !inLD) mult = player.ar.arFunction.add(1).log("1e2500").div(25).add(1)
         else mult = new Decimal(1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         player.ar.metaE4 = mult
 
@@ -1330,19 +1339,27 @@ addLayer("ar", {
         let automationBoolean = false
 
         if (hasMilestone("poly", 1)) automationBoolean = true
+        if (hasUpgrade("pf", 113)) automationBoolean = true
 
         if (automationBoolean){
             let list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27]
+            if (hasUpgrade("pf", 113)) list.push(31, 32, 33, 34, 35, 36, 37)
             for (const id of list){
                 if (!hasUpgrade("ar", id) && canAffordUpgrade("ar", id) && tmp.ar.upgrades[id].unlocked) buyUpgrade("ar", id)
             }
         }
+
+        mult = new Decimal(0.25)
+        player.ar.softcap1 = mult
+        
+        mult = new Decimal("1e1000")
+        player.ar.softcap1Start = mult
     },
 
     branches: [["add", 3], ["sub", 3], ["mul", 3], ["div", 3], ["d", 3], ["poly", 1]],
     tooltip() {
         let text = format(player.ar.points) + " Operation Power (+" + format(getResetGain("ar")) + " Operation Power on reset)"
-        if (player.ar.points.gte(player.ar.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${player.ar.softcap1Start} - ^${player.ar.softcap1}]`
+        if (player.ar.points.gte(player.ar.softcap1Start)) text += `<br>[FIRST SOFTCAP - ${format(player.ar.softcap1Start)} - ^${format(player.ar.softcap1)}]`
         return text
     },
 })

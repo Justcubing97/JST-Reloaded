@@ -25,6 +25,7 @@ addLayer("poly", {
         areaEffect6: new Decimal(1),
 
         areaMeta1: new Decimal(1),
+        areaMeta2: new Decimal(1),
 
         triangles: new Decimal(0),
         squares: new Decimal(0),
@@ -146,10 +147,10 @@ addLayer("poly", {
                 "blank",
                 ["upgrades", [10, 11]],
                 "blank",
-                function(){if (hasUpgrade("poly", 21)) return "h-line"},
+                function(){if (hasUpgrade("poly", 21) || hasUpgrade("pf", 12)) return "h-line"},
                 "blank",
-                ["display-text", function(){if (hasUpgrade("poly", 21)) return `You have <h2 style="color: rgb(102,51,255); text-shadow: 0px 0px 10px rgb(102,51,255)">${format(player.poly.edges)}</h2> Edges (no short form)`}],
-                ["display-text", function(){if (hasUpgrade("poly", 21)) return `You are gaining ${format(player.poly.edgeGain)} Edges per second. Edge gain is determined by Vertices.`}],
+                ["display-text", function(){if (hasUpgrade("poly", 21) || hasUpgrade("pf", 12)) return `You have <h2 style="color: rgb(102,51,255); text-shadow: 0px 0px 10px rgb(102,51,255)">${format(player.poly.edges)}</h2> Edges (no short form)`}],
+                ["display-text", function(){if (hasUpgrade("poly", 21) || hasUpgrade("pf", 12)) return `You are gaining ${format(player.poly.edgeGain)} Edges per second. Edge gain is determined by Vertices.`}],
                 "blank",
                 ["upgrades", [20, 21]],
                 "blank",
@@ -157,7 +158,7 @@ addLayer("poly", {
                 "blank",
                 "milestones",
             ],
-            unlocked() {return hasUpgrade("poly", 11)},
+            unlocked() {return hasUpgrade("poly", 11) || hasUpgrade("pf", 12)},
         },
         "Area": {
             content: [
@@ -194,11 +195,15 @@ addLayer("poly", {
                 }],
                 "blank",
                 ["display-text", function(){
-                    if (player.poly.area.gte(347163)) return `Area raises the above 6 effects, the first 10 Function effects, and Points by ^${format(player.poly.areaMeta1)}`
+                    if (player.poly.area.gte(347163)) return `Area raises the first 6 effects, the first 10 Function effects, and Points by ^${format(player.poly.areaMeta1)}`
                     return `Unlocked at 347,163 Area`
                 }],
+                ["display-text", function(){
+                    if (player.poly.area.gte(1735105)) return `Area raises the first 7 effects, the first 4 Function meta-effects, and CS by ^${format(player.poly.areaMeta2)}`
+                    return `Unlocked at 1,735,105 Area`
+                }],
             ],
-            unlocked() {return hasMilestone("poly", 10)},
+            unlocked() {return hasMilestone("poly", 10) || hasUpgrade("pf", 12)},
         },
         "Constructor": {
             content: [
@@ -230,7 +235,7 @@ addLayer("poly", {
                 "blank",
                 ["challenge", [11]]
             ],
-            unlocked() {return hasMilestone("poly", 13)},
+            unlocked() {return hasMilestone("poly", 13) || hasUpgrade("pf", 12)},
         },
     },
     findConstructorShapesMult_POLY(type){
@@ -245,6 +250,10 @@ addLayer("poly", {
         if (hasUpgrade("cb", 15)) mult = mult.mul(player.cb.e3)
         mult = mult.mul(tmp.poly.challenges[11].rewardEffect[2])
         if (hasMilestone("div", 12)) mult = mult.mul(55)
+        mult = mult.mul(buyableEffect("pf", 12)[1])
+        if (hasUpgrade("pf", 12)) mult = mult.mul(100)
+            
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         if (type == "t"){
             mult = mult.pow(player.poly.hexagonsEffect2)
@@ -417,7 +426,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         102: {
             title: "Congruency Theorems",
@@ -426,7 +435,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         103: {
             title: "Similar Triangles II",
@@ -435,7 +444,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         104: {
             title: "Buyable Boosts",
@@ -444,7 +453,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         105: {
             title: "Cap Dilation",
@@ -470,7 +479,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         106: {
             title: "Time Expander",
@@ -479,7 +488,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         107: {
             title: "Buyable Mania",
@@ -488,7 +497,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 15)},
+            unlocked() {return hasUpgrade(this.layer, 15) || hasUpgrade("pf", 12)},
         },
         111: {
             title: "Vertex Manipulation",
@@ -497,7 +506,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         112: {
             title: "Hyperbolic Geometry",
@@ -506,7 +515,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         113: {
             title: "3D Polygon",
@@ -515,7 +524,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         114: {
             title: "Bismuth Square",
@@ -539,7 +548,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         115: {
             title: "INFATUATION",
@@ -548,7 +557,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         116: {
             title: "Dividing Shapes",
@@ -572,7 +581,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         117: {
             title: "SSS",
@@ -581,7 +590,7 @@ addLayer("poly", {
             currencyDisplayName: "Vertices",
             currencyInternalName: "vertices",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 206)},
+            unlocked() {return hasUpgrade(this.layer, 206) || hasUpgrade("pf", 12)},
         },
         
         201: {
@@ -609,7 +618,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         202: {
             title: "Rays",
@@ -618,7 +627,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         203: {
             title: "Angles From Rays",
@@ -627,7 +636,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         204: {
             title: "Acute Angles",
@@ -636,7 +645,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         205: {
             title: "Obtuse Angles",
@@ -660,7 +669,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         206: {
             title: "Reflexive Angles",
@@ -684,7 +693,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         207: {
             title: "2τ",
@@ -693,7 +702,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasUpgrade(this.layer, 21)},
+            unlocked() {return hasUpgrade(this.layer, 21) || hasUpgrade("pf", 12)},
         },
         211: {
             title: "Cyclic Upgrade",
@@ -717,7 +726,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         212: {
             title: "Number Line is an Edge",
@@ -726,7 +735,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         213: {
             title: "Furrycore",
@@ -735,7 +744,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         214: {
             title: "More Edges, More Shapes!",
@@ -759,7 +768,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         215: {
             title: "Another Bar",
@@ -768,7 +777,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         216: {
             title: "<i>INCREASING</i>",
@@ -777,7 +786,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
         217: {
             title: "Atomic Clock Malfunction",
@@ -786,7 +795,7 @@ addLayer("poly", {
             currencyDisplayName: "Edges",
             currencyInternalName: "edges",
             currencyLayer: "poly",
-            unlocked() {return hasMilestone("div", 7)},
+            unlocked() {return hasMilestone("div", 7) || hasUpgrade("pf", 12)},
         },
     },
 
@@ -820,7 +829,7 @@ addLayer("poly", {
             },
             canAfford() { return player[this.layer].vertices.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 123)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -899,7 +908,7 @@ addLayer("poly", {
             },
             canAfford() { return player[this.layer].vertices.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 123)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -982,7 +991,7 @@ addLayer("poly", {
             },
             canAfford() { return player[this.layer].vertices.gte(this.cost()) },
             buy() {
-                if (hasMilestone("div", 5)){
+                if (hasMilestone("div", 5) || hasUpgrade("pf", 123)){
                     let cost = tmp[this.layer].buyables[this.id].buyMax()[0]
                     let amount = tmp[this.layer].buyables[this.id].buyMax()[1]
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(amount))
@@ -1408,7 +1417,7 @@ addLayer("poly", {
             requirementDescription: "1: 1,000 Edges",
             effectDescription: "<i>THE GREAT AUTOMATION.</i> Generate 100% of pending Fundamentality, Numbers, and Operation Power per second. Automate the first 14 Arithmetic upgrades. Automate and bulk-buy the buyables for Addition, Subtraction, and Multiplication.",
             done() { return player.poly.edges.gte("1e3") },
-            unlocked() {return hasUpgrade("poly", 21)},
+            unlocked() {return hasUpgrade("poly", 21) || hasUpgrade("pf", 12)},
         },
         2: {
             requirementDescription: "2: 30,000 Edges",
@@ -1489,9 +1498,9 @@ addLayer("poly", {
             unlocked() {return hasMilestone("poly", this.id - 1)},
         },
         13: {
-            requirementDescription: "13: 1e100 Edges",
+            requirementDescription: "13: 1e115 Edges",
             effectDescription: "Unlock the Constructor. Automate the 6th and 7th rows of TMT, and -0.002 to Division time scaling.",
-            done() { return player.poly.edges.gte("1e100") },
+            done() { return player.poly.edges.gte("1e115") },
             unlocked() {return hasMilestone("poly", this.id - 1)},
         },
         14: {
@@ -1709,7 +1718,7 @@ addLayer("poly", {
         mult = mult.mul(buyableEffect("poly", 13))
 
         player.poly.vertGain = mult
-        if (hasUpgrade("poly", 11)) player.poly.vertices = Decimal.min(player.poly.vertices.add(player.poly.vertGain.times(diff)), player.poly.vertCap)
+        if (hasUpgrade("poly", 11) || hasUpgrade("pf", 12)) player.poly.vertices = Decimal.min(player.poly.vertices.add(player.poly.vertGain.times(diff)), player.poly.vertCap)
 
         //edges
         //gain
@@ -1731,11 +1740,12 @@ addLayer("poly", {
         if (player.d.points.gte(4)) mult = mult.mul("1e10")
         if (hasUpgrade("cb", 15)) mult = mult.mul(player.cb.e3)
         if (hasUpgrade("poly", 117)) mult = mult.mul(mult.add(1).log(2))
+        if (hasUpgrade("pf", 12)) mult = mult.mul(100)
 
         if (hasUpgrade("div", 25)) mult = mult.pow(1.1)
             
         player.poly.edgeGain = mult
-        if (hasUpgrade("poly", 21)) player.poly.edges = player.poly.edges.add(player.poly.edgeGain.times(diff))
+        if (hasUpgrade("poly", 21) || hasUpgrade("pf", 12)) player.poly.edges = player.poly.edges.add(player.poly.edgeGain.times(diff))
 
         //length width area
         //length
@@ -1774,6 +1784,7 @@ addLayer("poly", {
 
         mult = mult.pow(0.75)
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         let softcapAE11 = new Decimal(0.25)
         let softcapAE11Start = new Decimal("100")
@@ -1788,6 +1799,7 @@ addLayer("poly", {
 
         mult = mult.pow(1.125)
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
         
         if (!inChallenge("poly", 11)) player.poly.areaEffect2 = mult
         else player.poly.areaEffect2 = new Decimal(1)
@@ -1797,6 +1809,7 @@ addLayer("poly", {
 
         mult = mult.log("1e6").add(1)
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
         
         if (!inChallenge("poly", 11)) player.poly.areaEffect3 = mult
         else player.poly.areaEffect3 = new Decimal(1)
@@ -1806,6 +1819,7 @@ addLayer("poly", {
 
         mult = mult.log("1e50").add(1)
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
         
         if (!inChallenge("poly", 11)) player.poly.areaEffect4 = mult
         else player.poly.areaEffect4 = new Decimal(1)
@@ -1815,6 +1829,7 @@ addLayer("poly", {
 
         mult = mult.pow(15)
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
 
         let softcapAE51 = new Decimal(0.25)
         let softcapAE51Start = new Decimal("1e1000")
@@ -1829,6 +1844,7 @@ addLayer("poly", {
 
         mult = mult.pow(4).pow(mult.log("1e10").add(1))
         if (player.poly.area.gte(347163)) mult = mult.pow(player.poly.areaMeta1)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
         
         if (!inChallenge("poly", 11)) player.poly.areaEffect6 = mult
         else player.poly.areaEffect6 = new Decimal(1)
@@ -1837,16 +1853,25 @@ addLayer("poly", {
         mult = player.poly.area
 
         mult = mult.pow(0.001)
+        if (player.poly.area.gte(1735105)) mult = mult.pow(player.poly.areaMeta2)
         
         player.poly.areaMeta1 = mult
+        
+        //meta 2
+        mult = player.poly.area
+
+        mult = mult.pow(0.002)
+        
+        player.poly.areaMeta2 = mult
 
     
         //automation
-        let automationBoolean = false
+        let automationBooleanBuyable = false
 
-        if (hasMilestone("div", 5)) automationBoolean = true
+        if (hasMilestone("div", 5)) automationBooleanBuyable = true
+        if (hasUpgrade("pf", 123)) automationBooleanBuyable = true
 
-        if (automationBoolean){
+        if (automationBooleanBuyable){
             let layer = "poly"
             let list = [11, 12, 13]
             if (hasUpgrade("ar", 34)) list.push(101, 102)
@@ -1854,6 +1879,22 @@ addLayer("poly", {
                 if (canBuyBuyable(layer, id) && tmp[layer].buyables[id].unlocked) {
                     tmp[layer].buyables[id].buy()
                 }
+            }
+        }
+
+        let automationBooleanUpgrade = false
+
+        if (hasUpgrade("pf", 123)) automationBooleanUpgrade = true
+
+        if (automationBooleanUpgrade){
+            let layer = "poly"
+            let list = [101, 102, 103, 104, 105, 106, 107, 111, 112, 113, 114, 115, 116, 117]
+            if (hasUpgrade("pf", 124)){
+                if (hasUpgrade("pf", 123)) list.push(11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 201, 202, 203, 204, 205, 206, 207, 211, 212, 213, 214, 215, 216, 217)
+                else list = [11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 201, 202, 203, 204, 205, 206, 207, 211, 212, 213, 214, 215, 216, 217]
+            }
+            for (const id of list){
+                if (!hasUpgrade(layer, id) && canAffordUpgrade(layer, id) && tmp[layer].upgrades[id].unlocked) buyUpgrade(layer, id)
             }
         }
 
@@ -1885,10 +1926,11 @@ addLayer("poly", {
         player.poly.baseTime = mult
 
         //function time
-        if (hasMilestone("poly", 13)){
+        if (hasMilestone("poly", 13) || hasUpgrade("pf", 12)){
             let mult = new Decimal(1)
             //add "timewarp" boosts here
             if (hasUpgrade("poly", 217)) mult = mult.mul(3)
+            if (hasUpgrade("pf", 12)) mult = mult.mul(50)
 
             player.poly.currentTime = Decimal.min(player.poly.currentTime.sub(mult.mul(diff)), player.poly.baseTime)
 
@@ -1951,6 +1993,12 @@ addLayer("poly", {
             player.poly.pentagons = player.poly.pentagons.add(tmp.poly.findConstructorShapesMult_POLY("p"))
             player.poly.hexagons = player.poly.hexagons.add(tmp.poly.findConstructorShapesMult_POLY("h"))
         }
+
+        mult = new Decimal(0.25)
+        player.add.softcap1 = mult
+        
+        mult = new Decimal("1e1000")
+        player.add.softcap1Start = mult
     },
 
     glowColor() {
