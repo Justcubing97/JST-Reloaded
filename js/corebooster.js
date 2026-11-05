@@ -53,7 +53,9 @@ addLayer("cb", {
         if (hasUpgrade("sub", 27)) player.cb.unlocked = true
         return player.cb.unlocked
     },
-    autoPrestige() {return false}, //use autoPrestige() if static!
+    autoPrestige() {return hasUpgrade("pf", 121)}, //use autoPrestige() if static!
+    resetsNothing() {return hasUpgrade("pf", 121)},
+    canBuyMax() {return hasUpgrade("pf", 121)},
     doReset(resettingLayer) {
         // Stage 1, almost always needed, makes resetting this layer not delete your progress
         if (resettingLayer == "cb") doReset("poly", true)
