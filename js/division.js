@@ -222,7 +222,7 @@ addLayer("div", {
                 
                 base = base.pow(base.log(10)).add(1)
                 
-                if (hasMilestone("div", 6)) base = base.pow(1.5)
+                if (hasMilestone("div", 6)) base = base.pow(1.75)
 
                 let softcap1 = new Decimal(0.25)
                 let softcap1Start = new Decimal("1e200")
