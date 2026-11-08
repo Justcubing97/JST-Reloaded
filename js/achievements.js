@@ -267,7 +267,7 @@ addLayer("a", {
             name: "Finality of Polygon Layer",
             done() {return player.poly.points.gte("1e650")},
             unlocked() {return true},
-            tooltip() {return "Have 21 Arithmetic upgrades."},
+            tooltip() {return "Have 1e650 Shapes. I hope you are ready."},
         },
         61: {
             name: "Blast Off",
